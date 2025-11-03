@@ -1,0 +1,1 @@
+# ProtT5 / ProstT5 embeddings
