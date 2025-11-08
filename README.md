@@ -38,8 +38,24 @@ project_root/
 ```
 
 ### ⚡ Usage
- tba
- 
+
+Generate CSV files from the Access database
+
+1. Create a `.env` file in the project root with:
+
+    - ACCESS_DB_PATH=/full/path/to/database.accdb
+    - ACCESS_DB_PASSWORD=yourpassword
+
+2. Run the script:
+
+   python scripts/fetch_data.py
+    
+   The script will:
+   - Check if UGT.csv, Activity.csv, and Substrate.csv already exist in data/
+   - If missing, export the tables from the .accdb file and fetch additional substrate info
+
+3. Result: CSV files will be saved in the data/ folder, ready for preprocessing and analysis.
+
 ---
 
 ### 📈 Experiments
