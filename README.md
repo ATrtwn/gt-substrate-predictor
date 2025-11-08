@@ -16,8 +16,8 @@ This project aims to develop machine learning models that predict GT-substrate b
   - **C1:** Both GT and substrate seen during training
   - **C2:** Novel GT or substrate
   - **C3:** Both GT and substrate unseen
-- Integrate structural insights from AlphaFold2 (optional).
 - Benchmark against baseline models and existing prediction tools.
+- Integrate structural insights from AlphaFold2 (optional).
 
 ---
 
@@ -26,12 +26,13 @@ This project aims to develop machine learning models that predict GT-substrate b
 project_root/
 │
 ├── data/ # Raw and processed datasets
+├── scripts/ # Entry-point scripts
 ├── src/ # Source code for data processing, embeddings, models, training, and evaluation
-│ ├── data/
-│ ├── features/
-│ ├── models/
-│ ├── training/
-│ └──utils/
+│ ├── data/ # Data loading, preprocessing, and splitting
+│ ├── features/ # Feature extraction and encoding (e.g., embeddings)
+│ ├── models/ # Model architectures
+│ ├── training/ # Training loops, optimizers, evaluation
+│ └── utils/ # Shared helper functions (e.g. plotting)
 ├── experiments/ # Experiment logs and checkpoints
 └── reports/ # Figures and summaries of results
 ```
