@@ -46,14 +46,14 @@ def create_csv():
     print(f"✅ Table UGT exported to {output_path_ugt}")
 
     # Read Activity table
-    df_act = pd.read_sql(f"SELECT ID,UGT_trivial_name, substrate,activity FROM Activity WHERE activity <>'None' ", engine)
+    df_act = pd.read_sql(f"SELECT ID,UGT_trivial_name, substrate,activity FROM Activity WHERE activity <>'missing' ", engine)
     # Save as CSV
     output_path_act = location / "Activity.csv"
     df_act.to_csv(output_path_act, index=False)
     print(f"✅ Table Activity exported to {output_path_act}")
 
     # Read activity table and get distinct substrates
-    df_substrate = pd.read_sql(f"SELECT DISTINCT substrate FROM Activity WHERE activity <>'None' ", engine)
+    df_substrate = pd.read_sql(f"SELECT DISTINCT substrate FROM Activity WHERE activity <>'missing' ", engine)
     print("Fetching PubChem data for substrates...")
     df_substrate["molecule"] = [get_pubchem_info(name) for name in tqdm(df_substrate["substrate"])]
     # Save as CSV
