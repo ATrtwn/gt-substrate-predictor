@@ -1,0 +1,8 @@
+numpy
+pandas
+dotenv
+requests
+tqdm
+pathlib
+sqlalchemy
+sqlalchemy-access
