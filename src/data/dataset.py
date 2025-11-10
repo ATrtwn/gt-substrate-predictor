@@ -12,8 +12,11 @@ def get_pubchem_info(name):
         r = requests.get(url)
         r.raise_for_status()
         data = r.json()
-        props = data["PropertyTable"]["Properties"][0]["MolecularFormula"]
-        return props
+        props = data["PropertyTable"]["Properties"][0]
+        return {
+            "MolecularFormula": props.get("MolecularFormula"),
+            "ConnectivitySMILES": props.get("ConnectivitySMILES")
+        }
     except Exception:
         return None
 
@@ -28,10 +31,16 @@ def create_csv():
     password = os.getenv("ACCESS_DB_PASSWORD")
     location = Path(__file__).parent.parent.parent / "data"
 
+    absolute_path = os.path.abspath(db_file)
+
+    # Check if file exists
+    if os.path.exists(absolute_path):
+        print("File exists ✅")
+
     # Build ODBC connection string
     odbc_conn_str = (
         r"Driver={Microsoft Access Driver (*.mdb, *.accdb)};"
-        f"DBQ={db_file};"
+        f"DBQ={absolute_path};"
         f"PWD={password};"
     )
 
@@ -55,7 +64,15 @@ def create_csv():
     # Read activity table and get distinct substrates
     df_substrate = pd.read_sql(f"SELECT DISTINCT substrate FROM Activity WHERE activity <>'missing' ", engine)
     print("Fetching PubChem data for substrates...")
-    df_substrate["molecule"] = [get_pubchem_info(name) for name in tqdm(df_substrate["substrate"])]
+    tqdm.pandas()  # enables progress_apply for nice progress bar
+
+# Apply your function once per substrate and expand dict into columns
+    tqdm.pandas()  # enables progress_apply for nice progress bar
+
+    df_substrate[["MolecularFormula", "ConnectivitySMILES"]] = (
+        df_substrate["substrate"]
+        .progress_apply(lambda name: pd.Series(get_pubchem_info(name)))
+    )
     # Save as CSV
     output_path_substrate = location / "Substrate.csv"
     df_substrate.to_csv(output_path_substrate, index=False)

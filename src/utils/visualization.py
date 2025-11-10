@@ -1,6 +1,9 @@
 import os
 import matplotlib.pyplot as plt
 import seaborn as sns
+import pandas as pd
+from rdkit import Chem
+from rdkit.Chem import Descriptors
 
 # set sns style
 sns.set_theme(
@@ -39,6 +42,35 @@ def plot_sequence_length_distribution(df, seq_col="prot_seq"):
     plt.ylabel("Count")
     plt.tight_layout()
     output_path = os.path.join(FIGURES_DIR, "sequence_length_distribution.png")
+    plt.savefig(output_path)
+    plt.close()
+
+def plot_molecular_property_distribution(df_substrate):
+    """Plot Pairplot of molecular properties."""
+    # --- Compute molecular descriptors ---
+    def compute_properties(smiles):
+        if type(smiles) != str:
+            return None
+        if smiles is None or smiles.strip() == "":
+            return None
+        mol = Chem.MolFromSmiles(smiles)
+        if mol is None:
+            return None
+        props = {
+            "MolWt": Descriptors.MolWt(mol),
+            "LogP": Descriptors.MolLogP(mol),
+            "TPSA": Descriptors.TPSA(mol),
+            "NumHDonors": Descriptors.NumHDonors(mol),
+            "NumHAcceptors": Descriptors.NumHAcceptors(mol),
+            "NumRotatableBonds": Descriptors.NumRotatableBonds(mol),
+        }
+        return props
+    props_df = df_substrate["ConnectivitySMILES"].apply(compute_properties).dropna().apply(pd.Series)
+    g = sns.pairplot(props_df, vars=["MolWt", "LogP", "TPSA","NumHDonors","NumHAcceptors", "NumRotatableBonds"], diag_kind="kde")
+    plt.suptitle("Molecular Property Distributions by Binding Activity")
+    g.figure.suptitle("Molecular Property Distributions by Binding Activity", y=1.02)
+    g.figure.tight_layout(pad=1.5)  # Adjust spacing
+    output_path = os.path.join(FIGURES_DIR, "molecular_property_distributions.png")
     plt.savefig(output_path)
     plt.close()
 

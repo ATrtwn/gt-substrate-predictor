@@ -2,9 +2,13 @@ import os
 import pandas as pd
 from pathlib import Path
 
+# import sys
+# sys.path.append(str(Path(__file__).resolve().parent.parent))
+
 from src.utils.visualization import (
     plot_class_balance,
-    plot_sequence_length_distribution
+    plot_sequence_length_distribution,
+    plot_molecular_property_distribution
 )
 
 # data directory
@@ -32,7 +36,8 @@ def main():
     plot_class_balance(df_merged, label_col="activity")
     # gt lengths
     plot_sequence_length_distribution(df_merged, seq_col="prot_seq")
-
+    # Molecular property distributions
+    plot_molecular_property_distribution(df_substrate)
     print("Visualizations completed. Check out reports folder.")
 
 
