@@ -73,14 +73,17 @@ This section explains how to reproduce the clustering of GT sequences using MMse
 
 3. Run the clustering:
 -Once MMseqs2 is ready, run the clustering command (adjust filenames if needed):
-tools\mmseqs\bin\mmseqs.bat easy-cluster UGT.fasta GT_cluster tmp --min-seq-id 0.5 -c 0.8
-  -min-seq-id 0.5 sets 50% minimum sequence identity 
-  -c 0.8 sets 80% minimum coverage
+tools\mmseqs\bin\mmseqs.exe easy-cluster UGT.fasta GT_cluster tmp --min-seq-id 0.7 -c 0.7
+  -min-seq-id 0.7 sets 70% minimum sequence identity (agreed on the meeting)
+  -c 0.7 sets 70% minimum coverage (share ≥70% of their length)
 
 4. Output files: After running, MMseqs2 will generate several output files:
   -GT_cluster_cluster.tsv → sequence-to-cluster assignments
   -GT_cluster_rep_seq.fasta → one representative sequence per cluster
   -GT_cluster_all_seqs.fasta → all clustered sequences
+
+5. Report output:
+  -run python .\scripts\print_cluster_report.p for the report output -> CONCLUSION: dataset is diverse enough, no need for omiting the sequences
 
 ---
 
