@@ -25,6 +25,7 @@ This project aims to develop machine learning models that predict GT-substrate b
 ```
 project_root/
 │
+├──.venv # contains the enviroment - has to be created
 ├── data/ # Raw and processed datasets
 ├── scripts/ # Entry-point scripts
 ├── src/ # Source code for data processing, embeddings, models, training, and evaluation
@@ -38,6 +39,27 @@ project_root/
 ```
 
 ### ⚡ Usage
+
+#### Create a virtual environment
+1. Install uv with 
+    ```sh
+    pip install uv
+    ```
+2. Install dependencies with
+
+    ```sh
+    uv sync
+    ```
+    This will create a virtual environment `.venv` under project folder and install all the dependencies listed in the `pyproject.toml` file.
+    
+3. You can add packages to uv 
+  Add package and update files
+  ```bash
+  uv add package-name
+  uv sync
+  ```
+  Make sure to include the new pyproject.toml and uv.lock file in the commit, otherwise uv sync will not install them for other users.
+
 
 Generate CSV files from the Access database
 
