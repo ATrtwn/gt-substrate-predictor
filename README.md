@@ -61,7 +61,7 @@ project_root/
   Make sure to include the new pyproject.toml and uv.lock file in the commit, otherwise uv sync will not install them for other users.
 
 
-Generate CSV files from the Access database
+### Generate CSV files from the Access database
 
 1. Create a `.env` file in the project root with:
 
@@ -78,7 +78,7 @@ Generate CSV files from the Access database
 
 3. Result: CSV files will be saved in the data/ folder, ready for preprocessing and analysis.
 
-🧬 Clustering GT sequences with MMseqs2
+### 🧬 Clustering GT sequences with MMseqs2
 
 This section explains how to reproduce the clustering of GT sequences using MMseqs2. 
 
