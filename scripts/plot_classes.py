@@ -10,6 +10,7 @@ from src.utils.visualization import (
     plot_sequence_length_distribution,
     plot_molecular_property_distribution
 )
+from src.data.preprocessing import binarize_activity
 
 # data directory
 data_dir = Path(__file__).parent.parent / "data"
@@ -34,8 +35,10 @@ def main():
 
     # Active vs Inactive
     plot_class_balance(df_merged, label_col="activity")
+    df = binarize_activity(df_merged) # binarize
+    plot_class_balance(df_merged, label_col="is_active", label_rot=False)
     # gt lengths
-    plot_sequence_length_distribution(df_merged, seq_col="prot_seq")
+    plot_sequence_length_distribution(df_ugt, seq_col="prot_seq")
     # Molecular property distributions
     plot_molecular_property_distribution(df_substrate)
     print("Visualizations completed. Check out reports folder.")
