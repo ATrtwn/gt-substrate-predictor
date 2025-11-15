@@ -1,0 +1,145 @@
+substrate,MolecularFormula,ConnectivitySMILES
+(-)linalool,,
+(+/-)linalool,,
+(R)-citronellol,C10H20O,CC(CCC=C(C)C)CCO
+(S)-(-)-perillyl alcohol,C10H16O,CC(=C)C1CCC(=CC1)CO
+(S)-citronellol,C10H20O,CC(CCC=C(C)C)CCO
+"1,2,4-benzenetriol",C6H6O3,C1=CC(=C(C=C1O)O)O
+"1,6-hexandiol",C6H14O2,C(CCCO)CCO
+"13-hydroxyoctadecadienoic acid, 13-HOD",,
+16-hydroxypalmitic acid,C16H32O3,C(CCCCCCCC(=O)O)CCCCCCCO
+18-carboxyoleic acid,,
+1-naphthol,C10H8O,C1=CC=C2C(=C1)C=CC=C2O
+"2,4,5-trichlorophenol",C6H3Cl3O,C1=C(C(=CC(=C1Cl)Cl)Cl)O
+2-naphthol,C10H8O,C1=CC=C2C=C(C=CC2=C1)O
+2-phenylethanol,C8H10O,C1=CC=C(C=C1)CCO
+"3,4-dihydroxyflavone",C15H10O4,C1=CC=C2C(=C1)C(=O)C=C(O2)C3=CC(=C(C=C3)O)O
+"3,4-dimethoxycinnamic acid",C11H12O4,COC1=C(C=C(C=C1)C=CC(=O)O)OC
+"3,5-dichloro-4-hydroxybenzoic acid",C7H4Cl2O3,C1=C(C=C(C(=C1Cl)O)Cl)C(=O)O
+"3,7-dihydroxyflavone",C15H10O4,C1=CC=C(C=C1)C2=C(C(=O)C3=C(O2)C=C(C=C3)O)O
+3-hydroxybenzoic acid,C7H6O3,C1=CC(=CC(=C1)O)C(=O)O
+3-hydroxycoumarin,C9H6O3,C1=CC=C2C(=C1)C=C(C(=O)O2)O
+3-hydroxyflavone,C15H10O3,C1=CC=C(C=C1)C2=C(C(=O)C3=CC=CC=C3O2)O
+3-methyl-2-butenol,C5H10O,CC(=CCO)C
+3-methyl-3-butenol,C5H10O,CC(=C)CCO
+4-chlorocinnamic acid,C9H7ClO2,C1=CC(=CC=C1C=CC(=O)O)Cl
+"4-hydroxy-2,5-dimethyl-3(2H)-furanone, HDMF",,
+4-hydroxybenzoic acid,C7H6O3,C1=CC(=CC=C1C(=O)O)O
+4-hydroxycoumarin,C9H6O3,C1=CC=C2C(=C1)C(=CC(=O)O2)O
+4-methylguaiacol,C8H10O2,CC1=CC(=C(C=C1)O)OC
+4-methylsyringol,C9H12O3,CC1=CC(=C(C(=C1)OC)O)OC
+5-hydroxyflavone,C15H10O3,C1=CC=C(C=C1)C2=CC(=O)C3=C(C=CC=C3O2)O
+6-gingerol,C17H26O4,CCCCCC(CC(=O)CCC1=CC(=C(C=C1)O)OC)O
+6-hydroxycoumarin,C9H6O3,C1=CC2=C(C=CC(=O)O2)C=C1O
+7-hydroxycoumarin,C9H6O3,C1=CC(=CC2=C1C=CC(=O)O2)O
+7-hydroxyflavone,C15H10O3,C1=CC=C(C=C1)C2=CC(=O)C3=C(O2)C=C(C=C3)O
+8-hydroxylinalool,C10H18O2,CC(=CCCC(C)(C=C)O)CO
+"9(S)-hydroxyoctadecadienoic acid, 9-HOD",,
+alpha-ionol,C13H22O,CC1=CCCC(C1C=CC(C)O)(C)C
+alpha-terpineol,C10H18O,CC1=CCC(CC1)C(C)(C)O
+anisyl alcohol,C8H10O2,COC1=CC=C(C=C1)CO
+anthranilic acid,C7H7NO2,C1=CC=C(C(=C1)C(=O)O)N
+apigenin,C15H10O5,C1=CC(=CC=C1C2=CC(=O)C3=C(C=C(C=C3O2)O)O)O
+benzoic acid,C7H6O2,C1=CC=C(C=C1)C(=O)O
+benzyl alcohol,C7H8O,C1=CC=C(C=C1)CO
+benzyl salicylate,C14H12O3,C1=CC=C(C=C1)COC(=O)C2=CC=CC=C2O
+benzylalcohol,C7H8O,C1=CC=C(C=C1)CO
+beta-citronellol,C10H20O,CC(CCC=C(C)C)CCO
+caffeic acid,C9H8O4,C1=CC(=C(C=C1C=CC(=O)O)O)O
+capsaicin,C18H27NO3,CC(C)C=CCCCCC(=O)NCC1=CC(=C(C=C1)O)OC
+carvacrol,C10H14O,CC1=C(C=C(C=C1)C(C)C)O
+carveol,C10H16O,CC1=CCC(CC1O)C(=C)C
+catechin,C15H14O6,C1C(C(OC2=CC(=CC(=C21)O)O)C3=CC(=C(C=C3)O)O)O
+chrysin,C15H10O4,C1=CC=C(C=C1)C2=CC(=O)C3=C(C=C(C=C3O2)O)O
+cinnamic acid,C9H8O2,C1=CC=C(C=C1)C=CC(=O)O
+cinnamyl alcohol,C9H10O,C1=CC=C(C=C1)C=CCO
+cis-3-hexen-1-ol,C6H12O,CCC=CCCO
+cis-3-hexenol,C6H12O,CCC=CCCO
+citronellol,C10H20O,CC(CCC=C(C)C)CCO
+citronellol (rac),,
+crotonic acid,C4H6O2,CC=CC(=O)O
+curcumin,C21H20O6,COC1=C(C=CC(=C1)C=CC(=O)CC(=O)C=CC2=CC(=C(C=C2)O)OC)O
+curcumin glucoside,,
+cyanidin,C15H11O6+,C1=CC(=C(C=C1C2=[O+]C3=CC(=CC(=C3C=C2O)O)O)O)O
+daphnetin,C9H6O4,C1=CC(=C(C2=C1C=CC(=O)O2)O)O
+decanol,C10H22O,CCCCCCCCCCO
+delphinidin,C15H11O7+,C1=C(C=C(C(=C1O)O)O)C2=[O+]C3=CC(=CC(=C3C=C2O)O)O
+epicatechin,C15H14O6,C1C(C(OC2=CC(=CC(=C21)O)O)C3=CC(=C(C=C3)O)O)O
+esculetin,C9H6O4,C1=CC(=O)OC2=CC(=C(C=C21)O)O
+ethylvanillin,C9H10O3,CCOC1=C(C=CC(=C1)C=O)O
+ethylvanillin alcohol,,
+eugenol,C10H12O2,COC1=C(C=CC(=C1)CC=C)O
+farnesol,C15H26O,CC(=CCCC(=CCCC(=CCO)C)C)C
+ferulic acid,C10H10O4,COC1=C(C=CC(=C1)C=CC(=O)O)O
+fisetin,C15H10O6,C1=CC(=C(C=C1C2=C(C(=O)C3=C(O2)C=C(C=C3)O)O)O)O
+furaneol,C6H8O3,CC1C(=O)C(=C(O1)C)O
+galangin,C15H10O5,C1=CC=C(C=C1)C2=C(C(=O)C3=C(C=C(C=C3O2)O)O)O
+gallic acid,C7H6O5,C1=C(C=C(C(=C1O)O)O)C(=O)O
+gentisic acid,C7H6O4,C1=CC(=C(C=C1O)C(=O)O)O
+geranic acid,C10H16O2,CC(=CCCC(=CC(=O)O)C)C
+geraniol,C10H18O,CC(=CCCC(=CCO)C)C
+guaiacol,C7H8O2,COC1=CC=CC=C1O
+hexadecanol,C16H34O,CCCCCCCCCCCCCCCCO
+hexanol,C6H14O,CCCCCCO
+homofuraneol,C7H10O3,CCC1C(=O)C(=C(O1)C)O
+isorhamnetin,C16H12O7,COC1=C(C=CC(=C1)C2=C(C(=O)C3=C(C=C(C=C3O2)O)O)O)O
+kaempferol,C15H10O6,C1=CC(=CC=C1C2=C(C(=O)C3=C(C=C(C=C3O2)O)O)O)O
+kaempferol-3-glucoside,C21H20O11,C1=CC(=CC=C1C2=C(C(=O)C3=C(C=C(C=C3O2)O)O)OC4C(C(C(C(O4)CO)O)O)O)O
+linalool,C10H18O,CC(=CCCC(C)(C=C)O)C
+malvidin,C17H15O7+,COC1=CC(=CC(=C1O)OC)C2=[O+]C3=CC(=CC(=C3C=C2O)O)O
+mandelonitril,,
+mandelonitrile,C8H7NO,C1=CC=C(C=C1)C(C#N)O
+maple furanone,C7H10O3,CCC1C(=C(C(=O)O1)O)C
+m-coumaric acid,C9H8O3,C1=CC(=CC(=C1)O)C=CC(=O)O
+m-cresol,C7H8O,CC1=CC(=CC=C1)O
+menthol,C10H20O,CC1CCC(C(C1)O)C(C)C
+morin,C15H10O7,C1=CC(=C(C=C1O)O)C2=C(C(=O)C3=C(C=C(C=C3O2)O)O)O
+myricetin,C15H10O8,C1=C(C=C(C(=C1O)O)O)C2=C(C(=O)C3=C(C=C(C=C3O2)O)O)O
+myrtenol,C10H16O,CC1(C2CC=C(C1C2)CO)C
+naringenin,C15H12O5,C1C(OC2=CC(=CC(=C2C1=O)O)O)C3=CC=C(C=C3)O
+nerol,C10H18O,CC(=CCCC(=CCO)C)C
+nicotinic acid,C6H5NO2,C1=CC(=CN=C1)C(=O)O
+o-coumaric acid,C9H8O3,C1=CC=C(C(=C1)C=CC(=O)O)O
+o-cresol,C7H8O,CC1=CC=CC=C1O
+octanol,C8H18O,CCCCCCCCO
+oleic acid,C18H34O2,CCCCCCCCC=CCCCCCCCC(=O)O
+p-coumaric acid,C9H8O3,C1=CC(=CC=C1C=CC(=O)O)O
+pelargonidin,C15H11O5+,C1=CC(=CC=C1C2=[O+]C3=CC(=CC(=C3C=C2O)O)O)O
+peonidin,C16H13ClO6,COC1=C(C=CC(=C1)C2=[O+]C3=CC(=CC(=C3C=C2O)O)O)O.[Cl-]
+petunidin,C16H13ClO7,COC1=CC(=CC(=C1O)O)C2=[O+]C3=CC(=CC(=C3C=C2O)O)O.[Cl-]
+phenol,C6H6O,C1=CC=C(C=C1)O
+phenyl ethanol,C8H10O,CC(C1=CC=CC=C1)O
+phenylethanol,C8H10O,C1=CC=C(C=C1)CCO
+phloroglucinol,C6H6O3,C1=C(C=C(C=C1O)O)O
+p-nitrophenol,C6H5NO3,C1=CC(=CC=C1[N+](=O)[O-])O
+protocatechuic acid,C7H6O4,C1=CC(=C(C=C1C(=O)O)O)O
+"protocatechuic acid, 3,4-dihydroxybenzoic acid",,
+pseudocapsaicin/ pelargonic acid vanillylamide,,
+pyrogallol,C6H6O3,C1=CC(=C(C(=C1)O)O)O
+quercetin,C15H10O7,C1=CC(=C(C=C1C2=C(C(=O)C3=C(C=C(C=C3O2)O)O)O)O)O
+raspberry ketone,C10H12O2,CC(=O)CCC1=CC=C(C=C1)O
+ricinoleic acid,C18H34O3,CCCCCCC(CC=CCCCCCCCC(=O)O)O
+salicylic acid,C7H6O3,C1=CC=C(C(=C1)C(=O)O)O
+santalol,C15H24O,CC(=CCCC1(C2CCC(C2)C1=C)C)CO
+scopoletin,C10H8O4,COC1=C(C=C2C(=C1)C=CC(=O)O2)O
+sinapic acid,C11H12O5,COC1=CC(=CC(=C1O)OC)C=CC(=O)O
+sorbic acid,C6H8O2,CC=CC=CC(=O)O
+sotolon,C6H8O3,CC1C(=C(C(=O)O1)O)C
+syringic acid,C9H10O5,COC1=CC(=CC(=C1O)OC)C(=O)O
+syringol,C8H10O3,COC1=C(C(=CC=C1)OC)O
+taxifolin,C15H12O7,C1=CC(=C(C=C1C2C(C(=O)C3=C(C=C(C=C3O2)O)O)O)O)O
+terpineol,C10H18O,CC1=CCC(CC1)C(C)(C)O
+thymol,C10H14O,CC1=CC(=C(C=C1)C(C)C)O
+"trans,trans-muconic acid",C6H6O4,C(=CC(=O)O)C=CC(=O)O
+trans-2-hexen-1-ol,C6H12O,CCCC=CCO
+trans-2-hexenoic acid,C6H10O2,CCCC=CC(=O)O
+trans-2-hexenol,C6H12O,CCCC=CCO
+trans-3-(2-furyl)acrylic acid,,
+trans-3-(3-pyridyl)acrylic acid,C8H7NO2,C1=CC(=CN=C1)C=CC(=O)O
+trans-3-hexenoic acid,C6H10O2,CCC=CCC(=O)O
+trans-resveratrol,C14H12O3,C1=CC(=CC=C1C=CC2=CC(=CC(=C2)O)O)O
+tyrosol,C8H10O2,C1=CC(=CC=C1CCO)O
+vanillic acid,C8H8O4,COC1=C(C=CC(=C1)C(=O)O)O
+vanillin,C8H8O3,COC1=C(C=CC(=C1)C=O)O
+veratric acid,C9H10O4,COC1=C(C=C(C=C1)C(=O)O)OC
+"veratric acid, 3,4-dimethoxybenzoic acid",,

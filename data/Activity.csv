@@ -1,0 +1,2252 @@
+ID,UGT_trivial_name,substrate,activity
+1,FaGT2,gallic acid,high
+2,FaGT2,sorbic acid,"medium, high"
+3,FaGT2,salicylic acid,high
+4,FaGT2,3-hydroxybenzoic acid,high
+5,FaGT2,4-hydroxybenzoic acid,high
+6,FaGT2,protocatechuic acid,high
+7,FaGT2,gentisic acid,high
+8,FaGT2,vanillic acid,high
+9,FaGT2,veratric acid,high
+10,FaGT2,syringic acid,high
+11,FaGT2,cinnamic acid,high
+12,FaGT2,o-coumaric acid,high
+13,FaGT2,m-coumaric acid,medium
+14,FaGT2,p-coumaric acid,high
+15,FaGT2,caffeic acid,high
+16,FaGT2,ferulic acid,low
+17,FaGT2,"3,4-dimethoxycinnamic acid",medium
+18,FaGT2,sinapic acid,low
+19,FaGT2*,sorbic acid,low
+20,FaGT2*,salicylic acid,none
+21,FaGT2*,3-hydroxybenzoic acid,high
+22,FaGT2*,4-hydroxybenzoic acid,high
+23,FaGT2*,protocatechuic acid,high
+24,FaGT2*,gentisic acid,none
+25,FaGT2*,gallic acid,low
+26,FaGT2*,vanillic acid,high
+27,FaGT2*,veratric acid,high
+28,FaGT2*,syringic acid,high
+29,FaGT2*,cinnamic acid,low
+30,FaGT2*,o-coumaric acid,high
+31,FaGT2*,m-coumaric acid,high
+32,FaGT2*,p-coumaric acid,medium
+33,FaGT2*,caffeic acid,medium
+34,FaGT2*,ferulic acid,medium
+35,FaGT2*,"3,4-dimethoxycinnamic acid",high
+36,FaGT2*,sinapic acid,high
+37,FvGT2,sorbic acid,medium
+38,FvGT2,salicylic acid,none
+39,FvGT2,3-hydroxybenzoic acid,high
+40,FvGT2,4-hydroxybenzoic acid,high
+41,FvGT2,protocatechuic acid,high
+42,FvGT2,gentisic acid,low
+43,FvGT2,gallic acid,medium
+44,FvGT2,vanillic acid,high
+45,FvGT2,veratric acid,high
+46,FvGT2,syringic acid,high
+47,FvGT2,cinnamic acid,medium
+48,FvGT2,o-coumaric acid,high
+49,FvGT2,m-coumaric acid,high
+50,FvGT2,p-coumaric acid,high
+51,FvGT2,caffeic acid,high
+52,FvGT2,ferulic acid,medium
+53,FvGT2,"3,4-dimethoxycinnamic acid",high
+54,FvGT2,sinapic acid,high
+55,RiGT2,sorbic acid,high
+56,RiGT2,salicylic acid,none
+57,RiGT2,3-hydroxybenzoic acid,high
+58,RiGT2,4-hydroxybenzoic acid,high
+59,RiGT2,protocatechuic acid,medium
+60,RiGT2,gentisic acid,low
+61,RiGT2,gallic acid,medium
+62,RiGT2,vanillic acid,high
+63,RiGT2,veratric acid,medium
+64,RiGT2,syringic acid,medium
+65,RiGT2,cinnamic acid,high
+66,RiGT2,o-coumaric acid,high
+67,RiGT2,m-coumaric acid,high
+68,RiGT2,p-coumaric acid,high
+69,RiGT2,caffeic acid,high
+70,RiGT2,ferulic acid,medium
+71,RiGT2,"3,4-dimethoxycinnamic acid",high
+72,RiGT2,sinapic acid,high
+73,FaGT5,sorbic acid,low
+74,FaGT5,salicylic acid,none
+75,FaGT5,3-hydroxybenzoic acid,"none, low"
+76,FaGT5,4-hydroxybenzoic acid,low
+77,FaGT5,"protocatechuic acid, 3,4-dihydroxybenzoic acid","low, none"
+78,FaGT5,gentisic acid,none
+79,FaGT5,gallic acid,low
+80,FaGT5,vanillic acid,"low, high"
+81,FaGT5,"veratric acid, 3,4-dimethoxybenzoic acid","high, medium"
+82,FaGT5,syringic acid,low
+83,FaGT5,cinnamic acid,"low, medium"
+84,FaGT5,o-coumaric acid,low
+85,FaGT5,m-coumaric acid,low
+86,FaGT5,p-coumaric acid,medium
+87,FaGT5,caffeic acid,"low, high"
+88,FaGT5,ferulic acid,"low, high"
+89,FaGT5,"3,4-dimethoxycinnamic acid","low, medium"
+90,FaGT5,sinapic acid,high
+91,VvgGT1,sorbic acid,high
+92,VvgGT1,salicylic acid,low
+93,VvgGT1,3-hydroxybenzoic acid,low
+94,VvgGT1,4-hydroxybenzoic acid,medium
+95,VvgGT1,protocatechuic acid,medium
+96,VvgGT1,gentisic acid,low
+97,VvgGT1,gallic acid,medium
+98,VvgGT1,vanillic acid,medium
+99,VvgGT1,veratric acid,high
+100,VvgGT1,syringic acid,high
+101,VvgGT1,cinnamic acid,low
+102,VvgGT1,o-coumaric acid,high
+103,VvgGT1,m-coumaric acid,high
+104,VvgGT1,p-coumaric acid,high
+105,VvgGT1,caffeic acid,high
+106,VvgGT1,ferulic acid,medium
+107,VvgGT1,"3,4-dimethoxycinnamic acid",high
+108,VvgGT1,sinapic acid,high
+109,FaGT2*_R230S,sorbic acid,low
+110,FaGT2*_R230S,salicylic acid,none
+111,FaGT2*_R230S,3-hydroxybenzoic acid,high
+112,FaGT2*_R230S,4-hydroxybenzoic acid,high
+113,FaGT2*_R230S,protocatechuic acid,high
+114,FaGT2*_R230S,gentisic acid,none
+115,FaGT2*_R230S,gallic acid,medium
+116,FaGT2*_R230S,vanillic acid,high
+117,FaGT2*_R230S,veratric acid,high
+118,FaGT2*_R230S,syringic acid,high
+119,FaGT2*_R230S,cinnamic acid,low
+120,FaGT2*_R230S,o-coumaric acid,high
+121,FaGT2*_R230S,m-coumaric acid,high
+122,FaGT2*_R230S,p-coumaric acid,high
+123,FaGT2*_R230S,caffeic acid,high
+124,FaGT2*_R230S,ferulic acid,medium
+125,FaGT2*_R230S,"3,4-dimethoxycinnamic acid",high
+126,FaGT2*_R230S,sinapic acid,high
+127,FaGT2*_E420D_I422V,sorbic acid,low
+128,FaGT2*_E420D_I422V,salicylic acid,none
+129,FaGT2*_E420D_I422V,3-hydroxybenzoic acid,high
+130,FaGT2*_E420D_I422V,4-hydroxybenzoic acid,high
+131,FaGT2*_E420D_I422V,protocatechuic acid,high
+132,FaGT2*_E420D_I422V,gentisic acid,none
+133,FaGT2*_E420D_I422V,gallic acid,medium
+134,FaGT2*_E420D_I422V,vanillic acid,high
+135,FaGT2*_E420D_I422V,veratric acid,high
+136,FaGT2*_E420D_I422V,syringic acid,high
+137,FaGT2*_E420D_I422V,cinnamic acid,medium
+138,FaGT2*_E420D_I422V,o-coumaric acid,high
+139,FaGT2*_E420D_I422V,m-coumaric acid,high
+140,FaGT2*_E420D_I422V,p-coumaric acid,high
+141,FaGT2*_E420D_I422V,caffeic acid,high
+142,FaGT2*_E420D_I422V,ferulic acid,medium
+143,FaGT2*_E420D_I422V,"3,4-dimethoxycinnamic acid",high
+144,FaGT2*_E420D_I422V,sinapic acid,high
+145,VvdGT7,malvidin,low
+146,VvdGT7,pelargonidin,none
+147,VvdGT7,quercetin,high
+148,VvdGT7,kaempferol,high
+149,VvdGT7,thymol,low
+150,VvdGT7,beta-citronellol,none
+151,VvdGT7,carvacrol,medium
+152,VvdGT7,geraniol,low
+153,VvdGT7,linalool,low
+154,VvdGT7,farnesol,low
+155,VvdGT7,octanol,low
+156,VvdGT7,decanol,low
+157,VvdGT7,hexanol,low
+158,VvdGT7,2-phenylethanol,low
+159,VvdGT7,eugenol,medium
+160,VvdGT7,vanillin,high
+161,VvdGT7,furaneol,low
+162,VvdGT13,malvidin,none
+163,VvdGT13,pelargonidin,none
+164,VvdGT13,quercetin,low
+165,VvdGT13,kaempferol,low
+166,VvdGT13,thymol,high
+167,VvdGT13,beta-citronellol,low
+168,VvdGT13,carvacrol,high
+169,VvdGT13,geraniol,low
+170,VvdGT13,linalool,none
+171,VvdGT13,farnesol,low
+172,VvdGT13,octanol,low
+173,VvdGT13,decanol,low
+174,VvdGT13,hexanol,low
+175,VvdGT13,2-phenylethanol,low
+176,VvdGT13,eugenol,medium
+177,VvdGT13,vanillin,medium
+178,VvdGT13,furaneol,low
+179,VvdGT14,malvidin,none
+180,VvdGT14,pelargonidin,none
+181,VvdGT14,quercetin,medium
+182,VvdGT14,kaempferol,medium
+183,VvdGT14,thymol,low
+184,VvdGT14,beta-citronellol,none
+185,VvdGT14,carvacrol,high
+186,VvdGT14,geraniol,low
+187,VvdGT14,linalool,none
+188,VvdGT14,farnesol,none
+189,VvdGT14,octanol,low
+190,VvdGT14,decanol,none
+191,VvdGT14,hexanol,low
+192,VvdGT14,2-phenylethanol,low
+193,VvdGT14,eugenol,low
+194,VvdGT14,vanillin,low
+195,VvdGT14,furaneol,none
+196,VvdGT13,guaiacol,high
+197,VvdGT13,trans-resveratrol,high
+198,VvdGT13,syringol,medium
+199,VvdGT13,4-methylguaiacol,medium
+200,VvdGT13,m-cresol,medium
+201,VvdGT13,phloroglucinol,medium
+202,VvdGT13,o-cresol,small
+203,VvdGT13,4-methylsyringol,small
+204,VvdGT13,phenol,small
+205,VvdGT13,furaneol,small
+206,FaGT2,"2,4,5-trichlorophenol",high
+207,FaGT2,trans-3-(2-furyl)acrylic acid,high
+208,FaGT2,4-chlorocinnamic acid,medium
+209,FaGT2,"3,5-dichloro-4-hydroxybenzoic acid",high
+210,FaGT2,trans-3-(3-pyridyl)acrylic acid,low
+211,FaGT2,anthranilic acid,low
+212,FaGT2,trans-2-hexenoic acid,low
+213,FaGT2,nicotinic acid,low
+214,FaGT2,trans-3-hexenoic acid,none
+215,FaGT2,crotonic acid,none
+216,FaGT2,"trans,trans-muconic acid",none
+217,FaGT2,furaneol,none
+218,FaGT07876a,benzoic acid,low
+219,FaGT07876a,benzyl alcohol,low
+220,FaGT07876a,beta-citronellol,low
+221,FaGT07876a,cis-3-hexen-1-ol,low
+222,FaGT07876a,farnesol,none
+223,FaGT07876a,geraniol,low
+224,FaGT07876a,(+/-)linalool,low
+225,FaGT07876a,(-)linalool,low
+226,FaGT07876a,nerol,none
+227,FaGT07876a,2-phenylethanol,none
+228,FaGT07876a,trans-2-hexen-1-ol,low
+229,FaGT07876a,vanillin,high
+230,FaGT07876a,"4-hydroxy-2,5-dimethyl-3(2H)-furanone, HDMF",high
+231,FaGT07876b,benzoic acid,low
+232,FaGT07876b,benzyl alcohol,low
+233,FaGT07876b,beta-citronellol,low
+234,FaGT07876b,cis-3-hexen-1-ol,low
+235,FaGT07876b,farnesol,none
+236,FaGT07876b,geraniol,low
+237,FaGT07876b,(+/-)linalool,low
+238,FaGT07876b,(-)linalool,low
+239,FaGT07876b,nerol,none
+240,FaGT07876b,2-phenylethanol,none
+241,FaGT07876b,trans-2-hexen-1-ol,low
+242,FaGT07876b,vanillin,high
+243,FaGT07876b,"4-hydroxy-2,5-dimethyl-3(2H)-furanone, HDMF",high
+244,FaGT24225a,benzoic acid,low
+245,FaGT24225a,benzyl alcohol,none
+246,FaGT24225a,beta-citronellol,none
+247,FaGT24225a,cis-3-hexen-1-ol,none
+248,FaGT24225a,farnesol,none
+249,FaGT24225a,geraniol,low
+250,FaGT24225a,(+/-)linalool,none
+251,FaGT24225a,(-)linalool,none
+252,FaGT24225a,nerol,none
+253,FaGT24225a,2-phenylethanol,none
+254,FaGT24225a,trans-2-hexen-1-ol,low
+255,FaGT24225a,vanillin,high
+256,FaGT24225a,"4-hydroxy-2,5-dimethyl-3(2H)-furanone, HDMF",low
+257,FaGT24225b,benzoic acid,low
+258,FaGT24225b,benzyl alcohol,none
+259,FaGT24225b,beta-citronellol,none
+260,FaGT24225b,cis-3-hexen-1-ol,none
+261,FaGT24225b,farnesol,none
+262,FaGT24225b,geraniol,low
+263,FaGT24225b,(+/-)linalool,none
+264,FaGT24225b,(-)linalool,none
+265,FaGT24225b,nerol,none
+266,FaGT24225b,2-phenylethanol,none
+267,FaGT24225b,trans-2-hexen-1-ol,low
+268,FaGT24225b,vanillin,high
+269,FaGT24225b,"4-hydroxy-2,5-dimethyl-3(2H)-furanone, HDMF",low
+270,FaGT00126,benzoic acid,low
+271,FaGT00126,benzyl alcohol,low
+272,FaGT00126,beta-citronellol,low
+273,FaGT00126,cis-3-hexen-1-ol,low
+274,FaGT00126,farnesol,low
+275,FaGT00126,geraniol,low
+276,FaGT00126,(+/-)linalool,low
+277,FaGT00126,(-)linalool,low
+278,FaGT00126,nerol,low
+279,FaGT00126,2-phenylethanol,low
+280,FaGT00126,trans-2-hexen-1-ol,low
+281,FaGT00126,vanillin,high
+282,FaGT00126,"4-hydroxy-2,5-dimethyl-3(2H)-furanone, HDMF",low
+283,FaGT26345,benzoic acid,low
+284,FaGT26345,benzyl alcohol,low
+285,FaGT26345,beta-citronellol,medium
+286,FaGT26345,cis-3-hexen-1-ol,low
+287,FaGT26345,farnesol,low
+288,FaGT26345,geraniol,low
+289,FaGT26345,(+/-)linalool,low
+290,FaGT26345,(-)linalool,low
+291,FaGT26345,nerol,low
+292,FaGT26345,2-phenylethanol,low
+293,FaGT26345,trans-2-hexen-1-ol,low
+294,FaGT26345,vanillin,high
+295,FaGT26345,"4-hydroxy-2,5-dimethyl-3(2H)-furanone, HDMF",low
+296,FaGT22709,benzoic acid,low
+297,FaGT22709,benzyl alcohol,low
+298,FaGT22709,beta-citronellol,low
+299,FaGT22709,cis-3-hexen-1-ol,low
+300,FaGT22709,farnesol,low
+301,FaGT22709,geraniol,low
+302,FaGT22709,(+/-)linalool,low
+303,FaGT22709,(-)linalool,low
+304,FaGT22709,nerol,low
+305,FaGT22709,2-phenylethanol,low
+306,FaGT22709,trans-2-hexen-1-ol,low
+307,FaGT22709,vanillin,high
+308,FaGT22709,"4-hydroxy-2,5-dimethyl-3(2H)-furanone, HDMF",medium
+309,FaGT24224,benzoic acid,low
+310,FaGT24224,benzyl alcohol,none
+311,FaGT24224,beta-citronellol,none
+312,FaGT24224,cis-3-hexen-1-ol,none
+313,FaGT24224,farnesol,none
+314,FaGT24224,geraniol,none
+315,FaGT24224,(+/-)linalool,none
+316,FaGT24224,(-)linalool,none
+317,FaGT24224,nerol,none
+318,FaGT24224,2-phenylethanol,none
+319,FaGT24224,trans-2-hexen-1-ol,none
+320,FaGT24224,vanillin,high
+321,FaGT24224,"4-hydroxy-2,5-dimethyl-3(2H)-furanone, HDMF",low
+322,FaGT24226,benzoic acid,none
+323,FaGT24226,benzyl alcohol,none
+324,FaGT24226,beta-citronellol,none
+325,FaGT24226,cis-3-hexen-1-ol,none
+326,FaGT24226,farnesol,none
+327,FaGT24226,geraniol,none
+328,FaGT24226,(+/-)linalool,none
+329,FaGT24226,(-)linalool,none
+330,FaGT24226,nerol,none
+331,FaGT24226,2-phenylethanol,none
+332,FaGT24226,trans-2-hexen-1-ol,none
+333,FaGT24226,vanillin,high
+334,FaGT24226,"4-hydroxy-2,5-dimethyl-3(2H)-furanone, HDMF",low
+335,FaGT24224,3-hydroxycoumarin,high
+336,FaGT24224,2-naphthol,high
+337,FaGT24224,esculetin,high
+338,FaGT24224,"3,4-dihydroxyflavone",high
+339,FaGT24224,6-hydroxycoumarin,medium
+340,FaGT24224,scopoletin,medium
+341,FaGT24224,naringenin,medium
+342,FaGT24224,galangin,medium
+343,FaGT24224,daphnetin,medium
+344,FaGT24224,kaempferol,medium
+345,FaGT24224,7-hydroxycoumarin,low
+346,FaGT24224,quercetin,low
+347,FaGT24224,7-hydroxyflavone,low
+348,FaGT24224,3-hydroxyflavone,low
+349,FaGT24224,fisetin,low
+350,FaGT24224,taxifolin,low
+351,FaGT24224,isorhamnetin,low
+352,FaGT24224,pyrogallol,low
+353,FaGT24224,1-naphthol,low
+354,FaGT24224,phloroglucinol,low
+355,FaGT24224,myricetin,low
+356,FaGT24224,4-hydroxycoumarin,low
+357,FaGT24224,epicatechin,low
+358,FaGT24224,catechin,low
+359,FaGT24224,apigenin,low
+360,FaGT24224,"1,2,4-benzenetriol",none
+361,FaGT24224,5-hydroxyflavone,none
+362,FaGT24224,cyanidin,none
+363,FaGT24224,morin,none
+364,FaGT24225a,3-hydroxycoumarin,high
+365,FaGT24225a,esculetin,high
+366,FaGT24225a,7-hydroxyflavone,high
+367,FaGT24225a,daphnetin,high
+368,FaGT24225a,"3,7-dihydroxyflavone",high
+369,FaGT24225a,naringenin,high
+370,FaGT24225a,scopoletin,medium
+371,FaGT24225a,fisetin,medium
+372,FaGT24225a,epicatechin,medium
+373,FaGT24225a,7-hydroxycoumarin,medium
+374,FaGT24225a,kaempferol,medium
+375,FaGT24225a,quercetin,medium
+376,FaGT24225a,2-naphthol,medium
+377,FaGT24225a,6-hydroxycoumarin,medium
+378,FaGT24225a,galangin,medium
+379,FaGT24225a,3-hydroxyflavone,medium
+380,FaGT24225a,isorhamnetin,low
+381,FaGT24225a,myricetin,low
+382,FaGT24225a,1-naphthol,low
+383,FaGT24225a,taxifolin,low
+384,FaGT24225a,apigenin,low
+385,FaGT24225a,4-hydroxycoumarin,low
+386,FaGT24225a,pyrogallol,low
+387,FaGT24225a,phloroglucinol,low
+388,FaGT24225a,catechin,low
+389,FaGT24225a,"1,2,4-benzenetriol",low
+390,FaGT24225a,5-hydroxyflavone,low
+391,FaGT24225a,cyanidin,none
+392,FaGT24225a,morin,none
+393,FaGT24225b,3-hydroxycoumarin,high
+394,FaGT24225b,esculetin,high
+395,FaGT24225b,7-hydroxyflavone,high
+396,FaGT24225b,daphnetin,high
+397,FaGT24225b,"3,7-dihydroxyflavone",medium
+398,FaGT24225b,naringenin,high
+399,FaGT24225b,scopoletin,medium
+400,FaGT24225b,fisetin,high
+401,FaGT24225b,epicatechin,medium
+402,FaGT24225b,7-hydroxycoumarin,medium
+403,FaGT24225b,kaempferol,medium
+404,FaGT24225b,quercetin,medium
+405,FaGT24225b,2-naphthol,medium
+406,FaGT24225b,6-hydroxycoumarin,medium
+407,FaGT24225b,galangin,high
+408,FaGT24225b,3-hydroxyflavone,low
+409,FaGT24225b,isorhamnetin,low
+410,FaGT24225b,myricetin,medium
+411,FaGT24225b,1-naphthol,low
+412,FaGT24225b,taxifolin,low
+413,FaGT24225b,apigenin,low
+414,FaGT24225b,4-hydroxycoumarin,low
+415,FaGT24225b,pyrogallol,low
+416,FaGT24225b,phloroglucinol,low
+417,FaGT24225b,catechin,low
+418,FaGT24225b,"1,2,4-benzenetriol",low
+419,FaGT24225b,5-hydroxyflavone,low
+420,FaGT24225b,cyanidin,none
+421,FaGT24225b,morin,none
+422,FaGT24226,3-hydroxycoumarin,high
+423,FaGT24226,scopoletin,medium
+424,FaGT24226,2-naphthol,medium
+425,FaGT24226,daphnetin,medium
+426,FaGT24226,esculetin,low
+427,FaGT24226,3-hydroxyflavone,low
+428,FaGT24226,1-naphthol,low
+429,FaGT24226,naringenin,low
+430,FaGT24226,taxifolin,low
+431,FaGT24226,7-hydroxycoumarin,low
+432,FaGT24226,pyrogallol,low
+433,FaGT24226,6-hydroxycoumarin,low
+434,FaGT24226,phloroglucinol,low
+435,FaGT24226,4-hydroxycoumarin,low
+436,FaGT24226,"3,7-dihydroxyflavone",low
+437,FaGT24226,7-hydroxyflavone,low
+438,FaGT24226,kaempferol,low
+439,FaGT24226,isorhamnetin,low
+440,FaGT24226,galangin,low
+441,FaGT24226,fisetin,low
+442,FaGT24226,epicatechin,low
+443,FaGT24226,catechin,low
+444,FaGT24226,apigenin,low
+445,FaGT24226,quercetin,none
+446,FaGT24226,5-hydroxyflavone,none
+447,FaGT24226,myricetin,none
+448,FaGT24226,cyanidin,none
+449,FaGT24226,"1,2,4-benzenetriol",none
+450,FaGT24226,morin,none
+451,FaGT22709,1-naphthol,high
+452,FaGT22709,daphnetin,high
+453,FaGT22709,galangin,high
+454,FaGT22709,fisetin,high
+455,FaGT22709,quercetin,medium
+456,FaGT22709,"3,7-dihydroxyflavone",medium
+457,FaGT22709,pyrogallol,medium
+458,FaGT22709,3-hydroxyflavone,medium
+459,FaGT22709,taxifolin,low
+460,FaGT22709,3-hydroxycoumarin,low
+461,FaGT22709,myricetin,low
+462,FaGT22709,kaempferol,low
+463,FaGT22709,2-naphthol,low
+464,FaGT22709,4-hydroxycoumarin,low
+465,FaGT22709,isorhamnetin,low
+466,FaGT22709,malvidin,low
+467,FaGT22709,phloroglucinol,low
+468,FaGT22709,scopoletin,low
+469,FaGT22709,6-hydroxycoumarin,low
+470,FaGT22709,naringenin,low
+471,FaGT22709,esculetin,low
+472,FaGT22709,7-hydroxyflavone,low
+473,FaGT22709,catechin,low
+474,FaGT22709,7-hydroxycoumarin,low
+475,FaGT22709,5-hydroxyflavone,low
+476,FaGT22709,epicatechin,low
+477,FaGT22709,apigenin,none
+478,FaGT22709,"1,2,4-benzenetriol",none
+479,FaGT22709,cyanidin,none
+480,FaGT22709,morin,none
+481,FaGT07876a,2-naphthol,high
+482,FaGT07876a,1-naphthol,high
+483,FaGT07876a,3-hydroxycoumarin,high
+484,FaGT07876a,fisetin,high
+485,FaGT07876a,esculetin,high
+486,FaGT07876a,galangin,high
+487,FaGT07876a,7-hydroxycoumarin,high
+488,FaGT07876a,daphnetin,high
+489,FaGT07876a,scopoletin,high
+490,FaGT07876a,quercetin,medium
+491,FaGT07876a,kaempferol,medium
+492,FaGT07876a,6-hydroxycoumarin,medium
+493,FaGT07876a,isorhamnetin,medium
+494,FaGT07876a,phloroglucinol,medium
+495,FaGT07876a,myricetin,medium
+496,FaGT07876a,"3,7-dihydroxyflavone",medium
+497,FaGT07876a,pyrogallol,medium
+498,FaGT07876a,apigenin,medium
+499,FaGT07876a,3-hydroxyflavone,low
+500,FaGT07876a,taxifolin,low
+501,FaGT07876a,naringenin,low
+502,FaGT07876a,morin,low
+503,FaGT07876a,epicatechin,low
+504,FaGT07876a,catechin,low
+505,FaGT07876a,7-hydroxyflavone,low
+506,FaGT07876a,4-hydroxycoumarin,low
+507,FaGT07876a,5-hydroxyflavone,low
+508,FaGT07876a,"1,2,4-benzenetriol",none
+509,FaGT26345,3-hydroxycoumarin,high
+510,FaGT26345,2-naphthol,high
+511,FaGT26345,esculetin,high
+512,FaGT26345,kaempferol,high
+513,FaGT26345,daphnetin,high
+514,FaGT26345,6-hydroxycoumarin,medium
+515,FaGT26345,myricetin,medium
+516,FaGT26345,fisetin,medium
+517,FaGT26345,3-hydroxyflavone,medium
+518,FaGT26345,"3,7-dihydroxyflavone",medium
+519,FaGT26345,quercetin,medium
+520,FaGT26345,7-hydroxyflavone,medium
+521,FaGT26345,1-naphthol,medium
+522,FaGT26345,taxifolin,medium
+523,FaGT26345,scopoletin,medium
+524,FaGT26345,epicatechin,medium
+525,FaGT26345,isorhamnetin,medium
+526,FaGT26345,7-hydroxycoumarin,medium
+527,FaGT26345,galangin,medium
+528,FaGT26345,catechin,low
+529,FaGT26345,pyrogallol,low
+530,FaGT26345,naringenin,low
+531,FaGT26345,apigenin,low
+532,FaGT26345,4-hydroxycoumarin,low
+533,FaGT26345,"1,2,4-benzenetriol",low
+534,FaGT26345,phloroglucinol,low
+535,FaGT26345,5-hydroxyflavone,low
+536,FaGT26345,morin,low
+538,FaGT07876b,2-naphthol,medium
+539,FaGT07876b,1-naphthol,medium
+540,FaGT07876b,3-hydroxycoumarin,medium
+541,FaGT07876b,fisetin,medium
+542,FaGT07876b,esculetin,medium
+543,FaGT07876b,galangin,medium
+544,FaGT07876b,7-hydroxycoumarin,medium
+545,FaGT07876b,daphnetin,medium
+546,FaGT07876b,scopoletin,medium
+547,FaGT07876b,quercetin,medium
+548,FaGT07876b,kaempferol,medium
+549,FaGT07876b,6-hydroxycoumarin,medium
+550,FaGT07876b,isorhamnetin,low
+551,FaGT07876b,phloroglucinol,low
+552,FaGT07876b,myricetin,low
+553,FaGT07876b,"3,7-dihydroxyflavone",low
+554,FaGT07876b,pyrogallol,low
+555,FaGT07876b,apigenin,low
+556,FaGT07876b,3-hydroxyflavone,low
+557,FaGT07876b,taxifolin,low
+558,FaGT07876b,naringenin,low
+559,FaGT07876b,morin,low
+560,FaGT07876b,epicatechin,low
+561,FaGT07876b,catechin,low
+562,FaGT07876b,7-hydroxyflavone,low
+563,FaGT07876b,4-hydroxycoumarin,low
+564,FaGT07876b,5-hydroxyflavone,low
+565,FaGT07876b,"1,2,4-benzenetriol",none
+566,FaGT00126,3-hydroxycoumarin,high
+567,FaGT00126,myricetin,high
+568,FaGT00126,fisetin,high
+569,FaGT00126,2-naphthol,high
+570,FaGT00126,quercetin,high
+571,FaGT00126,esculetin,high
+572,FaGT00126,galangin,high
+573,FaGT00126,6-hydroxycoumarin,high
+574,FaGT00126,daphnetin,high
+575,FaGT00126,kaempferol,high
+576,FaGT00126,7-hydroxyflavone,medium
+577,FaGT00126,1-naphthol,medium
+578,FaGT00126,naringenin,medium
+579,FaGT00126,"3,7-dihydroxyflavone",medium
+580,FaGT00126,scopoletin,medium
+581,FaGT00126,taxifolin,medium
+582,FaGT00126,malvidin,medium
+583,FaGT00126,epicatechin,medium
+584,FaGT00126,isorhamnetin,medium
+585,FaGT00126,3-hydroxyflavone,medium
+586,FaGT00126,7-hydroxycoumarin,medium
+587,FaGT00126,pyrogallol,medium
+588,FaGT00126,apigenin,medium
+589,FaGT00126,catechin,medium
+590,FaGT00126,morin,low
+591,FaGT00126,4-hydroxycoumarin,low
+592,FaGT00126,phloroglucinol,low
+593,FaGT00126,"1,2,4-benzenetriol",low
+594,FaGT00126,5-hydroxyflavone,low
+595,FaGT5,benzoic acid,low
+596,FaGT1,cyanidin,high
+597,FaGT1,pelargonidin,high
+598,FaGT1,peonidin,high
+599,FaGT1,delphinidin,medium
+600,FaGT1,petunidin,low
+601,FaGT1,isorhamnetin,low
+602,FaGT1,malvidin,low
+603,FaGT1,galangin,low
+604,FaGT1,myricetin,low
+605,FaGT1,quercetin,low
+606,FaGT1,"3,7-dihydroxyflavone",low
+607,FaGT1,fisetin,low
+608,FaGT1,kaempferol,low
+609,FaGT6,3-hydroxyflavone,high
+610,FaGT6,galangin,high
+611,FaGT6,isorhamnetin,high
+612,FaGT6,3-hydroxycoumarin,high
+613,FaGT6,myricetin,medium
+614,FaGT6,2-naphthol,medium
+615,FaGT6,scopoletin,medium
+616,FaGT6,quercetin,low
+617,FaGT6,"3,7-dihydroxyflavone",low
+618,FaGT6,kaempferol,low
+619,FaGT6,daphnetin,low
+620,FaGT6,malvidin,low
+621,FaGT6,7-hydroxycoumarin,low
+622,FaGT6,taxifolin,low
+623,FaGT6,kaempferol-3-glucoside,low
+624,FaGT6,naringenin,low
+625,FaGT6,chrysin,low
+626,FaGT6,esculetin,low
+627,FaGT6,apigenin,low
+628,FaGT6,1-naphthol,low
+629,FaGT6,6-hydroxycoumarin,low
+630,FaGT6,morin,low
+631,FaGT6,petunidin,low
+632,FaGT7,isorhamnetin,high
+633,FaGT7,3-hydroxycoumarin,high
+634,FaGT7,galangin,high
+635,FaGT7,"3,7-dihydroxyflavone",medium
+636,FaGT7,myricetin,medium
+637,FaGT7,7-hydroxyflavone,medium
+638,FaGT7,chrysin,low
+639,FaGT7,kaempferol,low
+640,FaGT7,quercetin,low
+641,FaGT7,daphnetin,low
+642,FaGT7,3-hydroxyflavone,low
+643,FaGT7,1-naphthol,low
+644,FaGT7,2-naphthol,low
+645,FaGT7,scopoletin,low
+646,FaGT7,taxifolin,low
+647,FaGT7,esculetin,low
+648,FaGT7,7-hydroxycoumarin,low
+649,CaUGT2,carvacrol,high
+650,CaUGT2,thymol,high
+651,CaUGT2,geraniol,medium
+652,CaUGT2,vanillin,low
+653,CaUGT2,eugenol,low
+654,CaUGT2,2-phenylethanol,low
+655,CaUGT2,tyrosol,low
+656,CaUGT2,menthol,low
+657,SbUGTA1,16-hydroxypalmitic acid,high
+658,SbUGTA1,decanol,high
+659,SbUGTA1,octanol,medium
+660,SbUGTA1,18-carboxyoleic acid,low
+661,SbUGTA1,"13-hydroxyoctadecadienoic acid, 13-HOD",low
+662,SbUGTA1,hexadecanol,low
+663,SbUGTA1,"1,6-hexandiol",low
+664,SbUGTA1,"9(S)-hydroxyoctadecadienoic acid, 9-HOD",low
+665,SbUGTA1,ricinoleic acid,none
+666,SbUGTA1,hexanol,none
+667,SbUGTA1,oleic acid,none
+668,CaUGT2,curcumin,high
+669,CaUGT2,curcumin glucoside,medium
+670,CaUGT2,esculetin,medium
+671,CaUGT2,scopoletin,low
+672,CaUGT2,p-nitrophenol,low
+673,CaUGT2,vanillin,low
+674,CaUGT2,6-gingerol,none
+675,CaUGT2,capsaicin,none
+676,VvGT14a,geraniol,high
+677,VvGT14a,citronellol,high
+678,VvGT14a,octanol,high
+679,VvGT14a,hexanol,high
+680,VvGT14a,nerol,high
+681,VvGT14a,cis-3-hexenol,high
+682,VvGT14a,eugenol,medium
+683,VvGT14a,trans-2-hexenol,medium
+684,VvGT14a,farnesol,medium
+685,VvGT14a,2-phenylethanol,medium
+686,VvGT14a,8-hydroxylinalool,medium
+687,VvGT14a,mandelonitril,medium
+688,VvGT14a,terpineol,medium
+689,VvGT14a,benzylalcohol,medium
+690,VvGT14a,3-methyl-2-butenol,low
+691,VvGT14a,3-methyl-3-butenol,low
+692,VvGT14a,furaneol,low
+693,VvGT14a,linalool,low
+694,VvGT14a,cyanidin,none
+695,VvGT14a,kaempferol,none
+696,VvGT14a,pelargonidin,none
+697,VvGT14a,quercetin,none
+698,VvGT14b,geraniol,low
+699,VvGT14b,citronellol,low
+700,VvGT14b,octanol,none
+701,VvGT14b,hexanol,none
+702,VvGT14b,nerol,none
+703,VvGT14b,cis-3-hexenol,none
+704,VvGT14b,eugenol,none
+705,VvGT14b,trans-2-hexenol,none
+706,VvGT14b,farnesol,none
+707,VvGT14b,2-phenylethanol,none
+708,VvGT14b,8-hydroxylinalool,none
+709,VvGT14b,mandelonitril,low
+710,VvGT14b,terpineol,none
+711,VvGT14b,benzylalcohol,none
+712,VvGT14b,3-methyl-2-butenol,none
+713,VvGT14b,3-methyl-3-butenol,none
+714,VvGT14b,furaneol,none
+715,VvGT14b,linalool,low
+716,VvGT14b,cyanidin,none
+717,VvGT14b,kaempferol,none
+718,VvGT14b,pelargonidin,none
+719,VvGT14b,quercetin,none
+720,VvGT14c,geraniol,none
+721,VvGT14c,citronellol,none
+722,VvGT14c,octanol,none
+723,VvGT14c,hexanol,none
+724,VvGT14c,nerol,none
+725,VvGT14c,cis-3-hexenol,none
+726,VvGT14c,eugenol,none
+727,VvGT14c,trans-2-hexenol,none
+728,VvGT14c,farnesol,none
+729,VvGT14c,2-phenylethanol,none
+730,VvGT14c,8-hydroxylinalool,none
+731,VvGT14c,mandelonitril,none
+732,VvGT14c,terpineol,none
+733,VvGT14c,benzylalcohol,none
+734,VvGT14c,3-methyl-2-butenol,none
+735,VvGT14c,3-methyl-3-butenol,none
+736,VvGT14c,furaneol,none
+737,VvGT14c,linalool,none
+738,VvGT14c,cyanidin,none
+739,VvGT14c,kaempferol,none
+740,VvGT14c,pelargonidin,none
+741,VvGT14c,quercetin,none
+742,VvGT12a,citronellol,none
+743,VvGT12a,geraniol,none
+744,VvGT12a,alpha-terpineol,none
+745,VvGT12a,nerol,none
+746,VvGT12a,linalool,none
+747,VvGT12a,8-hydroxylinalool,none
+748,VvGT12a,cyanidin,none
+749,VvGT12a,kaempferol,none
+750,VvGT12a,pelargonidin,none
+751,VvGT12a,quercetin,none
+752,VvGT12a,eugenol,none
+753,VvGT12a,2-phenylethanol,none
+754,VvGT12a,benzylalcohol,none
+755,VvGT12a,farnesol,none
+756,VvGT12b,citronellol,none
+757,VvGT12b,geraniol,none
+758,VvGT12b,alpha-terpineol,none
+759,VvGT12b,nerol,none
+760,VvGT12b,linalool,none
+761,VvGT12b,8-hydroxylinalool,none
+762,VvGT12b,cyanidin,none
+763,VvGT12b,kaempferol,none
+764,VvGT12b,pelargonidin,none
+765,VvGT12b,quercetin,none
+766,VvGT12b,eugenol,none
+767,VvGT12b,2-phenylethanol,none
+768,VvGT12b,benzylalcohol,none
+769,VvGT12b,farnesol,none
+770,VvGT12c,citronellol,none
+771,VvGT12c,geraniol,none
+772,VvGT12c,alpha-terpineol,none
+773,VvGT12c,nerol,none
+774,VvGT12c,linalool,none
+775,VvGT12c,8-hydroxylinalool,none
+776,VvGT12c,cyanidin,none
+777,VvGT12c,kaempferol,none
+778,VvGT12c,pelargonidin,none
+779,VvGT12c,quercetin,none
+780,VvGT12c,eugenol,none
+781,VvGT12c,2-phenylethanol,none
+782,VvGT12c,benzylalcohol,none
+783,VvGT12c,farnesol,none
+784,VvGT13a,citronellol,none
+785,VvGT13a,geraniol,none
+786,VvGT13a,alpha-terpineol,none
+787,VvGT13a,nerol,none
+788,VvGT13a,linalool,none
+789,VvGT13a,8-hydroxylinalool,none
+790,VvGT13a,cyanidin,none
+791,VvGT13a,kaempferol,none
+792,VvGT13a,pelargonidin,none
+793,VvGT13a,quercetin,none
+794,VvGT13a,eugenol,none
+795,VvGT13a,2-phenylethanol,none
+796,VvGT13a,benzylalcohol,none
+797,VvGT13a,farnesol,none
+798,VvGT13b,citronellol,none
+799,VvGT13b,geraniol,none
+800,VvGT13b,alpha-terpineol,none
+801,VvGT13b,nerol,none
+802,VvGT13b,linalool,none
+803,VvGT13b,8-hydroxylinalool,none
+804,VvGT13b,cyanidin,none
+805,VvGT13b,kaempferol,none
+806,VvGT13b,pelargonidin,none
+807,VvGT13b,quercetin,none
+808,VvGT13b,eugenol,none
+809,VvGT13b,2-phenylethanol,none
+810,VvGT13b,benzylalcohol,none
+811,VvGT13b,farnesol,none
+812,VvGT13c,citronellol,none
+813,VvGT13c,geraniol,none
+814,VvGT13c,alpha-terpineol,none
+815,VvGT13c,nerol,none
+816,VvGT13c,linalool,none
+817,VvGT13c,8-hydroxylinalool,none
+818,VvGT13c,cyanidin,none
+819,VvGT13c,kaempferol,none
+820,VvGT13c,pelargonidin,none
+821,VvGT13c,quercetin,none
+822,VvGT13c,eugenol,none
+823,VvGT13c,2-phenylethanol,none
+824,VvGT13c,benzylalcohol,none
+825,VvGT13c,farnesol,none
+826,VvGT8a,kaempferol,low
+827,VvGT8a,quercetin,low
+828,VvGT8a,eugenol,low
+829,VvGT8a,cyanidin,none
+830,VvGT8b,kaempferol,none
+831,VvGT8b,quercetin,none
+832,VvGT8b,eugenol,none
+833,VvGT8b,cyanidin,none
+838,VvGT8d,kaempferol,none
+839,VvGT8d,quercetin,none
+840,VvGT8d,eugenol,none
+841,VvGT8d,cyanidin,none
+842,VvGT9a,kaempferol,low
+843,VvGT9a,quercetin,low
+844,VvGT9a,eugenol,low
+845,VvGT9a,cyanidin,low
+846,VvGT9b,kaempferol,high
+847,VvGT9b,quercetin,medium
+848,VvGT9b,eugenol,low
+849,VvGT9b,cyanidin,none
+850,VvGT10,kaempferol,medium
+851,VvGT10,quercetin,medium
+852,VvGT10,eugenol,none
+853,VvGT10,cyanidin,none
+854,VvGT11,kaempferol,medium
+855,VvGT11,quercetin,medium
+856,VvGT11,eugenol,low
+857,VvGT11,cyanidin,none
+858,VvGT14a,(S)-citronellol,high
+859,VvGT14a,(R)-citronellol,medium
+860,VvGT16,benzylalcohol,high
+861,VvGT16,geraniol,high
+862,VvGT16,hexanol,high
+863,VvGT16,2-phenylethanol,high
+864,VvGT16,trans-2-hexenol,medium
+865,VvGT16,nerol,medium
+866,VvGT16,cis-3-hexenol,medium
+867,VvGT16,citronellol (rac),medium
+868,VvGT16,3-methyl-2-butenol,medium
+870,VvGT16,8-hydroxylinalool,none
+871,VvGT16,linalool,none
+872,VvGT16,terpineol,none
+873,VvGT16,cyanidin,none
+874,VvGT16,kaempferol,none
+875,VvGT16,pelargonidin,none
+876,VvGT16,quercetin,none
+877,VvGT16,eugenol,none
+878,VvGT16,farnesol,none
+879,VvGT16,octanol,none
+880,VvGT16,mandelonitrile,none
+881,VvGT16,3-methyl-3-butenol,none
+882,VvGT16,furaneol,none
+883,VvGT16,(S)-citronellol,medium
+884,VvGT16,(R)-citronellol,medium
+885,VvGT15a,geraniol,high
+886,VvGT15a,citronellol (rac),high
+887,VvGT15a,nerol,medium
+888,VvGT15a,octanol,medium
+889,VvGT15a,trans-2-hexenol,low
+890,VvGT15a,hexanol,low
+891,VvGT15a,8-hydroxylinalool,low
+892,VvGT15a,farnesol,none
+893,VvGT15a,linalool,none
+894,VvGT15a,terpineol,none
+895,VvGT15a,cyanidin,none
+896,VvGT15a,kaempferol,none
+897,VvGT15a,pelargonidin,none
+898,VvGT15a,quercetin,none
+899,VvGT15a,benzyl alcohol,none
+900,VvGT15a,phenyl ethanol,none
+901,VvGT15a,eugenol,none
+902,VvGT15a,mandelonitrile,none
+903,VvGT15a,3-methyl-2-butenol,none
+904,VvGT15a,3-methyl-3-butenol,none
+905,VvGT15a,cis-3-hexenol,none
+906,VvGT15a,furaneol,none
+907,VvGT15b,geraniol,medium
+908,VvGT15b,citronellol (rac),low
+909,VvGT15b,nerol,low
+910,VvGT15b,octanol,low
+911,VvGT15b,trans-2-hexenol,none
+912,VvGT15b,hexanol,low
+913,VvGT15b,8-hydroxylinalool,none
+914,VvGT15b,farnesol,none
+915,VvGT15b,linalool,none
+916,VvGT15b,terpineol,none
+917,VvGT15b,cyanidin,none
+918,VvGT15b,kaempferol,none
+919,VvGT15b,pelargonidin,none
+920,VvGT15b,quercetin,none
+921,VvGT15b,benzyl alcohol,none
+922,VvGT15b,phenyl ethanol,none
+923,VvGT15b,eugenol,none
+924,VvGT15b,mandelonitrile,none
+925,VvGT15b,3-methyl-2-butenol,none
+926,VvGT15b,3-methyl-3-butenol,none
+927,VvGT15b,cis-3-hexenol,none
+928,VvGT15b,furaneol,none
+929,VvGT15c,geraniol,high
+930,VvGT15c,citronellol (rac),medium
+931,VvGT15c,nerol,low
+932,VvGT15c,octanol,low
+933,VvGT15c,trans-2-hexenol,low
+934,VvGT15c,hexanol,low
+935,VvGT15c,8-hydroxylinalool,low
+936,VvGT15c,farnesol,low
+937,VvGT15c,linalool,none
+938,VvGT15c,terpineol,none
+939,VvGT15c,cyanidin,none
+940,VvGT15c,kaempferol,none
+941,VvGT15c,pelargonidin,none
+942,VvGT15c,quercetin,none
+943,VvGT15c,benzyl alcohol,none
+944,VvGT15c,phenyl ethanol,none
+945,VvGT15c,eugenol,none
+946,VvGT15c,mandelonitrile,none
+947,VvGT15c,3-methyl-2-butenol,none
+948,VvGT15c,3-methyl-3-butenol,none
+949,VvGT15c,cis-3-hexenol,none
+950,VvGT15c,furaneol,none
+951,VvGT7a,citronellol,medium
+952,VvGT7a,geraniol,low
+953,VvGT7a,8-hydroxylinalool,none
+954,VvGT7a,linalool,none
+955,VvGT7a,nerol,medium
+956,VvGT7a,terpineol,none
+957,VvGT7a,cyanidin,none
+958,VvGT7a,kaempferol,none
+959,VvGT7a,pelargonidin,none
+960,VvGT7a,quercetin,none
+961,VvGT7a,benzyl alcohol,low
+962,VvGT7a,phenylethanol,none
+963,VvGT7a,eugenol,low
+964,VvGT7a,farnesol,none
+965,VvGT7a,hexanol,low
+966,VvGT7a,octanol,none
+967,VvGT7a,mandelonitrile,none
+968,VvGT7a,3-methyl-2-butenol,none
+969,VvGT7a,3-methyl-3-butenol,none
+970,VvGT7a,cis-3-hexenol,none
+971,VvGT7a,trans-2-hexenol,low
+972,VvGT7b,citronellol,medium
+973,VvGT7b,geraniol,medium
+974,VvGT7b,8-hydroxylinalool,low
+975,VvGT7b,linalool,none
+976,VvGT7b,nerol,high
+977,VvGT7b,terpineol,none
+978,VvGT7b,cyanidin,none
+979,VvGT7b,kaempferol,none
+980,VvGT7b,pelargonidin,none
+981,VvGT7b,quercetin,low
+982,VvGT7b,benzyl alcohol,low
+983,VvGT7b,phenylethanol,low
+984,VvGT7b,eugenol,low
+985,VvGT7b,farnesol,none
+986,VvGT7b,hexanol,none
+987,VvGT7b,octanol,low
+988,VvGT7b,mandelonitrile,none
+989,VvGT7b,3-methyl-2-butenol,low
+990,VvGT7b,3-methyl-3-butenol,none
+991,VvGT7b,cis-3-hexenol,low
+992,VvGT7b,trans-2-hexenol,low
+993,VvGT7c,citronellol,high
+994,VvGT7c,geraniol,medium
+995,VvGT7c,8-hydroxylinalool,none
+996,VvGT7c,linalool,none
+997,VvGT7c,nerol,high
+998,VvGT7c,terpineol,none
+999,VvGT7c,cyanidin,none
+1000,VvGT7c,kaempferol,none
+1001,VvGT7c,pelargonidin,none
+1002,VvGT7c,quercetin,low
+1003,VvGT7c,benzyl alcohol,low
+1004,VvGT7c,phenylethanol,none
+1005,VvGT7c,eugenol,medium
+1006,VvGT7c,farnesol,none
+1007,VvGT7c,hexanol,none
+1008,VvGT7c,octanol,low
+1009,VvGT7c,mandelonitrile,none
+1010,VvGT7c,3-methyl-2-butenol,none
+1011,VvGT7c,3-methyl-3-butenol,none
+1012,VvGT7c,cis-3-hexenol,none
+1013,VvGT7c,trans-2-hexenol,low
+1014,VvGT7d,citronellol,high
+1015,VvGT7d,geraniol,low
+1016,VvGT7d,8-hydroxylinalool,none
+1017,VvGT7d,linalool,none
+1018,VvGT7d,nerol,high
+1019,VvGT7d,terpineol,none
+1020,VvGT7d,cyanidin,none
+1021,VvGT7d,kaempferol,none
+1022,VvGT7d,pelargonidin,none
+1023,VvGT7d,quercetin,low
+1024,VvGT7d,benzyl alcohol,low
+1025,VvGT7d,phenylethanol,low
+1026,VvGT7d,eugenol,medium
+1027,VvGT7d,farnesol,none
+1028,VvGT7d,hexanol,low
+1029,VvGT7d,octanol,none
+1030,VvGT7d,mandelonitrile,none
+1031,VvGT7d,3-methyl-2-butenol,none
+1032,VvGT7d,3-methyl-3-butenol,none
+1033,VvGT7d,cis-3-hexenol,none
+1034,VvGT7d,trans-2-hexenol,low
+1035,VvGT7e,citronellol,high
+1036,VvGT7e,geraniol,low
+1037,VvGT7e,8-hydroxylinalool,none
+1038,VvGT7e,linalool,none
+1039,VvGT7e,nerol,high
+1040,VvGT7e,terpineol,none
+1041,VvGT7e,cyanidin,none
+1042,VvGT7e,kaempferol,none
+1043,VvGT7e,pelargonidin,none
+1044,VvGT7e,quercetin,low
+1045,VvGT7e,benzyl alcohol,low
+1046,VvGT7e,phenylethanol,low
+1047,VvGT7e,eugenol,medium
+1048,VvGT7e,farnesol,none
+1049,VvGT7e,hexanol,none
+1050,VvGT7e,octanol,low
+1051,VvGT7e,mandelonitrile,none
+1052,VvGT7e,3-methyl-2-butenol,low
+1053,VvGT7e,3-methyl-3-butenol,none
+1054,VvGT7e,cis-3-hexenol,low
+1055,VvGT7e,trans-2-hexenol,low
+1056,VvGT7f,citronellol,low
+1057,VvGT7f,geraniol,low
+1058,VvGT7f,8-hydroxylinalool,none
+1059,VvGT7f,linalool,none
+1060,VvGT7f,nerol,high
+1061,VvGT7f,terpineol,none
+1062,VvGT7f,cyanidin,none
+1063,VvGT7f,kaempferol,none
+1064,VvGT7f,pelargonidin,none
+1065,VvGT7f,quercetin,low
+1066,VvGT7f,benzyl alcohol,low
+1067,VvGT7f,phenylethanol,none
+1068,VvGT7f,eugenol,low
+1069,VvGT7f,farnesol,none
+1070,VvGT7f,hexanol,none
+1071,VvGT7f,octanol,none
+1072,VvGT7f,mandelonitrile,none
+1073,VvGT7f,3-methyl-2-butenol,none
+1074,VvGT7f,3-methyl-3-butenol,none
+1075,VvGT7f,cis-3-hexenol,none
+1076,VvGT7f,trans-2-hexenol,low
+1077,VvGT7g,citronellol,medium
+1078,VvGT7g,geraniol,low
+1079,VvGT7g,8-hydroxylinalool,none
+1080,VvGT7g,linalool,none
+1081,VvGT7g,nerol,high
+1082,VvGT7g,terpineol,none
+1083,VvGT7g,cyanidin,none
+1084,VvGT7g,kaempferol,none
+1085,VvGT7g,pelargonidin,none
+1086,VvGT7g,quercetin,low
+1087,VvGT7g,benzyl alcohol,low
+1088,VvGT7g,phenylethanol,low
+1089,VvGT7g,eugenol,medium
+1090,VvGT7g,farnesol,none
+1091,VvGT7g,hexanol,low
+1092,VvGT7g,octanol,low
+1093,VvGT7g,mandelonitrile,none
+1094,VvGT7g,3-methyl-2-butenol,low
+1095,VvGT7g,3-methyl-3-butenol,none
+1096,VvGT7g,cis-3-hexenol,low
+1097,VvGT7g,trans-2-hexenol,low
+1098,VvGT7h,citronellol,low
+1099,VvGT7h,geraniol,low
+1100,VvGT7h,8-hydroxylinalool,none
+1101,VvGT7h,linalool,none
+1102,VvGT7h,nerol,medium
+1103,VvGT7h,terpineol,none
+1104,VvGT7h,cyanidin,none
+1105,VvGT7h,kaempferol,none
+1106,VvGT7h,pelargonidin,none
+1107,VvGT7h,quercetin,none
+1108,VvGT7h,benzyl alcohol,none
+1109,VvGT7h,phenylethanol,none
+1110,VvGT7h,eugenol,low
+1111,VvGT7h,farnesol,none
+1112,VvGT7h,hexanol,none
+1113,VvGT7h,octanol,none
+1114,VvGT7h,mandelonitrile,none
+1115,VvGT7h,3-methyl-2-butenol,none
+1116,VvGT7h,3-methyl-3-butenol,none
+1117,VvGT7h,cis-3-hexenol,none
+1118,VvGT7h,trans-2-hexenol,none
+1119,VvGT7i,citronellol,none
+1120,VvGT7i,geraniol,none
+1121,VvGT7i,8-hydroxylinalool,none
+1122,VvGT7i,linalool,none
+1123,VvGT7i,nerol,none
+1124,VvGT7i,terpineol,none
+1125,VvGT7i,cyanidin,none
+1126,VvGT7i,kaempferol,none
+1127,VvGT7i,pelargonidin,none
+1128,VvGT7i,quercetin,none
+1129,VvGT7i,benzyl alcohol,none
+1130,VvGT7i,phenylethanol,none
+1131,VvGT7i,eugenol,low
+1132,VvGT7i,farnesol,none
+1133,VvGT7i,hexanol,none
+1134,VvGT7i,octanol,none
+1135,VvGT7i,mandelonitrile,none
+1136,VvGT7i,3-methyl-2-butenol,none
+1137,VvGT7i,3-methyl-3-butenol,none
+1138,VvGT7i,cis-3-hexenol,none
+1139,VvGT7i,trans-2-hexenol,none
+1140,VvGT7j,citronellol,none
+1141,VvGT7j,geraniol,none
+1142,VvGT7j,8-hydroxylinalool,none
+1143,VvGT7j,linalool,none
+1144,VvGT7j,nerol,none
+1145,VvGT7j,terpineol,none
+1146,VvGT7j,cyanidin,none
+1147,VvGT7j,kaempferol,none
+1148,VvGT7j,pelargonidin,none
+1149,VvGT7j,quercetin,none
+1150,VvGT7j,benzyl alcohol,none
+1151,VvGT7j,phenylethanol,none
+1152,VvGT7j,eugenol,none
+1153,VvGT7j,farnesol,none
+1154,VvGT7j,hexanol,none
+1155,VvGT7j,octanol,none
+1156,VvGT7j,mandelonitrile,none
+1157,VvGT7j,3-methyl-2-butenol,none
+1158,VvGT7j,3-methyl-3-butenol,none
+1159,VvGT7j,cis-3-hexenol,none
+1160,VvGT7j,trans-2-hexenol,none
+1161,FaGT26479,galangin,high
+1162,RiGT2,geraniol,none
+1163,VvdGT13,geraniol,none
+1164,VvdGT7,geraniol,none
+1165,VvGT10,geraniol,none
+1166,VvGT11,geraniol,none
+1167,VvGT12a,geraniol,none
+1168,VvGT12c,geraniol,none
+1169,VvGT13a,geraniol,none
+1170,VvGT13b,geraniol,none
+1171,VvGT14a_codon_opt,geraniol,none
+1172,VvGT14b,geraniol,none
+1173,VvgGT1,geraniol,none
+1174,CaUGT2,geraniol,none
+1175,FaGT00126,geraniol,none
+1176,FaGT24225a,geraniol,none
+1177,VvGT8a,geraniol,none
+1178,FaGT5,geraniol,none
+1179,VvGT16,geraniol,none
+1180,VvGT9b,geraniol,none
+1181,VvGT8d,geraniol,none
+1182,VvGT7b,geraniol,none
+1183,VvGT7f,geraniol,none
+1184,VvGT7d,geraniol,none
+1185,VvGT9a,geraniol,none
+1186,VvGT7j,geraniol,none
+1187,VvGT7i,geraniol,none
+1188,VvGT7a,geraniol,none
+1189,VvGT7e,geraniol,none
+1190,VvGT7c,geraniol,none
+1191,VvGT7g,geraniol,none
+1192,VvGT7h,geraniol,none
+1193,FaGT07876a,geraniol,none
+1194,FaGT07876b,geraniol,none
+1195,FaGT2*,geraniol,none
+1196,FaGT22709,geraniol,none
+1197,FaGT24224,geraniol,none
+1198,FaGT24226,geraniol,none
+1199,FaGT26345,geraniol,none
+1200,FaGT26479,geraniol,none
+1201,FaGT6,geraniol,none
+1202,FaGT7,geraniol,none
+1203,FvGT2,geraniol,none
+1204,VvGT8b,geraniol,none
+1205,NbGTfc4,geraniol,none
+1206,AtUGT73C5,geraniol,none
+1207,UGT72B1,geraniol,none
+1208,VvGT12a,sotolon,none
+1209,VvGT12b,sotolon,none
+1210,VvGT12c,sotolon,none
+1211,VvGT13a,sotolon,none
+1212,VvGT13b,sotolon,none
+1213,VvGT14b,sotolon,none
+1214,VvdGT7,sotolon,none
+1215,FaGT24224,sotolon,none
+1216,FaGT24226,sotolon,none
+1217,FaGT26345,sotolon,none
+1218,FaGT26479,sotolon,none
+1219,VvGT8b,sotolon,none
+1220,SbUGTA1,sotolon,none
+1221,FaGT24225a,sotolon,none
+1222,VvGT8a,sotolon,none
+1223,VvGT16,sotolon,none
+1224,VvGT8d,sotolon,none
+1225,VvGT7b,sotolon,none
+1226,VvGT7f,sotolon,none
+1227,VvGT7d,sotolon,none
+1228,VvGT7j,sotolon,none
+1229,VvGT7i,sotolon,none
+1230,VvGT7a,sotolon,none
+1231,VvGT7e,sotolon,none
+1232,VvGT7c,sotolon,none
+1233,VvGT7g,sotolon,none
+1234,VvGT7h,sotolon,none
+1235,FaGT22709,sotolon,low
+1236,FaGT6,sotolon,low
+1237,NbGTfc4,sotolon,low
+1238,VvdGT13,sotolon,low
+1239,FaGT7,sotolon,low
+1240,VvGT15b,sotolon,low
+1241,VvGT15a,sotolon,low
+1242,CaUGT2,sotolon,low
+1243,VvGT14a,sotolon,low
+1244,FaGT07876a,sotolon,medium
+1245,VvGT14a_codon_opt,sotolon,medium
+1246,FaGT5,sotolon,medium
+1247,NbGTms9,sotolon,medium
+1248,FaGT07876b,sotolon,medium
+1249,VvgGT1,sotolon,medium
+1250,VvdGT14,sotolon,medium
+1251,VvGT15c,sotolon,medium
+1252,FvGT2,sotolon,medium
+1253,AtUGT73C5,sotolon,medium
+1254,FaGT2*,sotolon,high
+1255,VvGT11,sotolon,high
+1256,VvGT10,sotolon,high
+1257,RiGT2,sotolon,high
+1258,VvGT9b,sotolon,high
+1259,VvGT9a,sotolon,high
+1260,VvGT12a,maple furanone,none
+1261,VvGT12b,maple furanone,none
+1262,VvGT12c,maple furanone,none
+1263,VvGT13a,maple furanone,none
+1264,VvGT13b,maple furanone,none
+1265,VvGT14b,maple furanone,none
+1266,VvdGT7,maple furanone,none
+1267,FaGT24224,maple furanone,none
+1268,FaGT24226,maple furanone,none
+1269,FaGT26345,maple furanone,none
+1270,FaGT26479,maple furanone,none
+1271,VvGT8b,maple furanone,none
+1272,SbUGTA1,maple furanone,none
+1273,FaGT24225a,maple furanone,none
+1274,VvGT8a,maple furanone,none
+1275,VvGT16,maple furanone,none
+1276,VvGT8d,maple furanone,none
+1277,VvGT7b,maple furanone,none
+1278,VvGT7f,maple furanone,none
+1279,VvGT7d,maple furanone,none
+1280,VvGT7j,maple furanone,none
+1281,VvGT7i,maple furanone,none
+1282,VvGT7a,maple furanone,none
+1283,VvGT7e,maple furanone,none
+1284,VvGT7c,maple furanone,none
+1285,VvGT7g,maple furanone,none
+1286,VvGT7h,maple furanone,none
+1287,FaGT22709,maple furanone,low
+1288,FaGT6,maple furanone,low
+1289,NbGTfc4,maple furanone,low
+1290,VvdGT13,maple furanone,none
+1291,FaGT7,maple furanone,low
+1292,VvGT15b,maple furanone,low
+1293,VvGT15a,maple furanone,low
+1294,CaUGT2,maple furanone,medium
+1295,VvGT14a,maple furanone,medium
+1296,FaGT07876a,maple furanone,high
+1297,VvGT14a_codon_opt,maple furanone,high
+1298,FaGT5,maple furanone,medium
+1299,NbGTms9,maple furanone,medium
+1300,FaGT07876b,maple furanone,high
+1301,VvgGT1,maple furanone,medium
+1302,VvdGT14,maple furanone,medium
+1303,VvGT15c,maple furanone,medium
+1304,FvGT2,maple furanone,medium
+1305,AtUGT73C5,maple furanone,medium
+1306,FaGT2*,maple furanone,medium
+1307,VvGT11,maple furanone,high
+1308,VvGT10,maple furanone,high
+1309,RiGT2,maple furanone,medium
+1310,VvGT9b,maple furanone,high
+1311,VvGT9a,maple furanone,high
+1312,VvGT12a,furaneol,none
+1313,VvGT12b,furaneol,none
+1314,VvGT12c,furaneol,none
+1315,VvGT13a,furaneol,none
+1316,VvGT13b,furaneol,none
+1317,VvGT14b,furaneol,none
+1318,VvdGT7,furaneol,none
+1319,FaGT24224,furaneol,none
+1320,FaGT24226,furaneol,none
+1321,FaGT26345,furaneol,none
+1322,FaGT26479,furaneol,none
+1323,VvGT8b,furaneol,none
+1324,SbUGTA1,furaneol,none
+1325,FaGT24225a,furaneol,none
+1326,VvGT8a,furaneol,none
+1327,VvGT16,furaneol,none
+1328,VvGT8d,furaneol,low
+1329,VvGT7b,furaneol,none
+1330,VvGT7f,furaneol,none
+1331,VvGT7d,furaneol,none
+1332,VvGT7j,furaneol,none
+1333,VvGT7i,furaneol,none
+1334,VvGT7a,furaneol,none
+1335,VvGT7e,furaneol,none
+1336,VvGT7c,furaneol,none
+1337,VvGT7g,furaneol,none
+1338,VvGT7h,furaneol,none
+1339,FaGT22709,furaneol,none
+1340,FaGT6,furaneol,none
+1341,NbGTfc4,furaneol,low
+1342,VvdGT13,furaneol,high
+1343,FaGT7,furaneol,low
+1344,VvGT15b,furaneol,none
+1345,VvGT15a,furaneol,none
+1346,CaUGT2,furaneol,low
+1347,VvGT14a,furaneol,low
+1348,FaGT07876a,furaneol,medium
+1349,VvGT14a_codon_opt,furaneol,medium
+1350,FaGT5,furaneol,none
+1351,NbGTms9,furaneol,low
+1352,FaGT07876b,furaneol,medium
+1353,VvgGT1,furaneol,none
+1354,VvdGT14,furaneol,low
+1355,VvGT15c,furaneol,low
+1356,FvGT2,furaneol,none
+1357,AtUGT73C5,furaneol,low
+1358,FaGT2*,furaneol,none
+1359,VvGT11,furaneol,none
+1360,VvGT10,furaneol,none
+1361,RiGT2,furaneol,low
+1362,VvGT9b,furaneol,low
+1363,VvGT9a,furaneol,none
+1365,VvGT12a,homofuraneol,none
+1366,VvGT12b,homofuraneol,none
+1367,VvGT12c,homofuraneol,none
+1368,VvGT13a,homofuraneol,none
+1369,VvGT13b,homofuraneol,none
+1370,VvGT14b,homofuraneol,none
+1371,VvdGT7,homofuraneol,none
+1372,FaGT24224,homofuraneol,none
+1373,FaGT24226,homofuraneol,none
+1374,FaGT26345,homofuraneol,none
+1375,FaGT26479,homofuraneol,none
+1376,VvGT8b,homofuraneol,none
+1377,SbUGTA1,homofuraneol,none
+1378,FaGT24225a,homofuraneol,none
+1379,VvGT8a,homofuraneol,none
+1380,VvGT16,homofuraneol,none
+1381,VvGT8d,homofuraneol,low
+1382,VvGT7b,homofuraneol,none
+1383,VvGT7f,homofuraneol,none
+1384,VvGT7d,homofuraneol,none
+1385,VvGT7j,homofuraneol,none
+1386,VvGT7i,homofuraneol,none
+1387,VvGT7a,homofuraneol,none
+1388,VvGT7e,homofuraneol,none
+1389,VvGT7c,homofuraneol,none
+1390,VvGT7g,homofuraneol,none
+1391,VvGT7h,homofuraneol,none
+1392,FaGT22709,homofuraneol,low
+1393,FaGT6,homofuraneol,none
+1394,NbGTfc4,homofuraneol,low
+1395,VvdGT13,homofuraneol,high
+1396,FaGT7,homofuraneol,low
+1397,VvGT15b,homofuraneol,none
+1398,VvGT15a,homofuraneol,none
+1399,CaUGT2,homofuraneol,low
+1400,VvGT14a,homofuraneol,low
+1401,FaGT07876a,homofuraneol,medium
+1402,VvGT14a_codon_opt,homofuraneol,medium
+1403,FaGT5,homofuraneol,none
+1404,NbGTms9,homofuraneol,low
+1405,FaGT07876b,homofuraneol,medium
+1406,VvgGT1,homofuraneol,none
+1407,VvdGT14,homofuraneol,low
+1408,VvGT15c,homofuraneol,low
+1409,FvGT2,homofuraneol,none
+1410,AtUGT73C5,homofuraneol,low
+1411,FaGT2*,homofuraneol,none
+1412,VvGT11,homofuraneol,low
+1413,VvGT10,homofuraneol,low
+1414,RiGT2,homofuraneol,low
+1415,VvGT9b,homofuraneol,low
+1416,VvGT9a,homofuraneol,none
+1417,CaUGT2,thymol,medium
+1418,VvdGT13,thymol,high
+1419,FaGT00126,thymol,medium
+1420,FaGT24225a,thymol,medium
+1421,FaGT07876a,thymol,low
+1422,FaGT07876b,thymol,low
+1423,FaGT22709,thymol,medium
+1424,FaGT24226,thymol,low
+1425,NbGTfc4,thymol,low
+1426,RiGT2,thymol,none
+1427,VvdGT7,thymol,none
+1428,VvGT10,thymol,none
+1429,VvGT11,thymol,none
+1430,VvGT12a,thymol,none
+1431,VvGT12c,thymol,none
+1432,VvGT13a,thymol,none
+1433,VvGT13b,thymol,none
+1434,VvGT14a,thymol,none
+1435,VvGT14a_codon_opt,thymol,none
+1436,VvGT14b,thymol,none
+1437,VvGT15a,thymol,none
+1438,VvgGT1,thymol,none
+1439,VvGT8a,thymol,none
+1440,FaGT5,thymol,none
+1441,VvGT16,thymol,none
+1442,VvGT15c,thymol,none
+1443,VvGT9b,thymol,none
+1444,VvGT8d,thymol,none
+1445,VvGT7b,thymol,none
+1446,VvGT7f,thymol,none
+1447,VvGT7d,thymol,none
+1448,VvGT9a,thymol,none
+1449,VvGT7j,thymol,none
+1450,VvGT7i,thymol,none
+1451,VvGT7a,thymol,none
+1452,VvGT7e,thymol,none
+1453,VvGT7c,thymol,none
+1454,VvGT7g,thymol,none
+1455,VvGT7h,thymol,none
+1456,FaGT2*,thymol,none
+1457,FaGT24224,thymol,none
+1458,FaGT26345,thymol,none
+1459,FaGT26479,thymol,none
+1460,FaGT6,thymol,none
+1461,FaGT7,thymol,none
+1462,FvGT2,thymol,none
+1463,VvGT15b,thymol,none
+1464,VvGT8b,thymol,none
+1465,AtUGT73C5,thymol,none
+1466,NbGTfc6,geraniol,none
+1467,NbGTms8,geraniol,none
+1468,VvGT15a,geraniol,high
+1469,VvGT15c,geraniol,high
+1470,VvGT15b,geraniol,low
+1471,VvGT14a,geraniol,low
+1472,CaUGT2,ethylvanillin,high
+1473,FaGT07876a,ethylvanillin,high
+1474,FaGT07876b,ethylvanillin,medium
+1475,FaGT24226,ethylvanillin,medium
+1476,UGT72B1,ethylvanillin,low
+1477,NbGTms8,ethylvanillin,low
+1478,VvdGT13,ethylvanillin,low
+1479,FaGT24224,ethylvanillin,low
+1480,FaGT6,ethylvanillin,low
+1481,AtUGT73C5,ethylvanillin,low
+1482,FaGT24225a,ethylvanillin,low
+1483,VvGT7e,ethylvanillin,low
+1484,VvGT7c,ethylvanillin,low
+1485,FaGT7,ethylvanillin,low
+1486,FaGT22709,ethylvanillin,low
+1487,FaGT00126,ethylvanillin,low
+1488,VvGT7b,ethylvanillin,low
+1489,VvGT7h,ethylvanillin,low
+1490,NbGTfc3,ethylvanillin,low
+1491,VvGT15c,ethylvanillin,low
+1492,VvGT7g,ethylvanillin,low
+1493,VvGT7d,ethylvanillin,low
+1494,VvGT9b,ethylvanillin,low
+1495,VvGT7f,ethylvanillin,low
+1496,NbGTfc6,ethylvanillin,low
+1497,RiGT2,ethylvanillin,low
+1498,VvGT7a,ethylvanillin,low
+1499,NbGTfc4,ethylvanillin,low
+1500,VvGT10,ethylvanillin,low
+1501,VvdGT7,ethylvanillin,low
+1502,VvGT11,ethylvanillin,none
+1503,VvGT12a,ethylvanillin,none
+1504,VvGT12c,ethylvanillin,none
+1505,VvGT13a,ethylvanillin,none
+1506,VvGT13b,ethylvanillin,none
+1507,VvGT14a,ethylvanillin,none
+1508,VvGT14a_codon_opt,ethylvanillin,none
+1509,VvGT14b,ethylvanillin,none
+1510,VvGT15a,ethylvanillin,none
+1511,VvgGT1,ethylvanillin,none
+1512,VvGT8a,ethylvanillin,none
+1513,FaGT5,ethylvanillin,none
+1514,VvGT16,ethylvanillin,none
+1515,VvGT8d,ethylvanillin,none
+1516,VvGT9a,ethylvanillin,none
+1517,VvGT7j,ethylvanillin,none
+1518,VvGT7i,ethylvanillin,none
+1519,FaGT2*,ethylvanillin,none
+1520,FaGT26345,ethylvanillin,none
+1521,FaGT26479,ethylvanillin,none
+1522,FvGT2,ethylvanillin,none
+1523,VvGT15b,ethylvanillin,none
+1524,VvGT8b,ethylvanillin,none
+1525,FaGT07876b,ethylvanillin alcohol,high
+1526,FaGT07876a,ethylvanillin alcohol,high
+1527,CaUGT2,ethylvanillin alcohol,medium
+1528,FaGT24226,ethylvanillin alcohol,low
+1529,VvGT7e,ethylvanillin alcohol,low
+1530,AtUGT73C5,ethylvanillin alcohol,low
+1531,NbGTms8,ethylvanillin alcohol,low
+1532,VvGT14a,ethylvanillin alcohol,low
+1533,VvGT7c,ethylvanillin alcohol,low
+1534,FaGT24224,ethylvanillin alcohol,low
+1535,VvdGT13,ethylvanillin alcohol,low
+1536,NbGTfc3,ethylvanillin alcohol,low
+1537,FaGT24225a,ethylvanillin alcohol,low
+1538,UGT72B1,ethylvanillin alcohol,low
+1539,FaGT7,ethylvanillin alcohol,low
+1540,VvGT7b,ethylvanillin alcohol,low
+1541,VvGT7h,ethylvanillin alcohol,low
+1542,FaGT00126,ethylvanillin alcohol,low
+1543,FaGT22709,ethylvanillin alcohol,low
+1544,FaGT6,ethylvanillin alcohol,low
+1545,VvGT7g,ethylvanillin alcohol,low
+1546,VvGT7d,ethylvanillin alcohol,low
+1547,VvGT7f,ethylvanillin alcohol,low
+1548,NbGTfc6,ethylvanillin alcohol,low
+1549,VvGT12a,ethylvanillin alcohol,low
+1550,VvGT9b,ethylvanillin alcohol,low
+1551,NbGTfc4,ethylvanillin alcohol,low
+1552,VvGT12c,ethylvanillin alcohol,low
+1553,VvGT13a,ethylvanillin alcohol,low
+1554,VvdGT7,ethylvanillin alcohol,low
+1555,RiGT2,ethylvanillin alcohol,none
+1556,VvGT10,ethylvanillin alcohol,none
+1557,VvGT11,ethylvanillin alcohol,none
+1558,VvGT13b,ethylvanillin alcohol,none
+1559,VvGT14a_codon_opt,ethylvanillin alcohol,none
+1560,VvGT14b,ethylvanillin alcohol,none
+1561,VvGT15a,ethylvanillin alcohol,none
+1562,VvgGT1,ethylvanillin alcohol,none
+1563,VvGT8a,ethylvanillin alcohol,none
+1564,FaGT5,ethylvanillin alcohol,none
+1565,VvGT16,ethylvanillin alcohol,none
+1566,VvGT15c,ethylvanillin alcohol,none
+1567,VvGT8d,ethylvanillin alcohol,none
+1568,VvGT9a,ethylvanillin alcohol,none
+1569,VvGT7j,ethylvanillin alcohol,none
+1570,VvGT7i,ethylvanillin alcohol,none
+1571,VvGT7a,ethylvanillin alcohol,none
+1572,FaGT2*,ethylvanillin alcohol,none
+1573,FaGT26345,ethylvanillin alcohol,none
+1574,FaGT26479,ethylvanillin alcohol,none
+1575,FvGT2,ethylvanillin alcohol,none
+1576,VvGT15b,ethylvanillin alcohol,none
+1577,VvGT8b,ethylvanillin alcohol,none
+1578,FaGT24225a,raspberry ketone,high
+1579,NbGTfc4,raspberry ketone,high
+1580,FaGT00126,raspberry ketone,high
+1581,AtUGT73C5,raspberry ketone,medium
+1582,VvGT10,raspberry ketone,low
+1583,RiGT2,raspberry ketone,none
+1584,VvdGT13,raspberry ketone,none
+1585,VvdGT7,raspberry ketone,none
+1586,VvGT11,raspberry ketone,none
+1587,VvGT12a,raspberry ketone,none
+1588,VvGT12b,raspberry ketone,none
+1589,VvGT13a,raspberry ketone,none
+1590,VvGT13b,raspberry ketone,none
+1591,VvGT14a,raspberry ketone,none
+1592,VvGT14a_codon_opt,raspberry ketone,none
+1593,VvGT14b,raspberry ketone,none
+1594,VvGT15a,raspberry ketone,none
+1595,CaUGT2,raspberry ketone,none
+1596,FaGT07876a,raspberry ketone,none
+1597,FaGT07876b,raspberry ketone,none
+1598,FaGT2*,raspberry ketone,none
+1599,FaGT22709,raspberry ketone,none
+1600,FaGT24224,raspberry ketone,none
+1601,FaGT24226,raspberry ketone,none
+1602,FaGT26345,raspberry ketone,none
+1603,FaGT26479,raspberry ketone,none
+1604,FaGT6,raspberry ketone,none
+1605,FaGT7,raspberry ketone,none
+1606,FvGT2,raspberry ketone,none
+1607,VvGT15b,raspberry ketone,none
+1608,VvGT8b,raspberry ketone,none
+1609,NbGTms9,raspberry ketone,none
+1610,VvGT8a,raspberry ketone,none
+1611,FaGT5,raspberry ketone,none
+1612,VvGT15c,raspberry ketone,none
+1613,VvGT9b,raspberry ketone,none
+1614,VvGT8d,raspberry ketone,none
+1615,VvGT7a,raspberry ketone,none
+1616,VvGT7b,raspberry ketone,none
+1617,VvGT9a,raspberry ketone,none
+1618,CsUGTC30,menthol,high
+1619,VvdGT13,menthol,low
+1620,FaGT26345,menthol,low
+1621,RiGT2,menthol,none
+1622,VvdGT7,menthol,none
+1623,VvGT10,menthol,none
+1624,VvGT11,menthol,none
+1625,VvGT12a,menthol,none
+1626,VvGT12c,menthol,none
+1627,VvGT13a,menthol,none
+1628,VvGT13b,menthol,none
+1629,VvGT14a,menthol,none
+1630,VvGT14a_codon_opt,menthol,none
+1631,VvGT14b,menthol,none
+1632,VvGT15a,menthol,none
+1633,VvgGT1,menthol,none
+1634,CaUGT2,menthol,none
+1635,FaGT00126,menthol,none
+1636,FaGT24225a,menthol,none
+1637,VvGT8a,menthol,none
+1638,FaGT5,menthol,none
+1639,VvGT16,menthol,none
+1640,VvGT15c,menthol,none
+1641,VvGT9b,menthol,none
+1642,VvGT7b,menthol,none
+1643,VvGT7f,menthol,none
+1644,VvGT7d,menthol,none
+1645,VvGT9a,menthol,none
+1646,VvGT7j,menthol,none
+1647,VvGT7i,menthol,none
+1648,VvGT7a,menthol,none
+1649,VvGT7e,menthol,none
+1650,VvGT7c,menthol,none
+1651,VvGT7g,menthol,none
+1652,VvGT7h,menthol,none
+1653,FaGT07876a,menthol,none
+1654,FaGT07876b,menthol,none
+1655,FaGT2*,menthol,none
+1656,FaGT22709,menthol,none
+1657,FaGT24224,menthol,none
+1658,FaGT24226,menthol,none
+1659,FaGT26479,menthol,none
+1660,FaGT6,menthol,none
+1661,FaGT7,menthol,none
+1662,FvGT2,menthol,none
+1663,VvGT15b,menthol,none
+1664,VvGT8b,menthol,none
+1665,SbUGTA1,menthol,none
+1666,NbGTfc4,menthol,none
+1667,AtUGT73C5,menthol,none
+1668,UGT72B1,menthol,none
+1669,CsUGTC30,myrtenol,high
+1670,FaGT22709,myrtenol,high
+1671,FaGT7,myrtenol,medium
+1672,FaGT5,myrtenol,low
+1673,VvGT9a,myrtenol,low
+1674,FaGT00126,myrtenol,none
+1675,VvGT8a,myrtenol,none
+1676,VvGT9b,myrtenol,none
+1677,VvGT7j,myrtenol,none
+1678,VvGT7i,myrtenol,none
+1679,VvGT7e,myrtenol,none
+1680,VvGT7c,myrtenol,none
+1681,VvGT7g,myrtenol,none
+1682,FaGT07876b,myrtenol,none
+1683,FaGT2*,myrtenol,none
+1684,FaGT26345,myrtenol,none
+1685,NbGTfc4,myrtenol,none
+1686,AtUGT73C5,myrtenol,none
+1687,UGT72B1,myrtenol,none
+1688,VvGT15a,nerol,high
+1689,VvGT15c,nerol,low
+1690,FaGT24224,nerol,low
+1691,RiGT2,nerol,none
+1692,VvdGT13,nerol,none
+1693,VvdGT7,nerol,none
+1694,VvGT10,nerol,none
+1695,VvGT12a,nerol,none
+1696,VvGT12c,nerol,none
+1697,VvGT13a,nerol,none
+1698,VvGT13b,nerol,none
+1699,VvGT14a,nerol,none
+1700,VvGT14a_codon_opt,nerol,none
+1701,VvGT14b,nerol,none
+1702,NbGTfc4,nerol,none
+1703,AtUGT73C5,nerol,none
+1704,CaUGT2,nerol,none
+1705,FaGT2*,nerol,none
+1706,FaGT24226,nerol,none
+1707,FaGT26345,nerol,none
+1708,FaGT26479,nerol,none
+1709,FaGT6,nerol,none
+1710,FaGT7,nerol,none
+1711,FvGT2,nerol,none
+1712,VvGT15b,nerol,none
+1713,VvGT8b,nerol,none
+1714,NbGTms9,nerol,none
+1715,FaGT24225a,nerol,none
+1716,VvGT8a,nerol,none
+1717,FaGT5,nerol,none
+1718,VvGT8d,nerol,none
+1719,VvGT7a,nerol,none
+1720,VvGT7b,nerol,none
+1721,VvGT9a,nerol,none
+1722,FaGT7,pseudocapsaicin/ pelargonic acid vanillylamide,high
+1723,NbGTms8,pseudocapsaicin/ pelargonic acid vanillylamide,high
+1724,NbGTfc6,pseudocapsaicin/ pelargonic acid vanillylamide,medium
+1725,FaGT24226,pseudocapsaicin/ pelargonic acid vanillylamide,medium
+1726,NbGTfc4,pseudocapsaicin/ pelargonic acid vanillylamide,medium
+1727,VvdGT13,pseudocapsaicin/ pelargonic acid vanillylamide,low
+1728,FaGT00126,pseudocapsaicin/ pelargonic acid vanillylamide,low
+1729,FaGT6,pseudocapsaicin/ pelargonic acid vanillylamide,low
+1730,VvGT9b,pseudocapsaicin/ pelargonic acid vanillylamide,low
+1731,FaGT24225a,pseudocapsaicin/ pelargonic acid vanillylamide,low
+1732,RiGT2,pseudocapsaicin/ pelargonic acid vanillylamide,none
+1733,VvdGT7,pseudocapsaicin/ pelargonic acid vanillylamide,none
+1734,VvGT10,pseudocapsaicin/ pelargonic acid vanillylamide,none
+1735,VvGT11,pseudocapsaicin/ pelargonic acid vanillylamide,none
+1736,VvGT12a,pseudocapsaicin/ pelargonic acid vanillylamide,none
+1737,VvGT12c,pseudocapsaicin/ pelargonic acid vanillylamide,none
+1738,VvGT13a,pseudocapsaicin/ pelargonic acid vanillylamide,none
+1739,VvGT13b,pseudocapsaicin/ pelargonic acid vanillylamide,none
+1740,VvGT14a,pseudocapsaicin/ pelargonic acid vanillylamide,none
+1741,VvGT14a_codon_opt,pseudocapsaicin/ pelargonic acid vanillylamide,none
+1742,VvGT14b,pseudocapsaicin/ pelargonic acid vanillylamide,none
+1743,VvGT15a,pseudocapsaicin/ pelargonic acid vanillylamide,none
+1744,VvgGT1,pseudocapsaicin/ pelargonic acid vanillylamide,none
+1745,CaUGT2,pseudocapsaicin/ pelargonic acid vanillylamide,none
+1746,VvGT8a,pseudocapsaicin/ pelargonic acid vanillylamide,none
+1747,FaGT5,pseudocapsaicin/ pelargonic acid vanillylamide,none
+1748,VvGT16,pseudocapsaicin/ pelargonic acid vanillylamide,none
+1749,VvGT15c,pseudocapsaicin/ pelargonic acid vanillylamide,none
+1750,VvGT8d,pseudocapsaicin/ pelargonic acid vanillylamide,none
+1751,VvGT7b,pseudocapsaicin/ pelargonic acid vanillylamide,none
+1752,VvGT7f,pseudocapsaicin/ pelargonic acid vanillylamide,none
+1753,VvGT7d,pseudocapsaicin/ pelargonic acid vanillylamide,none
+1754,VvGT9a,pseudocapsaicin/ pelargonic acid vanillylamide,none
+1755,VvGT7j,pseudocapsaicin/ pelargonic acid vanillylamide,none
+1756,VvGT7i,pseudocapsaicin/ pelargonic acid vanillylamide,none
+1757,VvGT7a,pseudocapsaicin/ pelargonic acid vanillylamide,none
+1758,VvGT7c,pseudocapsaicin/ pelargonic acid vanillylamide,none
+1759,VvGT7g,pseudocapsaicin/ pelargonic acid vanillylamide,none
+1760,VvGT7h,pseudocapsaicin/ pelargonic acid vanillylamide,none
+1761,FaGT07876a,pseudocapsaicin/ pelargonic acid vanillylamide,none
+1762,FaGT07876b,pseudocapsaicin/ pelargonic acid vanillylamide,none
+1763,FaGT22709,pseudocapsaicin/ pelargonic acid vanillylamide,none
+1764,FaGT24224,pseudocapsaicin/ pelargonic acid vanillylamide,none
+1765,FaGT26479,pseudocapsaicin/ pelargonic acid vanillylamide,none
+1766,FvGT2,pseudocapsaicin/ pelargonic acid vanillylamide,none
+1767,CsUGTC30,pseudocapsaicin/ pelargonic acid vanillylamide,none
+1768,NbGTfc3,pseudocapsaicin/ pelargonic acid vanillylamide,none
+1769,NbGTfc6,santalol,high
+1770,NbGTms8,santalol,high
+1771,VvGT14a,santalol,low
+1772,VvGT15c,santalol,low
+1773,FaGT00126,santalol,low
+1774,VvGT15b,santalol,low
+1775,VvGT14a_codon_opt,santalol,low
+1776,RiGT2,santalol,none
+1777,VvdGT13,santalol,none
+1778,VvdGT7,santalol,none
+1779,VvGT10,santalol,none
+1780,VvGT11,santalol,none
+1781,VvGT12a,santalol,none
+1782,VvGT12c,santalol,none
+1783,VvGT13a,santalol,none
+1784,VvGT13b,santalol,none
+1785,VvGT14b,santalol,none
+1786,VvGT15a,santalol,none
+1787,VvgGT1,santalol,none
+1788,CaUGT2,santalol,none
+1789,FaGT24225a,santalol,none
+1790,VvGT16,santalol,none
+1791,VvGT7b,santalol,none
+1792,VvGT7f,santalol,none
+1793,VvGT7d,santalol,none
+1794,VvGT7a,santalol,none
+1795,VvGT7h,santalol,none
+1796,FaGT07876a,santalol,none
+1797,FaGT24224,santalol,none
+1798,FaGT24226,santalol,none
+1799,FaGT26479,santalol,none
+1800,FaGT6,santalol,none
+1801,FaGT7,santalol,none
+1802,VvGT8b,santalol,none
+1803,SbUGTA1,santalol,none
+1804,CsUGTC30,santalol,none
+1805,NbGTfc3,santalol,none
+1806,NbGTfc4,santalol,none
+1807,RiGT2,anisyl alcohol,low
+1808,VvdGT13,anisyl alcohol,low
+1809,VvdGT14,anisyl alcohol,none
+1810,VvdGT7,anisyl alcohol,none
+1811,VvGT10,anisyl alcohol,none
+1812,VvGT11,anisyl alcohol,low
+1813,VvGT12a,anisyl alcohol,none
+1814,VvGT12b,anisyl alcohol,none
+1815,VvGT12c,anisyl alcohol,none
+1816,VvGT13a,anisyl alcohol,none
+1817,VvGT13b,anisyl alcohol,none
+1818,VvGT14a,anisyl alcohol,none
+1819,VvGT14a_codon_opt,anisyl alcohol,low
+1820,VvGT14b,anisyl alcohol,none
+1821,VvGT15a,anisyl alcohol,low
+1822,VvgGT1,anisyl alcohol,none
+1823,CaUGT2,anisyl alcohol,none
+1824,FaGT00126,anisyl alcohol,low
+1825,FaGT24225a,anisyl alcohol,low
+1827,FaGT5,anisyl alcohol,none
+1828,VvGT16,anisyl alcohol,low
+1829,VvGT15c,anisyl alcohol,medium
+1830,VvGT9b,anisyl alcohol,none
+1831,VvGT8d,anisyl alcohol,none
+1832,VvGT7b,anisyl alcohol,none
+1833,VvGT7f,anisyl alcohol,none
+1834,VvGT7d,anisyl alcohol,none
+1835,VvGT9a,anisyl alcohol,none
+1836,VvGT7j,anisyl alcohol,none
+1837,VvGT7i,anisyl alcohol,none
+1838,VvGT7a,anisyl alcohol,none
+1839,VvGT7e,anisyl alcohol,none
+1840,VvGT7c,anisyl alcohol,none
+1841,VvGT7g,anisyl alcohol,none
+1842,VvGT7h,anisyl alcohol,none
+1843,FaGT07876a,anisyl alcohol,none
+1844,FaGT07876b,anisyl alcohol,none
+1845,FaGT2*,anisyl alcohol,none
+1846,FaGT22709,anisyl alcohol,none
+1847,FaGT24224,anisyl alcohol,none
+1848,FaGT24226,anisyl alcohol,none
+1849,FaGT26345,anisyl alcohol,none
+1850,FaGT26479,anisyl alcohol,none
+1851,FaGT6,anisyl alcohol,none
+1852,FaGT7,anisyl alcohol,none
+1853,FvGT2,anisyl alcohol,none
+1854,VvGT15b,anisyl alcohol,none
+1855,VvGT8b,anisyl alcohol,none
+1856,SbUGTA1,anisyl alcohol,medium
+1857,NbGTms9,anisyl alcohol,none
+1859,NbGTfc4,anisyl alcohol,none
+1860,AtUGT73C5,anisyl alcohol,low
+1861,CsUGTC30,anisyl alcohol,low
+1862,UGT72B1,anisyl alcohol,low
+1863,NbGTfc6,anisyl alcohol,none
+1864,NbGTms8,anisyl alcohol,none
+1866,MpGT71-26,anisyl alcohol,none
+1867,MpGT85-10-1,anisyl alcohol,none
+1868,MpGT85-10-3,anisyl alcohol,none
+1869,NbGTfc3,anisyl alcohol,none
+1870,MpGT86,anisyl alcohol,high
+1871,MpGT71-23,anisyl alcohol,none
+1872,FaGT13,anisyl alcohol,low
+1873,FaGT85,anisyl alcohol,medium
+1874,RiGT2,alpha-ionol,none
+1875,VvdGT13,alpha-ionol,none
+1876,VvdGT14,alpha-ionol,none
+1877,VvdGT7,alpha-ionol,none
+1878,VvGT10,alpha-ionol,none
+1879,VvGT11,alpha-ionol,none
+1880,VvGT12a,alpha-ionol,none
+1881,VvGT12b,alpha-ionol,none
+1882,VvGT12c,alpha-ionol,none
+1883,VvGT13a,alpha-ionol,none
+1885,VvGT14a,alpha-ionol,high
+1886,VvGT14a_codon_opt,alpha-ionol,medium
+1887,VvGT14b,alpha-ionol,none
+1888,VvGT15a,alpha-ionol,low
+1889,VvgGT1,alpha-ionol,none
+1890,CaUGT2,alpha-ionol,none
+1891,FaGT00126,alpha-ionol,none
+1892,FaGT24225a,alpha-ionol,none
+1894,FaGT5,alpha-ionol,none
+1895,VvGT16,alpha-ionol,none
+1896,VvGT15c,alpha-ionol,low
+1897,VvGT9b,alpha-ionol,none
+1898,VvGT8d,alpha-ionol,none
+1899,VvGT7b,alpha-ionol,none
+1900,VvGT7f,alpha-ionol,none
+1901,VvGT7d,alpha-ionol,none
+1902,VvGT9a,alpha-ionol,none
+1903,VvGT7j,alpha-ionol,none
+1904,VvGT7i,alpha-ionol,none
+1905,VvGT7a,alpha-ionol,none
+1906,VvGT7e,alpha-ionol,none
+1907,VvGT7c,alpha-ionol,none
+1908,VvGT7g,alpha-ionol,none
+1909,VvGT7h,alpha-ionol,none
+1910,FaGT07876a,alpha-ionol,none
+1911,FaGT07876b,alpha-ionol,none
+1912,FaGT2*,alpha-ionol,none
+1913,FaGT22709,alpha-ionol,none
+1914,FaGT24224,alpha-ionol,none
+1915,FaGT24226,alpha-ionol,none
+1916,FaGT26345,alpha-ionol,none
+1917,FaGT26479,alpha-ionol,none
+1918,FaGT6,alpha-ionol,none
+1919,FaGT7,alpha-ionol,none
+1920,FvGT2,alpha-ionol,none
+1922,VvGT8b,alpha-ionol,none
+1927,AtUGT73C5,alpha-ionol,none
+1928,CsUGTC30,alpha-ionol,low
+1929,UGT72B1,alpha-ionol,none
+1931,NbGTms8,alpha-ionol,none
+1933,MpGT71-26,alpha-ionol,none
+1934,MpGT85-10-1,alpha-ionol,none
+1935,MpGT85-10-3,alpha-ionol,none
+1936,NbGTfc3,alpha-ionol,none
+1937,MpGT86,alpha-ionol,high
+1938,MpGT71-23,alpha-ionol,none
+1939,FaGT13,alpha-ionol,none
+1941,RiGT2,benzyl salicylate,low
+1942,VvdGT13,benzyl salicylate,high
+1943,VvdGT14,benzyl salicylate,none
+1944,VvdGT7,benzyl salicylate,none
+1945,VvGT10,benzyl salicylate,none
+1946,VvGT11,benzyl salicylate,none
+1947,VvGT12a,benzyl salicylate,none
+1949,VvGT12c,benzyl salicylate,none
+1951,VvGT13b,benzyl salicylate,none
+1952,VvGT14a,benzyl salicylate,none
+1953,VvGT14a_codon_opt,benzyl salicylate,none
+1954,VvGT14b,benzyl salicylate,none
+1955,VvGT15a,benzyl salicylate,low
+1956,VvgGT1,benzyl salicylate,low
+1957,CaUGT2,benzyl salicylate,medium
+1958,FaGT00126,benzyl salicylate,low
+1959,FaGT24225a,benzyl salicylate,medium
+1961,FaGT5,benzyl salicylate,none
+1962,VvGT16,benzyl salicylate,none
+1963,VvGT15c,benzyl salicylate,low
+1964,VvGT9b,benzyl salicylate,low
+1965,VvGT8d,benzyl salicylate,none
+1969,VvGT9a,benzyl salicylate,none
+1972,VvGT7a,benzyl salicylate,none
+1977,FaGT07876a,benzyl salicylate,medium
+1978,FaGT07876b,benzyl salicylate,low
+1979,FaGT2*,benzyl salicylate,none
+1980,FaGT22709,benzyl salicylate,low
+1981,FaGT24224,benzyl salicylate,low
+1982,FaGT24226,benzyl salicylate,low
+1983,FaGT26345,benzyl salicylate,none
+1984,FaGT26479,benzyl salicylate,none
+1985,FaGT6,benzyl salicylate,low
+1986,FaGT7,benzyl salicylate,low
+1987,FvGT2,benzyl salicylate,none
+1988,VvGT15b,benzyl salicylate,none
+1989,VvGT8b,benzyl salicylate,none
+1993,NbGTfc4,benzyl salicylate,none
+1994,AtUGT73C5,benzyl salicylate,low
+1996,UGT72B1,benzyl salicylate,low
+2003,NbGTfc3,benzyl salicylate,none
+2008,RiGT2,carveol,none
+2009,VvdGT13,carveol,none
+2011,VvdGT7,carveol,none
+2012,VvGT10,carveol,none
+2013,VvGT11,carveol,none
+2014,VvGT12a,carveol,none
+2016,VvGT12c,carveol,none
+2018,VvGT13b,carveol,none
+2019,VvGT14a,carveol,high
+2020,VvGT14a_codon_opt,carveol,low
+2021,VvGT14b,carveol,none
+2022,VvGT15a,carveol,low
+2023,VvgGT1,carveol,none
+2024,CaUGT2,carveol,none
+2025,FaGT00126,carveol,none
+2026,FaGT24225a,carveol,none
+2028,FaGT5,carveol,none
+2029,VvGT16,carveol,none
+2030,VvGT15c,carveol,low
+2031,VvGT9b,carveol,none
+2032,VvGT8d,carveol,none
+2036,VvGT9a,carveol,none
+2039,VvGT7a,carveol,none
+2044,FaGT07876a,carveol,none
+2045,FaGT07876b,carveol,none
+2046,FaGT2*,carveol,none
+2047,FaGT22709,carveol,none
+2048,FaGT24224,carveol,none
+2049,FaGT24226,carveol,none
+2050,FaGT26345,carveol,none
+2051,FaGT26479,carveol,none
+2052,FaGT6,carveol,none
+2053,FaGT7,carveol,none
+2054,FvGT2,carveol,none
+2055,VvGT15b,carveol,low
+2056,VvGT8b,carveol,none
+2060,NbGTfc4,carveol,none
+2061,AtUGT73C5,carveol,none
+2063,UGT72B1,carveol,none
+2070,NbGTfc3,carveol,none
+2075,RiGT2,cinnamyl alcohol,none
+2076,VvdGT13,cinnamyl alcohol,none
+2078,VvdGT7,cinnamyl alcohol,none
+2079,VvGT10,cinnamyl alcohol,none
+2080,VvGT11,cinnamyl alcohol,none
+2081,VvGT12a,cinnamyl alcohol,none
+2083,VvGT12c,cinnamyl alcohol,none
+2085,VvGT13b,cinnamyl alcohol,none
+2086,VvGT14a,cinnamyl alcohol,high
+2087,VvGT14a_codon_opt,cinnamyl alcohol,none
+2088,VvGT14b,cinnamyl alcohol,none
+2089,VvGT15a,cinnamyl alcohol,low
+2090,VvgGT1,cinnamyl alcohol,none
+2091,CaUGT2,cinnamyl alcohol,none
+2092,FaGT00126,cinnamyl alcohol,none
+2093,FaGT24225a,cinnamyl alcohol,low
+2094,VvGT8a,cinnamyl alcohol,none
+2095,FaGT5,cinnamyl alcohol,none
+2096,VvGT16,cinnamyl alcohol,low
+2097,VvGT15c,cinnamyl alcohol,low
+2098,VvGT9b,cinnamyl alcohol,none
+2099,VvGT8d,cinnamyl alcohol,none
+2106,VvGT7a,cinnamyl alcohol,none
+2111,FaGT07876a,cinnamyl alcohol,none
+2112,FaGT07876b,cinnamyl alcohol,none
+2113,FaGT2*,cinnamyl alcohol,none
+2114,FaGT22709,cinnamyl alcohol,none
+2115,FaGT24224,cinnamyl alcohol,none
+2116,FaGT24226,cinnamyl alcohol,none
+2117,FaGT26345,cinnamyl alcohol,none
+2118,FaGT26479,cinnamyl alcohol,none
+2119,FaGT6,cinnamyl alcohol,none
+2120,FaGT7,cinnamyl alcohol,none
+2121,FvGT2,cinnamyl alcohol,none
+2122,VvGT15b,cinnamyl alcohol,none
+2123,VvGT8b,cinnamyl alcohol,none
+2127,NbGTfc4,cinnamyl alcohol,none
+2128,AtUGT73C5,cinnamyl alcohol,none
+2134,MpGT71-26,cinnamyl alcohol,none
+2135,MpGT85-10-1,cinnamyl alcohol,none
+2136,MpGT85-10-3,cinnamyl alcohol,none
+2137,NbGTfc3,cinnamyl alcohol,none
+2142,RiGT2,farnesol,none
+2143,VvdGT13,farnesol,none
+2145,VvdGT7,farnesol,none
+2146,VvGT10,farnesol,none
+2147,VvGT11,farnesol,none
+2148,VvGT12a,farnesol,none
+2150,VvGT12c,farnesol,none
+2152,VvGT13b,farnesol,none
+2153,VvGT14a,farnesol,high
+2154,VvGT14a_codon_opt,farnesol,none
+2155,VvGT14b,farnesol,none
+2156,VvGT15a,farnesol,none
+2157,VvgGT1,farnesol,none
+2158,CaUGT2,farnesol,none
+2159,FaGT00126,farnesol,none
+2160,FaGT24225a,farnesol,none
+2161,VvGT8a,farnesol,none
+2162,FaGT5,farnesol,none
+2163,VvGT16,farnesol,none
+2164,VvGT15c,farnesol,none
+2165,VvGT9b,farnesol,none
+2166,VvGT8d,farnesol,none
+2173,VvGT7a,farnesol,none
+2178,FaGT07876a,farnesol,none
+2179,FaGT07876b,farnesol,none
+2180,FaGT2*,farnesol,none
+2181,FaGT22709,farnesol,none
+2182,FaGT24224,farnesol,none
+2183,FaGT24226,farnesol,none
+2184,FaGT26345,farnesol,none
+2185,FaGT26479,farnesol,none
+2186,FaGT6,farnesol,none
+2187,FaGT7,farnesol,none
+2188,FvGT2,farnesol,none
+2189,VvGT15b,farnesol,none
+2190,VvGT8b,farnesol,none
+2194,NbGTfc4,farnesol,none
+2195,AtUGT73C5,farnesol,none
+2197,UGT72B1,farnesol,none
+2204,NbGTfc3,farnesol,none
+2209,RiGT2,geranic acid,high
+2210,VvdGT13,geranic acid,none
+2212,VvdGT7,geranic acid,none
+2213,VvGT10,geranic acid,high
+2214,VvGT11,geranic acid,high
+2215,VvGT12a,geranic acid,none
+2217,VvGT12c,geranic acid,none
+2219,VvGT13b,geranic acid,none
+2220,VvGT14a,geranic acid,high
+2221,VvGT14a_codon_opt,geranic acid,none
+2222,VvGT14b,geranic acid,none
+2223,VvGT15a,geranic acid,none
+2224,VvgGT1,geranic acid,high
+2225,CaUGT2,geranic acid,none
+2226,FaGT00126,geranic acid,none
+2227,FaGT24225a,geranic acid,medium
+2228,VvGT8a,geranic acid,none
+2229,FaGT5,geranic acid,medium
+2230,VvGT16,geranic acid,none
+2231,VvGT15c,geranic acid,none
+2232,VvGT9b,geranic acid,high
+2233,VvGT8d,geranic acid,none
+2237,VvGT9a,geranic acid,low
+2240,VvGT7a,geranic acid,none
+2245,FaGT07876a,geranic acid,none
+2246,FaGT07876b,geranic acid,none
+2247,FaGT2*,geranic acid,high
+2248,FaGT22709,geranic acid,none
+2249,FaGT24224,geranic acid,none
+2250,FaGT24226,geranic acid,none
+2251,FaGT26345,geranic acid,none
+2252,FaGT26479,geranic acid,none
+2253,FaGT6,geranic acid,none
+2254,FaGT7,geranic acid,none
+2255,FvGT2,geranic acid,none
+2256,VvGT15b,geranic acid,none
+2257,VvGT8b,geranic acid,none
+2261,NbGTfc4,geranic acid,none
+2262,AtUGT73C5,geranic acid,none
+2264,UGT72B1,geranic acid,none
+2271,NbGTfc3,geranic acid,none
+2276,RiGT2,(S)-(-)-perillyl alcohol,none
+2277,VvdGT13,(S)-(-)-perillyl alcohol,none
+2278,VvdGT14,(S)-(-)-perillyl alcohol,none
+2279,VvdGT7,(S)-(-)-perillyl alcohol,none
+2280,VvGT10,(S)-(-)-perillyl alcohol,none
+2281,VvGT11,(S)-(-)-perillyl alcohol,none
+2282,VvGT12a,(S)-(-)-perillyl alcohol,none
+2283,VvGT12b,(S)-(-)-perillyl alcohol,none
+2284,VvGT12c,(S)-(-)-perillyl alcohol,none
+2285,VvGT13a,(S)-(-)-perillyl alcohol,none
+2287,VvGT14a,(S)-(-)-perillyl alcohol,low
+2288,VvGT14a_codon_opt,(S)-(-)-perillyl alcohol,low
+2289,VvGT14b,(S)-(-)-perillyl alcohol,none
+2290,VvGT15a,(S)-(-)-perillyl alcohol,low
+2291,VvgGT1,(S)-(-)-perillyl alcohol,none
+2292,CaUGT2,(S)-(-)-perillyl alcohol,none
+2293,FaGT00126,(S)-(-)-perillyl alcohol,low
+2294,FaGT24225a,(S)-(-)-perillyl alcohol,low
+2296,FaGT5,(S)-(-)-perillyl alcohol,none
+2297,VvGT16,(S)-(-)-perillyl alcohol,none
+2298,VvGT15c,(S)-(-)-perillyl alcohol,medium
+2299,VvGT9b,(S)-(-)-perillyl alcohol,none
+2300,VvGT8d,(S)-(-)-perillyl alcohol,none
+2301,VvGT7b,(S)-(-)-perillyl alcohol,none
+2302,VvGT7f,(S)-(-)-perillyl alcohol,none
+2303,VvGT7d,(S)-(-)-perillyl alcohol,none
+2304,VvGT9a,(S)-(-)-perillyl alcohol,none
+2305,VvGT7j,(S)-(-)-perillyl alcohol,none
+2306,VvGT7i,(S)-(-)-perillyl alcohol,none
+2307,VvGT7a,(S)-(-)-perillyl alcohol,none
+2308,VvGT7e,(S)-(-)-perillyl alcohol,none
+2309,VvGT7c,(S)-(-)-perillyl alcohol,none
+2310,VvGT7g,(S)-(-)-perillyl alcohol,none
+2311,VvGT7h,(S)-(-)-perillyl alcohol,none
+2312,FaGT07876a,(S)-(-)-perillyl alcohol,none
+2313,FaGT07876b,(S)-(-)-perillyl alcohol,none
+2314,FaGT2*,(S)-(-)-perillyl alcohol,none
+2315,FaGT22709,(S)-(-)-perillyl alcohol,none
+2316,FaGT24224,(S)-(-)-perillyl alcohol,none
+2317,FaGT24226,(S)-(-)-perillyl alcohol,none
+2318,FaGT26345,(S)-(-)-perillyl alcohol,none
+2319,FaGT26479,(S)-(-)-perillyl alcohol,none
+2320,FaGT6,(S)-(-)-perillyl alcohol,none
+2321,FaGT7,(S)-(-)-perillyl alcohol,none
+2322,FvGT2,(S)-(-)-perillyl alcohol,none
+2323,VvGT15b,(S)-(-)-perillyl alcohol,none
+2324,VvGT8b,(S)-(-)-perillyl alcohol,none
+2325,SbUGTA1,(S)-(-)-perillyl alcohol,medium
+2326,NbGTms9,(S)-(-)-perillyl alcohol,none
+2328,NbGTfc4,(S)-(-)-perillyl alcohol,low
+2329,AtUGT73C5,(S)-(-)-perillyl alcohol,low
+2330,CsUGTC30,(S)-(-)-perillyl alcohol,none
+2331,UGT72B1,(S)-(-)-perillyl alcohol,none
+2332,NbGTfc6,(S)-(-)-perillyl alcohol,none
+2333,NbGTms8,(S)-(-)-perillyl alcohol,none
+2335,MpGT71-26,(S)-(-)-perillyl alcohol,low
+2336,MpGT85-10-1,(S)-(-)-perillyl alcohol,none
+2337,MpGT85-10-3,(S)-(-)-perillyl alcohol,low
+2338,NbGTfc3,(S)-(-)-perillyl alcohol,low
+2339,MpGT86,(S)-(-)-perillyl alcohol,high
+2340,MpGT71-23,(S)-(-)-perillyl alcohol,low
+2341,FaGT13,(S)-(-)-perillyl alcohol,low
+2342,FaGT85,(S)-(-)-perillyl alcohol,low
+2343,RiGT2,2-phenylethanol,low
+2344,VvdGT13,2-phenylethanol,low
+2345,VvdGT14,2-phenylethanol,none
+2346,VvdGT7,2-phenylethanol,none
+2347,VvGT10,2-phenylethanol,none
+2348,VvGT11,2-phenylethanol,low
+2349,VvGT12a,2-phenylethanol,none
+2350,VvGT12b,2-phenylethanol,none
+2351,VvGT12c,2-phenylethanol,none
+2352,VvGT13a,2-phenylethanol,none
+2353,VvGT13b,2-phenylethanol,low
+2354,VvGT14a,2-phenylethanol,medium
+2355,VvGT14a_codon_opt,2-phenylethanol,medium
+2356,VvGT14b,2-phenylethanol,none
+2357,VvGT15a,2-phenylethanol,medium
+2358,VvgGT1,2-phenylethanol,none
+2359,CaUGT2,2-phenylethanol,low
+2360,FaGT00126,2-phenylethanol,low
+2361,FaGT24225a,2-phenylethanol,low
+2363,FaGT5,2-phenylethanol,none
+2364,VvGT16,2-phenylethanol,low
+2365,VvGT15c,2-phenylethanol,low
+2366,VvGT9b,2-phenylethanol,low
+2367,VvGT8d,2-phenylethanol,none
+2368,VvGT7b,2-phenylethanol,none
+2369,VvGT7f,2-phenylethanol,none
+2370,VvGT7d,2-phenylethanol,low
+2371,VvGT9a,2-phenylethanol,none
+2372,VvGT7j,2-phenylethanol,low
+2373,VvGT7i,2-phenylethanol,none
+2374,VvGT7a,2-phenylethanol,none
+2375,VvGT7e,2-phenylethanol,medium
+2376,VvGT7c,2-phenylethanol,low
+2377,VvGT7g,2-phenylethanol,low
+2378,VvGT7h,2-phenylethanol,low
+2379,FaGT07876a,2-phenylethanol,low
+2380,FaGT07876b,2-phenylethanol,low
+2381,FaGT2*,2-phenylethanol,none
+2382,FaGT22709,2-phenylethanol,none
+2383,FaGT24224,2-phenylethanol,none
+2384,FaGT24226,2-phenylethanol,none
+2385,FaGT26345,2-phenylethanol,none
+2386,FaGT26479,2-phenylethanol,none
+2387,FaGT6,2-phenylethanol,none
+2388,FaGT7,2-phenylethanol,none
+2389,FvGT2,2-phenylethanol,none
+2390,VvGT15b,2-phenylethanol,low
+2391,VvGT8b,2-phenylethanol,none
+2392,SbUGTA1,2-phenylethanol,medium
+2393,NbGTms9,2-phenylethanol,high
+2395,NbGTfc4,2-phenylethanol,none
+2396,AtUGT73C5,2-phenylethanol,none
+2397,CsUGTC30,2-phenylethanol,low
+2398,UGT72B1,2-phenylethanol,low
+2399,NbGTfc6,2-phenylethanol,none
+2400,NbGTms8,2-phenylethanol,none
+2402,MpGT71-26,2-phenylethanol,low
+2403,MpGT85-10-1,2-phenylethanol,none
+2404,MpGT85-10-3,2-phenylethanol,none
+2405,NbGTfc3,2-phenylethanol,none
+2406,MpGT86,2-phenylethanol,high
+2407,MpGT71-23,2-phenylethanol,low
+2408,FaGT13,2-phenylethanol,low
+2409,FaGT85,2-phenylethanol,high
