@@ -55,6 +55,9 @@ def stratified_split_by_entities(df, protein_col="UGT_ID", substrate_col="substr
     for u, v, l in train_edges:
         seen_nodes.add(u)
         seen_nodes.add(v)
+    for u, v, l in val_edges:
+        seen_nodes.add(u)
+        seen_nodes.add(v)
     plot_split_graph(graph, train_edges, val_edges, C1_edges, C2_edges, C3_edges, seen_nodes)
     plot_graph_connectivity(graph)
     ###
@@ -144,6 +147,9 @@ def create_evaluation_sets(train_edges, val_edges, test_edges):
     for u, v, l in train_edges:
         seen_nodes.add(u)
         seen_nodes.add(v)
+    for u, v, l in val_edges:
+        seen_nodes.add(u)
+        seen_nodes.add(v)
 
     # C1/C2/C3 split
     C1_edges = []
@@ -176,6 +182,8 @@ def check_split(train_df, val_df, c1_df, c2_df, c3_df, protein_col, substrate_co
 
     train_proteins = set(train_df[protein_col].unique())
     train_substrates = set(train_df[substrate_col].unique())
+    val_proteins = set(val_df[protein_col].unique())
+    val_substrates = set(val_df[substrate_col].unique())
 
     # C1 consistency
     c1_proteins = set(c1_df[protein_col].unique())
@@ -185,8 +193,8 @@ def check_split(train_df, val_df, c1_df, c2_df, c3_df, protein_col, substrate_co
 
     # C2 consistency
     for idx, row in c2_df.iterrows():
-        p_seen = row[protein_col] in train_proteins
-        s_seen = row[substrate_col] in train_substrates
+        p_seen = (row[protein_col] in train_proteins) or (row[protein_col] in val_proteins)
+        s_seen = (row[substrate_col] in train_substrates) or (row[substrate_col] in val_substrates)
         assert p_seen != s_seen, f"C2 split invalid for row {idx}"
 
     # C3 consistency
@@ -194,3 +202,5 @@ def check_split(train_df, val_df, c1_df, c2_df, c3_df, protein_col, substrate_co
     c3_substrates = set(c3_df[substrate_col].unique())
     assert len(train_proteins & c3_proteins) == 0, "Data leakage: C3 protein in training!"
     assert len(train_substrates & c3_substrates) == 0, "Data leakage: C3 substrate in training!"
+    assert len(val_proteins & c3_proteins) == 0, "Data leakage: C3 protein in validation set!"
+    assert len(val_substrates & c3_substrates) == 0, "Data leakage: C3 substrate in validation set!"

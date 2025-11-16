@@ -23,7 +23,7 @@ def plot_class_balance(df, label_col="activity", label_rot=True):
     """Plot the fractions of active vs. inactive samples."""
     counts = df[label_col].value_counts(normalize=True)
     plt.figure()
-    sns.barplot(x=counts.index, y=counts.values, hue=counts.index, palette="colorblind")
+    sns.barplot(x=counts.index, y=counts.values, hue=counts.index, palette="colorblind", legend=False)
     plt.title("Class Balance")
     plt.xlabel(label_col)
     if label_rot:
