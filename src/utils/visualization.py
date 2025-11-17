@@ -146,6 +146,35 @@ def plot_graph_connectivity(g):
     plt.savefig(output_path)
     plt.close()
 
+def plot_connectivity_separate(G):
+    # Identify node types from bipartite structure:
+    proteins = [n for n, d in G.nodes(data=True) if d.get("bipartite") == "protein"]
+    substrates = [n for n, d in G.nodes(data=True) if d.get("bipartite") == "substrate"]
+
+    # Compute degrees
+    protein_deg = [G.degree(p) for p in proteins]
+    substrate_deg = [G.degree(s) for s in substrates]
+
+    # Plot
+    plt.figure(figsize=(12,5))
+
+    plt.subplot(1,2,1)
+    plt.hist(protein_deg, bins=20)
+    plt.title("Protein Degree Distribution")
+    plt.xlabel("Degree")
+    plt.ylabel("# Proteins")
+
+    plt.subplot(1,2,2)
+    plt.hist(substrate_deg, bins=20)
+    plt.title("Substrate Degree Distribution")
+    plt.xlabel("Degree")
+    plt.ylabel("# Substrates")
+
+    plt.tight_layout()
+    output_path = os.path.join(FIGURES_DIR, "graph_connectivity_separate.png")
+    plt.savefig(output_path)
+    plt.close()
+
 def plot_split_statistics(df_split, protein_col, substrate_col, label_col, split_col="split"):
     """Visualize unique enzymes/substrates and label distribution per split."""
 
