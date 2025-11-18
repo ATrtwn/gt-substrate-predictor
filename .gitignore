@@ -211,6 +211,7 @@ __marimo__/
 
 # Ignore all Microsoft Access database files
 *.accdb
+data/
 
 # ignore csv files
 .csv
