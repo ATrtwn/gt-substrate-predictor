@@ -3,9 +3,9 @@ import random
 import networkx as nx
 from collections import defaultdict, Counter
 from sklearn.model_selection import train_test_split
-from src.utils.visualization import plot_split_graph, plot_graph_connectivity
+from src.utils.visualization import plot_split_graph, plot_graph_connectivity, plot_connectivity_separate
 
-def stratified_split_by_entities(df, protein_col="UGT_ID", substrate_col="substrate", random_state=42):
+def stratified_split_by_entities(df, protein_col="UGT_ID", substrate_col="substrate", random_state=42, plot=False):
     """
     Perform stratified split according to generalization classes (C1, C2, C3).
 
@@ -36,11 +36,7 @@ def stratified_split_by_entities(df, protein_col="UGT_ID", substrate_col="substr
         edge_to_move = random.choice(C1_edges)
         u, v, l = edge_to_move
         # choose which component to move from seen to unseen
-        unseen_u = bool(random.getrandbits(1))
-        if unseen_u:
-            unseen_component = u
-        else:
-            unseen_component = v
+        unseen_component = u # protein as they are underrepresented in data
         # remove now unseen components from train and val sets
         train_removed = [e for e in train_edges if unseen_component in e]
         train_edges = [e for e in train_edges if unseen_component not in e]
@@ -55,8 +51,13 @@ def stratified_split_by_entities(df, protein_col="UGT_ID", substrate_col="substr
     for u, v, l in train_edges:
         seen_nodes.add(u)
         seen_nodes.add(v)
-    plot_split_graph(graph, train_edges, val_edges, C1_edges, C2_edges, C3_edges, seen_nodes)
-    plot_graph_connectivity(graph)
+    for u, v, l in val_edges:
+        seen_nodes.add(u)
+        seen_nodes.add(v)
+    if plot:
+        plot_split_graph(graph, train_edges, val_edges, C1_edges, C2_edges, C3_edges, seen_nodes)
+        plot_graph_connectivity(graph)
+        plot_connectivity_separate(graph)
     ###
 
     # perform split on df based on graph split
@@ -118,9 +119,9 @@ def split_graph(G, train_frac=0.7, test_frac=0.15, random_state=42):
         n_train = int(train_frac * n)
         n_val = int(val_frac * n)
 
-        # random select subset of edges = training pairs
+        # select subset of edges = training pairs
         train_edges.extend(group[:n_train])
-        # random select subset of remaining edges = val pairs (unseen edges maybe seen nodes)
+        # select subset of remaining edges = val pairs (unseen edges maybe seen nodes)
         val_edges.extend(group[n_train:n_train + n_val])
         # rest for evaluation
         test_edges.extend(group[n_train + n_val:])
@@ -142,6 +143,9 @@ def create_evaluation_sets(train_edges, val_edges, test_edges):
     """
     seen_nodes = set()
     for u, v, l in train_edges:
+        seen_nodes.add(u)
+        seen_nodes.add(v)
+    for u, v, l in val_edges:
         seen_nodes.add(u)
         seen_nodes.add(v)
 
@@ -176,17 +180,21 @@ def check_split(train_df, val_df, c1_df, c2_df, c3_df, protein_col, substrate_co
 
     train_proteins = set(train_df[protein_col].unique())
     train_substrates = set(train_df[substrate_col].unique())
+    val_proteins = set(val_df[protein_col].unique())
+    val_substrates = set(val_df[substrate_col].unique())
 
     # C1 consistency
+    seen_proteins = train_proteins | val_proteins
+    seen_substrates = train_substrates | val_substrates
     c1_proteins = set(c1_df[protein_col].unique())
     c1_substrates = set(c1_df[substrate_col].unique())
-    assert c1_proteins <= train_proteins, "C1 protein not in training!"
-    assert c1_substrates <= train_substrates, "C1 substrate not in training!"
+    assert c1_proteins <= seen_proteins, "C1 protein not in training!"
+    assert c1_substrates <= seen_substrates, "C1 substrate not in training!"
 
     # C2 consistency
     for idx, row in c2_df.iterrows():
-        p_seen = row[protein_col] in train_proteins
-        s_seen = row[substrate_col] in train_substrates
+        p_seen = (row[protein_col] in train_proteins) or (row[protein_col] in val_proteins)
+        s_seen = (row[substrate_col] in train_substrates) or (row[substrate_col] in val_substrates)
         assert p_seen != s_seen, f"C2 split invalid for row {idx}"
 
     # C3 consistency
@@ -194,3 +202,5 @@ def check_split(train_df, val_df, c1_df, c2_df, c3_df, protein_col, substrate_co
     c3_substrates = set(c3_df[substrate_col].unique())
     assert len(train_proteins & c3_proteins) == 0, "Data leakage: C3 protein in training!"
     assert len(train_substrates & c3_substrates) == 0, "Data leakage: C3 substrate in training!"
+    assert len(val_proteins & c3_proteins) == 0, "Data leakage: C3 protein in validation set!"
+    assert len(val_substrates & c3_substrates) == 0, "Data leakage: C3 substrate in validation set!"
