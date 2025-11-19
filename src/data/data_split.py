@@ -5,7 +5,7 @@ from collections import defaultdict, Counter
 from sklearn.model_selection import train_test_split
 from src.utils.visualization import plot_split_graph, plot_graph_connectivity, plot_connectivity_separate
 
-def stratified_split_by_entities(df, protein_col="UGT_ID", substrate_col="substrate", random_state=42):
+def stratified_split_by_entities(df, protein_col="UGT_ID", substrate_col="substrate", random_state=42, plot=False):
     """
     Perform stratified split according to generalization classes (C1, C2, C3).
 
@@ -54,9 +54,10 @@ def stratified_split_by_entities(df, protein_col="UGT_ID", substrate_col="substr
     for u, v, l in val_edges:
         seen_nodes.add(u)
         seen_nodes.add(v)
-    plot_split_graph(graph, train_edges, val_edges, C1_edges, C2_edges, C3_edges, seen_nodes)
-    plot_graph_connectivity(graph)
-    plot_connectivity_separate(graph)
+    if plot:
+        plot_split_graph(graph, train_edges, val_edges, C1_edges, C2_edges, C3_edges, seen_nodes)
+        plot_graph_connectivity(graph)
+        plot_connectivity_separate(graph)
     ###
 
     # perform split on df based on graph split
