@@ -95,16 +95,68 @@ def create_graph(df, protein_col="UGT_ID", substrate_col="substrate", label_col=
 
     return G
 
-def split_graph(G, train_frac=0.7, test_frac=0.15, random_state=42):
+def reserve_edges_by_degree(G, reserve_frac=0.10):
+    """
+    Reserve edges based on degree heuristic.
+    Returns reserved_edges (list of (u, v, label)) 
+    and remaining_edges in the same format.
+    """
+
+    # 1) Node degrees
+    neighbor_counts = dict(G.degree())
+
+    # 2) Build dataframe with edge features
+    edge_data = []
+    for u, v, data in G.edges(data=True):
+        deg_u = neighbor_counts.get(u, 0)
+        deg_v = neighbor_counts.get(v, 0)
+        sum_deg = deg_u + deg_v
+        label = data.get("label")
+        edge_data.append((u, v, deg_u, deg_v, sum_deg, label))
+
+    df_edges = pd.DataFrame(edge_data, 
+        columns=["node_protein", "node_sub", "deg_protein", 
+                 "deg_sub", "sum_deg", "label"]
+    )
+
+    # Sort edges ascending by sum of degrees
+    df_edges_sorted = df_edges.sort_values("sum_deg", ascending=True).reset_index(drop=True)
+
+    # 3) Reserve edges based on 10% of lowest-degree edges
+    n_total = len(df_edges_sorted)
+    n_reserve = int(reserve_frac * n_total)
+
+    reserved_df = df_edges_sorted.iloc[:n_reserve].copy()
+    remaining_df = df_edges_sorted.iloc[n_reserve:].copy()
+
+    # 4) Convert both to list-of-tuples format: (u, v, label)
+    reserved_edges = list(zip(reserved_df["node_protein"],
+                              reserved_df["node_sub"],
+                              reserved_df["label"]))
+
+    remaining_edges = list(zip(remaining_df["node_protein"],
+                               remaining_df["node_sub"],
+                               remaining_df["label"]))
+
+    return reserved_edges, remaining_edges
+
+
+def split_graph(G, train_frac=0.7, test_frac=0.15, reserve_frac = 0.1, random_state=42):
     """
         Perform split on graph level
     """
     val_frac = (1 - train_frac - test_frac)
     assert (1 - train_frac - test_frac - val_frac) <= 0.0001, "Fractions don't add to 1!"
+
+    # --- GET ALL EDGES ---
     edges = list(G.edges(data=True))
+
+    # --- 1) RESERVE A FIXED FRACTION OF EDGES BEFORE ANY SPLITTING ---
+    reserved_edges, remaining_edges = reserve_edges_by_degree(G, reserve_frac=reserve_frac)
+
     groups = defaultdict(list)
-    for u, v, l in edges:
-        label = l["label"]
+    for u, v, l in remaining_edges:
+        label = l
         groups[label].append((u, v, label))
 
     train_edges, val_edges, test_edges = [], [], []
@@ -124,6 +176,9 @@ def split_graph(G, train_frac=0.7, test_frac=0.15, random_state=42):
         val_edges.extend(group[n_train:n_train + n_val])
         # rest for evaluation
         test_edges.extend(group[n_train + n_val:])
+
+    # --- 3) ADD RESERVED EDGES TO TEST SET ---
+    test_edges.extend(reserved_edges)
 
     # split the rest into
     #   unseen edges with seen nodes = C1
