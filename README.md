@@ -103,6 +103,10 @@ Tips:
 MODEL: DeepChem/ChemBERTa-2_MTR (Trained on masked-token prediction + molecular property tasks): 
 ´´´powershell python \src\features\substrate_emb_ChamBERTA2.py´´´
 VISUALIZATION: ´´´poweshell python .\src\utils\visualize_substrate_embeddings.py´´´
+ANALYSIS: ´´´powershell $env:OMP_NUM_THREADS = "1"
+python .\scripts\analyze_substrate_embeddings.py´´´
+And for the conection between cluster classes and activity:
+´´´python .\scripts\analyze_cluster_properties.py´´´
 ---
 
 ### 📈 Experiments

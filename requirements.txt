@@ -8,3 +8,5 @@ sqlalchemy
 sqlalchemy-access
 transformers
 torch
+seaborn
+skikit-learn

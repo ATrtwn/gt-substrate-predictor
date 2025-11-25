@@ -65,13 +65,21 @@ def choose_kmeans_k(X, k_min=2, k_max=10):
     return best_k, best_score
 
 
-def run_kmeans(X):
-    best_k, best_score = choose_kmeans_k(X)
-    if best_k is None:
-        # fallback to k=5
-        best_k = 5
+def run_kmeans(X, k=None):
+    if k is None:
+        best_k, best_score = choose_kmeans_k(X)
+        if best_k is None:
+            # fallback to k=5
+            best_k = 5
+    else:
+        best_k = k
     km = KMeans(n_clusters=best_k, random_state=42, n_init=10)
     labels = km.fit_predict(X)
+    # compute silhouette score for chosen k
+    if len(set(labels)) >= 2:
+        best_score = silhouette_score(X, labels, metric='cosine')
+    else:
+        best_score = -1
     return labels, best_k, best_score
 
 
@@ -89,13 +97,13 @@ def compute_outliers(X):
     return scores
 
 
-def main():
+def main(k=None):
     sns.set_theme(context='paper', style='whitegrid', palette='pastel', font_scale=1.1)
     df, X = load_data()
     print(f"Embeddings: {X.shape}, valid substrates: {len(df)}")
 
     # KMeans clustering
-    labels, k, sil = run_kmeans(X)
+    labels, k, sil = run_kmeans(X, k=k)
     df['cluster_kmeans'] = labels
     df.to_csv(EMBEDDINGS_DIR / 'Substrate_with_clusters_chemberta2.csv', index=False)
     counts = df['cluster_kmeans'].value_counts().sort_index()
@@ -159,4 +167,6 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    import sys
+    k = int(sys.argv[1]) if len(sys.argv) > 1 else None
+    main(k=k)
