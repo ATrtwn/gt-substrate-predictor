@@ -212,3 +212,7 @@ __marimo__/
 
 # ignore csv files
 .csv
+
+# ignore third party libraries
+third_party/
+
