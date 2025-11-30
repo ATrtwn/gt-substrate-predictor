@@ -25,7 +25,6 @@ This project aims to develop machine learning models that predict GT-substrate b
 ```
 project_root/
 │
-├──.venv # contains the enviroment - has to be created
 ├── data/ # Raw and processed datasets
 ├── scripts/ # Entry-point scripts
 ├── src/ # Source code for data processing, embeddings, models, training, and evaluation
@@ -40,37 +39,18 @@ project_root/
 
 ### ⚡ Usage
 
-#### Create a virtual environment
-1. Install uv with 
-    ```sh
-    pip install uv
-    ```
-2. Install dependencies with
-
-    ```sh
-    uv sync
-    ```
-    This will create a virtual environment `.venv` under project folder and install all the dependencies listed in the `pyproject.toml` file.
-    
-3. You can add packages to uv 
-  Add package and update files
-  ```bash
-  uv add package-name
-  uv sync
-  ```
-  Make sure to include the new pyproject.toml and uv.lock file in the commit, otherwise uv sync will not install them for other users.
-
-
-#### Generate CSV files from the Access database
+#### 1. Generate CSV files from the Access database
 
 1. Create a `.env` file in the project root with:
 
     - ACCESS_DB_PATH=/full/path/to/database.accdb
     - ACCESS_DB_PASSWORD=yourpassword
 
-2. Run the script(check requirements before):
+2. Run the script:
 
+   ```bash
    python scripts/fetch_data.py
+   ```
     
    The script will:
    - Check if UGT.csv, Activity.csv, and Substrate.csv already exist in data/
@@ -78,34 +58,36 @@ project_root/
 
 3. Result: CSV files will be saved in the data/ folder, ready for preprocessing and analysis.
 
-#### 🧬 Clustering GT sequences with MMseqs2
+#### 2. Generate Concatenated Embeddings
 
-This section explains how to reproduce the clustering of GT sequences using MMseqs2. 
+After generating protein embeddings (ProtT5) and substrate embeddings (ChemBERTa2, ChemBERTa3, KPGT), concatenate them for ML model training:
 
-1. Create a FASTA file from the CSV: First, make sure your .csv file. Then run the same Python code we used to generate the FASTA file. This will create a file called UGT.fasta in your project directory.
+**Generate all substrate embedding types:**
+```bash
+python scripts/concatenate_embeddings.py --substrate all
+```
 
-2. Install MMseqs2
--Go to the MMseqs2 GitHub releases page:
-👉 https://github.com/soedinglab/MMseqs2/releases
--Download mmseqs-win64.zip
--Extract it to the tools/ folder inside your project (so you have tools/mmseqs/bin/mmseqs.bat)
--You can either:
-  -Use the full path when running it, or
-  -Add tools/mmseqs/bin to your PATH environment variable.
+**Generate specific substrate type only:**
+```bash
+# ChemBERTa2 (384D) + ProtT5 (1024D) = 1408D
+python scripts/concatenate_embeddings.py --substrate chemberta2
 
-3. Run the clustering:
--Once MMseqs2 is ready, run the clustering command (adjust filenames if needed):
-tools\mmseqs\bin\mmseqs.exe easy-cluster UGT.fasta GT_cluster tmp --min-seq-id 0.7 -c 0.7
-  -min-seq-id 0.7 sets 70% minimum sequence identity (agreed on the meeting)
-  -c 0.7 sets 70% minimum coverage (share ≥70% of their length)
+# ChemBERTa3 (768D) + ProtT5 (1024D) = 1792D
+python scripts/concatenate_embeddings.py --substrate chemberta3
 
-4. Output files: After running, MMseqs2 will generate several output files:
-  -GT_cluster_cluster.tsv → sequence-to-cluster assignments
-  -GT_cluster_rep_seq.fasta → one representative sequence per cluster
-  -GT_cluster_all_seqs.fasta → all clustered sequences
+# KPGT (2304D) + ProtT5 (1024D) = 3328D
+python scripts/concatenate_embeddings.py --substrate kpgt
+```
 
-5. Report output:
-  -run python .\scripts\print_cluster_report.p for the report output -> CONCLUSION: dataset is diverse enough, no need for omiting the sequences
+**Output:**
+- `data/concatenated_embeddings/X_{substrate_type}.npy` - Concatenated embeddings (N, dim)
+- `data/concatenated_embeddings/y_{substrate_type}.npy` - Activity labels (N,)
+- `data/concatenated_embeddings/metadata_{substrate_type}.csv` - Protein names, substrate names, indices
+
+The script automatically:
+- Maps protein-substrate pairs from `Activity.csv`
+- Only includes pairs with both protein and substrate embeddings
+- Generates 2251 valid concatenated pairs (100% coverage)
 
 ---
 
