@@ -26,7 +26,7 @@ def main():
 
     protein_col = "UGT_trivial_name"
     substrate_col = "substrate"
-    label_col = "activity"
+    label_col = "is_active"
     print(f"\nUnique enzymes ({protein_col}): {df[protein_col].nunique()}")
     print(f"Unique substrates ({substrate_col}): {df[substrate_col].nunique()}")
     if label_col in df.columns:
@@ -35,7 +35,8 @@ def main():
 
     splits = stratified_split_by_entities(df,
                                           protein_col=protein_col,
-                                          substrate_col=substrate_col)
+                                          substrate_col=substrate_col,
+                                          plot=True)
 
     # check stratification
     c1 = splits['C1']

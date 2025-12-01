@@ -23,7 +23,7 @@ def plot_class_balance(df, label_col="activity", label_rot=True):
     """Plot the fractions of active vs. inactive samples."""
     counts = df[label_col].value_counts(normalize=True)
     plt.figure()
-    sns.barplot(x=counts.index, y=counts.values, hue=counts.index, palette="colorblind")
+    sns.barplot(x=counts.index, y=counts.values, hue=counts.index, palette="colorblind", legend=False)
     plt.title("Class Balance")
     plt.xlabel(label_col)
     if label_rot:
@@ -146,6 +146,35 @@ def plot_graph_connectivity(g):
     plt.savefig(output_path)
     plt.close()
 
+def plot_connectivity_separate(G):
+    # Identify node types from bipartite structure:
+    proteins = [n for n, d in G.nodes(data=True) if d.get("bipartite") == "protein"]
+    substrates = [n for n, d in G.nodes(data=True) if d.get("bipartite") == "substrate"]
+
+    # Compute degrees
+    protein_deg = [G.degree(p) for p in proteins]
+    substrate_deg = [G.degree(s) for s in substrates]
+
+    # Plot
+    plt.figure(figsize=(12,5))
+
+    plt.subplot(1,2,1)
+    plt.hist(protein_deg, bins=20)
+    plt.title("Protein Degree Distribution")
+    plt.xlabel("Degree")
+    plt.ylabel("# Proteins")
+
+    plt.subplot(1,2,2)
+    plt.hist(substrate_deg, bins=20)
+    plt.title("Substrate Degree Distribution")
+    plt.xlabel("Degree")
+    plt.ylabel("# Substrates")
+
+    plt.tight_layout()
+    output_path = os.path.join(FIGURES_DIR, "graph_connectivity_separate.png")
+    plt.savefig(output_path)
+    plt.close()
+
 def plot_split_statistics(df_split, protein_col, substrate_col, label_col, split_col="split"):
     """Visualize unique enzymes/substrates and label distribution per split."""
 
@@ -195,6 +224,57 @@ def plot_split_statistics(df_split, protein_col, substrate_col, label_col, split
 
 def plot_cluster_sizes(cluster_df, cluster_col="cluster_id"):
     """Plot number of sequences per MMseqs2 cluster."""
+    # cluster_df expected to have columns [seq_id, rep_id] or [seq_id, cluster_id]
+    import pandas as pd
+    counts = None
+    if cluster_col in cluster_df.columns:
+        counts = cluster_df[cluster_col].value_counts()
+    else:
+        # try common column names
+        for c in ("rep_id", "representative", "cluster"):
+            if c in cluster_df.columns:
+                counts = cluster_df[c].value_counts()
+                break
+    if counts is None:
+        # assume df is mapping seq->rep in two columns
+        if cluster_df.shape[1] >= 2:
+            counts = cluster_df.iloc[:, 1].value_counts()
+        else:
+            raise ValueError("cluster_df does not contain cluster information")
+
+    # histogram of cluster sizes
+    plt.figure(figsize=(6, 4))
+    sns.histplot(counts.values, bins=range(1, max(counts.values) + 2), color="teal")
+    plt.yscale('log')
+    plt.title("MMseqs2 cluster size distribution")
+    plt.xlabel("Cluster size (number of sequences)")
+    plt.ylabel("Number of clusters (log scale)")
+    plt.tight_layout()
+    out1 = os.path.join(FIGURES_DIR, "cluster_size_histogram.png")
+    plt.savefig(out1)
+    plt.close()
+
+    # cumulative coverage plot
+    sorted_counts = counts.sort_values(ascending=False).values
+    cumulative = sorted_counts.cumsum() / sorted_counts.sum()
+    plt.figure(figsize=(6, 4))
+    plt.plot(range(1, len(cumulative) + 1), cumulative, marker='o', markersize=3)
+    plt.xscale('log')
+    plt.xlabel('Top N clusters (log scale)')
+    plt.ylabel('Cumulative fraction of sequences')
+    plt.title('Cumulative coverage by top clusters')
+    plt.grid(True, which='both', ls='--', lw=0.5)
+    plt.tight_layout()
+    out2 = os.path.join(FIGURES_DIR, "cluster_size_cumulative.png")
+    plt.savefig(out2)
+    plt.close()
+
+    # Also write top clusters table
+    top = counts.sort_values(ascending=False).head(20)
+    try:
+        top.to_csv(os.path.join(FIGURES_DIR, "top_clusters.tsv"), sep='\t', header=['size'])
+    except Exception:
+        pass
 
 def visualize_structure(pdb_file, highlight_residues=None):
     """Open PDB in Py3Dmol / ChimeraX for 3D visualization"""

@@ -39,7 +39,7 @@ project_root/
 
 ### ⚡ Usage
 
-Generate CSV files from the Access database
+#### 1. Generate CSV files from the Access database
 
 1. Create a `.env` file in the project root with:
 
@@ -48,7 +48,9 @@ Generate CSV files from the Access database
 
 2. Run the script:
 
+   ```bash
    python scripts/fetch_data.py
+   ```
     
    The script will:
    - Check if UGT.csv, Activity.csv, and Substrate.csv already exist in data/
@@ -56,6 +58,67 @@ Generate CSV files from the Access database
 
 3. Result: CSV files will be saved in the data/ folder, ready for preprocessing and analysis.
 
+#### 2. Generate Concatenated Embeddings
+
+After generating protein embeddings (ProtT5) and substrate embeddings (ChemBERTa2, ChemBERTa3, KPGT), concatenate them for ML model training:
+
+**Generate all substrate embedding types:**
+```bash
+python scripts/concatenate_embeddings.py --substrate all
+```
+
+**Generate specific substrate type only:**
+```bash
+# ChemBERTa2 (384D) + ProtT5 (1024D) = 1408D
+python scripts/concatenate_embeddings.py --substrate chemberta2
+
+# ChemBERTa3 (768D) + ProtT5 (1024D) = 1792D
+python scripts/concatenate_embeddings.py --substrate chemberta3
+
+# KPGT (2304D) + ProtT5 (1024D) = 3328D
+python scripts/concatenate_embeddings.py --substrate kpgt
+```
+3. Run the clustering:
+-Once MMseqs2 is ready, run the clustering command (adjust filenames if needed):
+´´´powershell tools\mmseqs\bin\mmseqs.exe easy-cluster UGT.fasta GT_cluster tmp --min-seq-id 0.7 -c 0.7´´´
+  -min-seq-id 0.7 sets 70% minimum sequence identity (agreed on the meeting)
+  -c 0.7 sets 70% minimum coverage (share ≥70% of their length)
+
+**Output:**
+- `data/concatenated_embeddings/X_{substrate_type}.npy` - Concatenated embeddings (N, dim)
+- `data/concatenated_embeddings/y_{substrate_type}.npy` - Activity labels (N,)
+- `data/concatenated_embeddings/metadata_{substrate_type}.csv` - Protein names, substrate names, indices
+
+The script automatically:
+- Maps protein-substrate pairs from `Activity.csv`
+- Only includes pairs with both protein and substrate embeddings
+- Generates 2251 valid concatenated pairs (100% coverage)
+
+5. Report output:
+  -´´´powershell python .\scripts\print_cluster_report.p´´´ for the report output -> CONCLUSION: dataset is diverse enough, no need for omiting the sequences
+
+#### 🧬 Substrate embeddings
+To use RDKit in this project, follow these steps:
+1. Create and activate a Conda environment
+conda create -n fast_env python=3.11
+conda activate fast_env
+2. Install RDKit: mamba install -c conda-forge rdkit
+3. Configure VS Code: Open your project in VS Code.
+  Press Ctrl+Shift+P → Python: Select Interpreter → choose the Python from fast_env.
+  Open a terminal in VS Code and make sure it shows: (fast_env) PS C:\path\to\project>
+4. Test the installation by runing the following command in the VS Code terminal or Anaconda Prompt: python -c "from rdkit import Chem; mol = Chem.MolFromSmiles('C1CCCCC1'); print(mol)"
+  Expected output: <rdkit.Chem.rdchem.Mol object at 0x...>
+Tips:
+  Always activate fast_env before running scripts or installing additional packages.
+  Selecting the correct interpreter in VS Code ensures your scripts use the environment where RDKit is installed.
+  After this setup, RDKit can be used seamlessly in Python scripts and notebooks within this project.
+MODEL: DeepChem/ChemBERTa-2_MTR (Trained on masked-token prediction + molecular property tasks): 
+´´´powershell python \src\features\substrate_emb_ChamBERTA2.py´´´
+VISUALIZATION: ´´´poweshell python .\src\utils\visualize_substrate_embeddings.py´´´
+ANALYSIS: ´´´powershell $env:OMP_NUM_THREADS = "1"
+python .\scripts\analyze_substrate_embeddings.py´´´
+And for the conection between cluster classes and activity:
+´´´python .\scripts\analyze_cluster_properties.py´´´
 ---
 
 ### 📈 Experiments
