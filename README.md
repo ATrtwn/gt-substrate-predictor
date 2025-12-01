@@ -95,7 +95,7 @@ This section explains how to reproduce the clustering of GT sequences using MMse
 
 3. Run the clustering:
 -Once MMseqs2 is ready, run the clustering command (adjust filenames if needed):
-tools\mmseqs\bin\mmseqs.exe easy-cluster UGT.fasta GT_cluster tmp --min-seq-id 0.7 -c 0.7
+´´´powershell tools\mmseqs\bin\mmseqs.exe easy-cluster UGT.fasta GT_cluster tmp --min-seq-id 0.7 -c 0.7´´´
   -min-seq-id 0.7 sets 70% minimum sequence identity (agreed on the meeting)
   -c 0.7 sets 70% minimum coverage (share ≥70% of their length)
 
@@ -105,8 +105,30 @@ tools\mmseqs\bin\mmseqs.exe easy-cluster UGT.fasta GT_cluster tmp --min-seq-id 0
   -GT_cluster_all_seqs.fasta → all clustered sequences
 
 5. Report output:
-  -run python .\scripts\print_cluster_report.p for the report output -> CONCLUSION: dataset is diverse enough, no need for omiting the sequences
+  -´´´powershell python .\scripts\print_cluster_report.p´´´ for the report output -> CONCLUSION: dataset is diverse enough, no need for omiting the sequences
 
+#### 🧬 Substrate embeddings
+To use RDKit in this project, follow these steps:
+1. Create and activate a Conda environment
+conda create -n fast_env python=3.11
+conda activate fast_env
+2. Install RDKit: mamba install -c conda-forge rdkit
+3. Configure VS Code: Open your project in VS Code.
+  Press Ctrl+Shift+P → Python: Select Interpreter → choose the Python from fast_env.
+  Open a terminal in VS Code and make sure it shows: (fast_env) PS C:\path\to\project>
+4. Test the installation by runing the following command in the VS Code terminal or Anaconda Prompt: python -c "from rdkit import Chem; mol = Chem.MolFromSmiles('C1CCCCC1'); print(mol)"
+  Expected output: <rdkit.Chem.rdchem.Mol object at 0x...>
+Tips:
+  Always activate fast_env before running scripts or installing additional packages.
+  Selecting the correct interpreter in VS Code ensures your scripts use the environment where RDKit is installed.
+  After this setup, RDKit can be used seamlessly in Python scripts and notebooks within this project.
+MODEL: DeepChem/ChemBERTa-2_MTR (Trained on masked-token prediction + molecular property tasks): 
+´´´powershell python \src\features\substrate_emb_ChamBERTA2.py´´´
+VISUALIZATION: ´´´poweshell python .\src\utils\visualize_substrate_embeddings.py´´´
+ANALYSIS: ´´´powershell $env:OMP_NUM_THREADS = "1"
+python .\scripts\analyze_substrate_embeddings.py´´´
+And for the conection between cluster classes and activity:
+´´´python .\scripts\analyze_cluster_properties.py´´´
 ---
 
 ### 📈 Experiments

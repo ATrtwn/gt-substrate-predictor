@@ -6,3 +6,7 @@ tqdm
 pathlib
 sqlalchemy
 sqlalchemy-access
+transformers
+torch
+seaborn
+skikit-learn
