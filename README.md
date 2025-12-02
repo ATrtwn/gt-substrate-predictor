@@ -127,6 +127,44 @@ And for the conection between cluster classes and activity:
 - **Advanced models:** GNN on molecular graphs, multi-modal transformer.
 - **Structural integration:** AlphaFold2-derived binding pocket features.
 
+#### Baseline models
+In order to run the baseline models one has to specify the settings of the experiment in the configs folder in a yaml file e.g. the scikit-learn.yml
+
+##### Create a virtual environment
+1. Install uv with 
+    ```sh
+    pip install uv
+    ```
+2. Install dependencies with
+
+    ```sh
+    uv sync
+    ```
+    This will create a virtual environment `.venv` under project folder and install all the dependencies listed in the `pyproject.toml` file.
+    
+3. You can add packages to uv 
+  Add package and update files
+  ```bash
+  uv add package-name
+  uv sync
+  ```
+  Make sure to include the new pyproject.toml and uv.lock file in the commit, otherwise uv sync will not install them for other users.
+4. Enter the virtual enviroment 
+
+  ```sh
+    source .venv/bin/activate
+  ```
+##### Login with wandb
+ ```sh
+    uv add wandb
+    uv run wandb login
+  ```
+
+##### Run the experiment within the env
+ ```sh
+    python scripts/run_experiment.py
+    ```
+
 ### 💡 Results
 tba
 
