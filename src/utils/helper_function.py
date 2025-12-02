@@ -6,13 +6,14 @@ import string
 
 import logging
 from pathlib import Path
+par_dir = Path(__file__).parent.parent.parent
 
 def get_params(config_name: str) -> dict:
     """
-    Load a YAML config file from configs/<config_name>.yaml,
+    Load a YAML config file from configs/<config_name>.yml,
     expand environment variables, and return a Python dict.
     """
-    config_path = Path("configs") / f"{config_name}.yaml"
+    config_path = par_dir / "configs" / f"{config_name}.yml"
     if not config_path.exists():
         raise FileNotFoundError(f"Config file not found: {config_path}")
 
@@ -26,33 +27,6 @@ def get_params(config_name: str) -> dict:
 
     if not isinstance(params, dict):
         raise ValueError(f"Invalid YAML structure in {config_path}")
-
-    if "dataset" in params:
-        dataset = Path(params["dataset"])
-
-        # If user passed only a filename, prepend data/
-        if not dataset.is_absolute():
-            dataset = Path("data") / dataset
-
-        params["dataset"] = str(dataset.resolve())
-
-    if "substrate_path" in params:
-        dataset = Path(params["substrate_path"])
-
-        # If user passed only a filename, prepend data/
-        if not dataset.is_absolute():
-            dataset = Path("data") / dataset
-
-        params["substrate_path"] = str(dataset.resolve())
-
-    if "protein_path" in params:
-        dataset = Path(params["protein_path"])
-
-        # If user passed only a filename, prepend data/
-        if not dataset.is_absolute():
-            dataset = Path("data") / dataset
-
-        params["protein_path"] = str(dataset.resolve())
 
     return params
 
