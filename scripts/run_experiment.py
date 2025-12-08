@@ -9,8 +9,11 @@ from joblib import Parallel, delayed, parallel_config
 from tqdm import tqdm
 
 import wandb
+from optuna.integration.wandb import WeightsAndBiasesCallback
+
 import numpy as np
 import pandas as pd
+import optuna
 
 from sklearn.linear_model import RidgeClassifier
 from sklearn.tree import DecisionTreeClassifier
@@ -26,8 +29,10 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 from src.data.data_split import stratified_split_by_entities, check_split
 from sklearn.metrics import accuracy_score, roc_auc_score, f1_score, matthews_corrcoef
 
-from src.utils.helper_function import get_params, setup_logging, nano_id
+from src.utils.helper_function import get_params, setup_logging, nano_id, sample_params
 from src.training.train import SklearnTrainer
+
+from datetime import datetime
 
 data_dir = Path(__file__).parent.parent 
 
@@ -49,13 +54,12 @@ def run_sklearn_experiment(
     protein_name:str,
     wandb_mode: str = "offline",
     project: str = "gt-substrate-predictor",
-    sweep: bool = False,
     concatenation_path:str=None,
-) -> None:
+) -> float:
     run = (
         wandb.init(
             project=project,
-            name=f"{model_name}_substrate-{substrate_name}_protein-{protein_name}_id-{nano_id()}",
+            name=f"{model_name}_substrate-{substrate_name}_protein-{protein_name}_id-{datetime.now().strftime("%Y%m%d_%H%M%S")}",
             config={
                 "model_name": model_name,
                 "model_params": model_params,
@@ -69,6 +73,7 @@ def run_sklearn_experiment(
 
     if model_name not in MODEL_MAPPING:
         raise ValueError(f"Unknown model_name '{model_name}'. Available: {list(MODEL_MAPPING.keys())}")
+
 
     sk_model = MODEL_MAPPING[model_name](**model_params)
 
@@ -147,13 +152,14 @@ def run_sklearn_experiment(
         "val_loss": history["val_loss"][-1] if history["val_loss"][-1] is not None else None
     })
 
-    # Evaluate on test sets
+    # Evaluate on sets
     results = {}
-    for emb,name in [(c1_emb, "C1"), (c2_emb, "C2") ]:#,(c3_emb, "C3")
+    return_metrics = 0.0
+    for emb,name in [(train_emb,'train'), (val_emb,'val'),(c1_emb, "C1"), (c2_emb, "C2") ]:#,(c3_emb, "C3")
         y_pred = trainer.predict(emb)
         results[name] = y_pred
 
-    test_sets = ["C1","C2"]#,"C3"]
+    test_sets = ["train", "val","C1","C2"]#,"C3"]
     metrics = [accuracy_score, roc_auc_score, f1_score, matthews_corrcoef]
 
     # Prepare a W&B Table
@@ -176,7 +182,8 @@ def run_sklearn_experiment(
                 value = metric_fn(binary_true_activities,predicted_activities_prob)  # pass probabilities
             else:
                 value = metric_fn(binary_true_activities,predicted_activities_bin)  # pass binary predictions)
-
+            if split_name == "val" and metric_fn == f1_score:
+                return_metrics = value
             metrics_table.add_data(split_name, metric_fn.__name__, value)
         for idx, (raw, true, prob, pred) in enumerate(
             zip(true_activities, binary_true_activities, predicted_activities_prob, predicted_activities_bin)
@@ -184,22 +191,22 @@ def run_sklearn_experiment(
             pred_table.add_data(split_name, idx, raw, int(true), float(prob), int(pred))
     # Log the table
     wandb.log({
-        "test_metrics": metrics_table,
-        "test_predictions": pred_table
+        "metrics": metrics_table,
+        "predictions": pred_table
     })
     run.finish()
+    return return_metrics
 
-def train(params: dict[str, Any] = None) -> None:
 
+
+
+def train_and_log(params: dict[str, Any] = None) -> None:
     logging.info("Starting experiment...")
-
     model_classes = params["models"]
-
     tasks = []
     for model_name, model_params in model_classes.items():
         logging.info(f"Preparing model: {model_name} with params: {model_params}")
         model_params_copy = model_params.copy()
-
         tasks.append(
             delayed(run_sklearn_experiment)(
                 model_name=model_name,
@@ -212,22 +219,20 @@ def train(params: dict[str, Any] = None) -> None:
                 concatenation_path=params.get("concatenation_path", None)
             )
         )
-
-    try:
-        with parallel_config(
-            backend="loky",
-            n_jobs=params["n_jobs"],
-            max_nbytes=params["max_mem"],
-        ):
-            Parallel(n_jobs=params["n_jobs"], timeout=None)(tasks)
-    except Exception:
-        logging.error("Error occurred, attempting to clean up...")
-        #gc.collect()
-        raise
-
+        try:
+            with parallel_config(
+                backend="loky",
+                n_jobs=params["n_jobs"],
+                max_nbytes=params["max_mem"],
+            ):
+                Parallel(n_jobs=params["n_jobs"], timeout=None)(tasks)
+        except Exception:
+            logging.error("Error occurred, attempting to clean up...")
+            raise
+        
 
 def main():
-    train(get_params("scikit_learn"))
+    train_and_log(get_params("scikit_learn"))
 
 
 if __name__ == "__main__":

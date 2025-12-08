@@ -1,0 +1,56 @@
+# config.yaml
+optuna_config:
+  study_name: "random_forest_optimization"
+  direction: "maximize"  # or "minimize"
+  n_trials: 3
+  n_jobs: 3  # For parallel execution
+  model_name: "random_forest"
+  
+  # Parameter space
+  param_space:
+    n_estimators:
+      type: "int"
+      low: 50
+      high: 500
+      step: 50
+    
+    max_depth:
+      type: "int"
+      low: 3
+      high: 30
+    
+    min_samples_split:
+      type: "int"
+      low: 2
+      high: 20
+    
+    min_samples_leaf:
+      type: "int"
+      low: 1
+      high: 10
+    
+    max_features:
+      type: "categorical"
+      values: ["sqrt", "log2", null]
+    
+    bootstrap:
+      type: "categorical"
+      values: [true, false]
+    
+    criterion:
+      type: "categorical"
+      values: ["gini", "entropy", "log_loss"]
+
+  
+# Data paths
+paths:
+  concatenation_path: "data/concatenated_embeddings/"
+  substrate_name: "chemberta3"
+  protein_name: "prott5"
+
+# Wandb settings
+wandb:
+  project: "gt-substrate-predictor"
+  group: "rf_optuna_sweep"
+  log_top_n: 5
+  offline: false

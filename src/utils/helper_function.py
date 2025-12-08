@@ -62,3 +62,25 @@ def setup_logging(level: int = logging.INFO) -> None:
     )
 
     logging.info("Logging initialized.")
+
+def sample_params(trial, param_space: dict) -> dict:
+    """ Sample hyperparameters from the given param_space using an Optuna trial.
+        Args:
+            trial: An Optuna trial object.
+            param_space: A dictionary defining the hyperparameter search space.
+        Returns:
+            A dictionary of sampled hyperparameters.
+    """
+    params = {}
+    for name, spec in param_space.items():
+        print(type(spec))
+        if spec["type"] == "categorical":
+            params[name] = trial.suggest_categorical(name, spec["values"])
+        elif spec["type"] == "int":
+            params[name] = trial.suggest_int(name, spec["low"], spec["high"], step=spec.get("step", 1))
+        elif spec["type"] == "float":
+            params[name] = trial.suggest_float(name, spec["low"], spec["high"], step=spec.get("step", None), log=spec.get("log", False))
+        else:
+            raise ValueError(f"Unsupported parameter type: {spec['type']}")
+    return params
+
