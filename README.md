@@ -121,14 +121,81 @@ And for the conection between cluster classes and activity:
 ´´´python .\scripts\analyze_cluster_properties.py´´´
 ---
 
+### 🤖 Neural Network Training
+
+Train neural networks for GT-substrate activity prediction using concatenated embeddings.
+
+#### Available Model Types
+
+1. **Simple MLP (`model_type: "simple"`)** - Recommended ✅
+   - 3-layer feedforward network
+
+2. **Deep MLP (`model_type: "deep"`)**
+   - 5-layer deep network with residual-style connections
+
+3. **Bilinear Interaction Network (`model_type: "bilinear"`)**
+   - Explicitly models protein-substrate interactions
+   - Projects embeddings to lower dimensions
+   - Similar performance to simple MLP but more complex
+
+#### Configuration
+
+Edit `configs/neural_network.yml`:
+
+```yaml
+# Model architecture
+model_type: "simple"  # "simple", "deep", or "bilinear"
+hidden_dims: [512, 256]  # Hidden layer dimensions
+dropout: 0.4  # Dropout rate (0.3-0.5 recommended)
+
+# Training hyperparameters
+learning_rate: 0.001
+batch_size: 16
+epochs: 100
+weight_decay: 0.0005  # L2 regularization
+
+# Data
+substrate_name: "chemberta3"  # "chemberta2", "chemberta3", or "kpgt"
+protein_name: "prott5"
+
+# W&B tracking
+wandb_mode: "offline"  # "online" or "offline"
+```
+
+#### Running Training
+
+```bash
+# Train with current config
+python scripts/train_nn.py
+```
+
+The script will:
+- Automatically normalize embeddings (StandardScaler)
+- Create stratified train/val/test splits
+- Apply early stopping (patience=10)
+- Save best model checkpoint
+- Generate training curves (loss, accuracy, F1, ROC-AUC)
+- Save metrics to JSON file
+- Log to Weights & Biases
+
+#### Outputs
+
+- **Model checkpoint**: `experiments/best_model_{substrate_name}.pth`
+- **Training curves**: `reports/figures/nn_training_{substrate_name}_{id}.png`
+- **Metrics JSON**: `reports/metrics/nn_metrics_{substrate_name}_{id}.json`
+- **W&B logs**: `wandb/offline-run-*/` (sync with `wandb sync <run-dir>`)
+---
+
 ### 📈 Experiments
 - **Baseline models:** Random classifier, majority class, logistic regression.
-- **Initial models:** FNN on concatenated embeddings.
-- **Advanced models:** GNN on molecular graphs, multi-modal transformer.
-- **Structural integration:** AlphaFold2-derived binding pocket features.
+- **Neural networks:** Simple MLP, Deep MLP, Bilinear Interaction Network.
+- **Future work:** GNN on molecular graphs, multi-modal transformer, AlphaFold2 integration.
 
 ### 💡 Results
-tba
+Best model: **Simple MLP with ChemBERTa3** embeddings
+- C1 (both seen): 84% accuracy, 93.3% ROC-AUC
+- C2 (one unseen): 92% accuracy, 97.4% ROC-AUC
+- Training time: ~0.5s/epoch, converges in 40-60 epochs
 
 ### References
 tba

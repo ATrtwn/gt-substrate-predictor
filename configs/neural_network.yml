@@ -1,0 +1,22 @@
+# Neural Network Configuration
+
+# Model architecture
+model_type: "bilinear"  # "simple" (GT_NN), "deep" (DeepMLP), or "bilinear" (BilinearInteractionNet)
+hidden_dims: [512, 256]  # 3 layers total: input->512->256->output
+dropout: 0.4  # Dropout rate
+projection_dim: 128  # Projection dimension for bilinear model (reduces parameters)
+
+# Training hyperparameters
+learning_rate: 0.001
+batch_size: 16  # Increased with simpler model
+epochs: 100
+weight_decay: 0.0005  # Moderate L2 regularization
+
+# Data
+concatenation_path: "data/concatenated_embeddings/"
+substrate_name: "chemberta3"
+protein_name: "prott5"
+
+# W&B
+project: "gt-substrate-predictor"
+wandb_mode: "offline"  # "online" or "offline"
