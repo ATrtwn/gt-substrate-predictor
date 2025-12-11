@@ -30,25 +30,26 @@ def load_embeddings():
     substrate_data = {}
     
     # ChemBERTa2
-    cb2_emb = np.load(ROOT / 'embeddings' / 'substrate_embeddings_chemberta2.npy')
-    cb2_df = pd.read_csv(ROOT / 'embeddings' / 'Substrate_with_embeddings_chemberta2.csv')
+    cb2_emb = np.load(ROOT / 'data' / 'Substrate_Embeddings' / 'substrate_embeddings_chemberta2.npy')
+    #cb2_df = pd.read_csv(ROOT / 'data' / 'Substrate_with_embeddings_chemberta2.csv')
+    cb2_df = pd.read_csv(ROOT / 'data' / 'Substrate.csv')[['substrate']]
     substrate_data['chemberta2'] = (cb2_emb, cb2_df, 384)
     print(f"  ChemBERTa2: {cb2_emb.shape}")
     
     # ChemBERTa3
-    cb3_data = torch.load(ROOT / 'embeddings' / 'ChemBERTa3_substrate_embeddings.pt')
+    cb3_data = torch.load(ROOT / 'data' / 'Substrate_Embeddings' / 'ChemBERTa3_substrate_embeddings.pt')
     cb3_emb = cb3_data['embeddings'].numpy()
     cb3_df = pd.DataFrame({'substrate': cb3_data['substrates']})
     substrate_data['chemberta3'] = (cb3_emb, cb3_df, 768)
     print(f"  ChemBERTa3: {cb3_emb.shape}")
     
     # KPGT
-    kpgt_data = np.load(ROOT / 'embeddings' / 'kpgt_substrate_embeddings.npz')
-    kpgt_emb = kpgt_data['fps']
-    kpgt_df = pd.read_csv(ROOT / 'data' / 'Substrate_SMILES.csv')[['substrate']]
-    kpgt_df = kpgt_df.dropna(subset=['substrate']).reset_index(drop=True)
-    substrate_data['kpgt'] = (kpgt_emb, kpgt_df, 2304)
-    print(f"  KPGT: {kpgt_emb.shape}")
+    # kpgt_data = np.load(ROOT / 'data' / 'Substrate_Embeddings' / 'kpgt.npz')
+    # kpgt_emb = kpgt_data['fps']
+    # kpgt_df = pd.read_csv(ROOT / 'data' / 'Substrate.csv')[['substrate']]
+    # kpgt_df = kpgt_df.dropna(subset=['substrate']).reset_index(drop=True)
+    # substrate_data['kpgt'] = (kpgt_emb, kpgt_df, 2304)
+    # print(f"  KPGT: {kpgt_emb.shape}")
     
     return protein_emb, protein_df, substrate_data
 
