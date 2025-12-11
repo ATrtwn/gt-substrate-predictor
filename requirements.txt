@@ -1,0 +1,12 @@
+numpy
+pandas
+dotenv
+requests
+tqdm
+pathlib
+sqlalchemy
+sqlalchemy-access
+transformers
+torch
+seaborn
+skikit-learn

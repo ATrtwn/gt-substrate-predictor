@@ -7,7 +7,7 @@ from src.utils.visualization import (plot_split_graph,
                                      plot_connectivity_separate,
                                      plot_degree_distributions)
 
-def stratified_split_by_entities(df, protein_col="UGT_ID", substrate_col="substrate", random_state=42, plot=False):
+def stratified_split_by_entities(df, protein_col="UGT_ID", substrate_col="substrate",label_col = "is_active", random_state=42, plot=False):
     """
     Perform stratified split according to generalization classes (C1, C2, C3).
 
@@ -18,7 +18,9 @@ def stratified_split_by_entities(df, protein_col="UGT_ID", substrate_col="substr
     """
     graph = create_graph(df,
                          protein_col=protein_col,
-                         substrate_col=substrate_col)
+                         substrate_col=substrate_col,
+                         label_col=label_col)
+
 
     # split and re-balance if evaluation sets are too small
     # choose parameters
@@ -92,7 +94,7 @@ def stratified_split_by_entities(df, protein_col="UGT_ID", substrate_col="substr
         plot_split_graph(graph, train, val, C1_test, C2_test, C3_test, seen_nodes)
         plot_graph_connectivity(graph)
         plot_connectivity_separate(graph)
-        plot_degree_distributions(graph)
+    ###
 
     # perform split on df based on graph split
     df_split = df.copy()
@@ -229,7 +231,7 @@ def split_graph(G, train_frac=0.7, test_frac=0.15, reserve_frac = 0.1, random_st
 def reserve_edges_by_degree(G, reserve_frac=0.10):
     """
     Reserve edges based on degree heuristic.
-    Returns reserved_edges (list of (u, v, label)) 
+    Returns reserved_edges (list of (u, v, label))
     and remaining_edges in the same format.
     """
 
@@ -246,8 +248,8 @@ def reserve_edges_by_degree(G, reserve_frac=0.10):
         train = data.get("force_train")
         edge_data.append((u, v, deg_u, deg_v, sum_deg, label, train))
 
-    df_edges = pd.DataFrame(edge_data, 
-        columns=["node_protein", "node_sub", "deg_protein", 
+    df_edges = pd.DataFrame(edge_data,
+        columns=["node_protein", "node_sub", "deg_protein",
                  "deg_sub", "sum_deg", "label", "force_train"]
     )
     # 2b) Separate force_train edges
