@@ -127,8 +127,9 @@ Train neural networks for GT-substrate activity prediction using concatenated em
 
 #### Available Model Types
 
-1. **Simple MLP (`model_type: "simple"`)** - Recommended ✅
+1. **Simple MLP (`model_type: "simple"`)**
    - 3-layer feedforward network
+   - Fast and effective baseline
 
 2. **Deep MLP (`model_type: "deep"`)**
    - 5-layer deep network with residual-style connections
@@ -136,7 +137,10 @@ Train neural networks for GT-substrate activity prediction using concatenated em
 3. **Bilinear Interaction Network (`model_type: "bilinear"`)**
    - Explicitly models protein-substrate interactions
    - Projects embeddings to lower dimensions
-   - Similar performance to simple MLP but more complex
+
+4. **Attention MLP (`model_type: "attention"`)**
+   - Cross-attention mechanism between protein and substrate
+   - Multi-head attention captures diverse interaction patterns
 
 #### Configuration
 
@@ -144,9 +148,17 @@ Edit `configs/neural_network.yml`:
 
 ```yaml
 # Model architecture
-model_type: "simple"  # "simple", "deep", or "bilinear"
+model_type: "attention"  # "simple", "deep", "bilinear", or "attention"
 hidden_dims: [512, 256]  # Hidden layer dimensions
 dropout: 0.4  # Dropout rate (0.3-0.5 recommended)
+
+# Attention-specific parameters (only for model_type: "attention")
+num_heads: 4  # Number of attention heads (4 recommended, 8 may overfit)
+use_residual: true  # Use residual connections (recommended)
+
+# Data augmentation (optional)
+data_augmentation: false  # Enable Gaussian noise during training
+noise_std: 0.02  # Standard deviation for noise (if augmentation enabled)
 
 # Training hyperparameters
 learning_rate: 0.001
@@ -192,10 +204,7 @@ The script will:
 - **Future work:** GNN on molecular graphs, multi-modal transformer, AlphaFold2 integration.
 
 ### 💡 Results
-Best model: **Simple MLP with ChemBERTa3** embeddings
-- C1 (both seen): 84% accuracy, 93.3% ROC-AUC
-- C2 (one unseen): 92% accuracy, 97.4% ROC-AUC
-- Training time: ~0.5s/epoch, converges in 40-60 epochs
+tba
 
 ### References
 tba

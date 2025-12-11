@@ -21,20 +21,30 @@ import matplotlib.pyplot as plt
 # Add project root to path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
-from src.models.nn_model import GT_NN, DeepMLP, BilinearInteractionNet, save_model
+from src.models.nn_model import GT_NN, DeepMLP, BilinearInteractionNet, AttentionMLP, save_model
 from src.data.data_split import stratified_split_by_entities, check_split
 from src.utils.helper_function import get_params, setup_logging, nano_id
 from sklearn.metrics import accuracy_score, roc_auc_score, f1_score, matthews_corrcoef
 from sklearn.preprocessing import StandardScaler
 
 
-def train_epoch(model, train_loader, criterion, optimizer, device):
-    """Train for one epoch."""
+def train_epoch(model, train_loader, criterion, optimizer, device, noise_std=0.0):
+    """
+    Train for one epoch.
+    
+    Args:
+        noise_std: Standard deviation for Gaussian noise augmentation (0.0 = no noise)
+    """
     model.train()
     total_loss = 0
     
     for batch_X, batch_y in train_loader:
         batch_X, batch_y = batch_X.to(device), batch_y.to(device)
+        
+        # Apply Gaussian noise augmentation if enabled
+        if noise_std > 0:
+            noise = torch.randn_like(batch_X) * noise_std
+            batch_X = batch_X + noise
         
         optimizer.zero_grad()
         outputs = model(batch_X)
@@ -81,11 +91,21 @@ def train_nn_experiment(
     batch_size: int,
     epochs: int,
     weight_decay: float = 0.0,
+    num_heads: int = 4,
+    use_residual: bool = True,
+    data_augmentation: bool = False,
+    noise_std: float = 0.02,
     wandb_mode: str = "offline",
     project: str = "gt-substrate-predictor",
     concatenation_path: str = None,
 ):
-    """Train neural network experiment."""
+    """
+    Train neural network experiment.
+    
+    Args:
+        data_augmentation: Enable Gaussian noise augmentation during training
+        noise_std: Standard deviation of Gaussian noise (default: 0.02)
+    """
     
     # Initialize W&B
     run = wandb.init(
@@ -177,14 +197,15 @@ def train_nn_experiment(
     
     # Initialize model
     input_dim = concatenated_embeddings.shape[1]
+    # Determine protein and substrate dimensions
+    # Assume protein is always ProtT5 (1024D), rest is substrate
+    protein_dim = 1024
+    substrate_dim = input_dim - protein_dim
+    
     if model_type.lower() == "deep":
         model = DeepMLP(input_dim=input_dim, hidden_dims=hidden_dims, dropout=dropout).to(device)
         logging.info(f"Using DeepMLP with hidden_dims={hidden_dims}")
     elif model_type.lower() == "bilinear":
-        # Determine protein and substrate dimensions
-        # Assume protein is always ProtT5 (1024D), rest is substrate
-        protein_dim = 1024
-        substrate_dim = input_dim - protein_dim
         model = BilinearInteractionNet(
             protein_dim=protein_dim, 
             substrate_dim=substrate_dim, 
@@ -193,6 +214,16 @@ def train_nn_experiment(
             projection_dim=128
         ).to(device)
         logging.info(f"Using BilinearInteractionNet with protein_dim={protein_dim}, substrate_dim={substrate_dim}")
+    elif model_type.lower() == "attention":
+        model = AttentionMLP(
+            protein_dim=protein_dim,
+            substrate_dim=substrate_dim,
+            num_heads=num_heads,
+            hidden_dims=hidden_dims,
+            dropout=dropout,
+            use_residual=use_residual
+        ).to(device)
+        logging.info(f"Using AttentionMLP with num_heads={num_heads}, protein_dim={protein_dim}, substrate_dim={substrate_dim}")
     else:
         model = GT_NN(input_dim=input_dim, hidden_dims=hidden_dims, dropout=dropout).to(device)
         logging.info(f"Using GT_NN with hidden_dims={hidden_dims}")
@@ -222,8 +253,13 @@ def train_nn_experiment(
     val_f1_scores = []
     val_roc_aucs = []
     
+    # Determine noise level for augmentation
+    augmentation_noise = noise_std if data_augmentation else 0.0
+    if data_augmentation:
+        logging.info(f"Data augmentation enabled: Gaussian noise with std={noise_std}")
+    
     for epoch in range(epochs):
-        train_loss = train_epoch(model, train_loader, criterion, optimizer, device)
+        train_loss = train_epoch(model, train_loader, criterion, optimizer, device, noise_std=augmentation_noise)
         val_loss, val_preds, val_labels = evaluate(model, val_loader, criterion, device)
         
         # Metrics
@@ -392,6 +428,10 @@ def main():
         batch_size=params["batch_size"],
         epochs=params["epochs"],
         weight_decay=params.get("weight_decay", 0.0),
+        num_heads=params.get("num_heads", 4),
+        use_residual=params.get("use_residual", True),
+        data_augmentation=params.get("data_augmentation", False),
+        noise_std=params.get("noise_std", 0.02),
         wandb_mode=params["wandb_mode"],
         project=params["project"],
         concatenation_path=params["concatenation_path"],
