@@ -21,7 +21,7 @@ sns.set_theme(
 FIGURES_DIR = "../reports"
 os.makedirs(FIGURES_DIR, exist_ok=True)
 
-def plot_class_balance(df, label_col="activity", label_rot=True, subscript=''):
+def plot_class_balance(df, label_col="activity", label_rot=True):
     """Plot the fractions of active vs. inactive samples."""
     counts = df[label_col].value_counts(normalize=True)
     plt.figure()
@@ -34,11 +34,11 @@ def plot_class_balance(df, label_col="activity", label_rot=True, subscript=''):
         plt.xticks(ha='right')
     plt.ylabel("Fraction of Samples")
     plt.tight_layout()
-    output_path = os.path.join(FIGURES_DIR, f"class_balance_{label_col}{subscript}.png")
+    output_path = os.path.join(FIGURES_DIR, f"class_balance_{label_col}.png")
     plt.savefig(output_path)
     plt.close()
 
-def plot_sequence_length_distribution(df, seq_col="prot_seq", subscript=''):
+def plot_sequence_length_distribution(df, seq_col="prot_seq"):
     """Plot histogram of protein sequence lengths."""
     lengths = df[seq_col].dropna().apply(len)
     plt.figure(figsize=(8, 5))
@@ -47,11 +47,11 @@ def plot_sequence_length_distribution(df, seq_col="prot_seq", subscript=''):
     plt.xlabel("Sequence Length (AA)")
     plt.ylabel("Count")
     plt.tight_layout()
-    output_path = os.path.join(FIGURES_DIR, f"sequence_length_distribution{subscript}.png")
+    output_path = os.path.join(FIGURES_DIR, "sequence_length_distribution.png")
     plt.savefig(output_path)
     plt.close()
 
-def plot_molecular_property_distribution(df_substrate, subscript=''):
+def plot_molecular_property_distribution(df_substrate):
     """Plot Pairplot of molecular properties."""
     # --- Compute molecular descriptors ---
     def compute_properties(smiles):
@@ -78,7 +78,7 @@ def plot_molecular_property_distribution(df_substrate, subscript=''):
     plt.suptitle("Molecular Property Distributions by Binding Activity")
     g.figure.suptitle("Molecular Property Distributions by Binding Activity", y=1.02)
     g.figure.tight_layout(pad=1.5)  # Adjust spacing
-    output_path = os.path.join(FIGURES_DIR, f"molecular_property_distributions{subscript}.png")
+    output_path = os.path.join(FIGURES_DIR, "molecular_property_distributions.png")
     plt.savefig(output_path)
     plt.close()
 
@@ -136,7 +136,7 @@ def plot_split_graph(G, train_edges, val_edges, C1_edges, C2_edges, C3_edges, se
     )
 
     plt.title("Graph-based Dataset Split")
-    output_path = os.path.join(FIGURES_DIR, f"data_split_graph.png")
+    output_path = os.path.join(FIGURES_DIR, "data_split_graph.png")
     plt.savefig(output_path)
     plt.close()
 
@@ -146,7 +146,7 @@ def plot_graph_connectivity(g):
     plt.title("Node degree distribution (number of partners per protein/substrate)")
     plt.xlabel("Degree")
     plt.ylabel("Number of nodes")
-    output_path = os.path.join(FIGURES_DIR, f"graph_connectivity.png")
+    output_path = os.path.join(FIGURES_DIR, "graph_connectivity.png")
     plt.savefig(output_path)
     plt.close()
 
@@ -175,11 +175,11 @@ def plot_connectivity_separate(G):
     plt.ylabel("# Substrates")
 
     plt.tight_layout()
-    output_path = os.path.join(FIGURES_DIR, f"graph_connectivity_separate.png")
+    output_path = os.path.join(FIGURES_DIR, "graph_connectivity_separate.png")
     plt.savefig(output_path)
     plt.close()
 
-def plot_split_statistics(df_split, protein_col, substrate_col, label_col, split_col="split", subscript=''):
+def plot_split_statistics(df_split, protein_col, substrate_col, label_col, split_col="split"):
     """Visualize unique enzymes/substrates and label distribution per split."""
 
     count_stats = []
@@ -212,7 +212,7 @@ def plot_split_statistics(df_split, protein_col, substrate_col, label_col, split
     plt.ylabel("Count")
     plt.xticks(rotation=0)
     plt.tight_layout()
-    output_path = os.path.join(FIGURES_DIR, f"data_split_stats_component_distr{subscript}.png")
+    output_path = os.path.join(FIGURES_DIR, "data_split_stats_component_distr.png")
     plt.savefig(output_path)
     plt.close()
 
@@ -222,11 +222,11 @@ def plot_split_statistics(df_split, protein_col, substrate_col, label_col, split
     plt.title("Label Distribution per Split")
     plt.xticks(rotation=0)
     plt.legend(title=label_col)
-    output_path = os.path.join(FIGURES_DIR, f"data_split_stats_label_distr{subscript}.png")
+    output_path = os.path.join(FIGURES_DIR, "data_split_stats_label_distr.png")
     plt.savefig(output_path)
     plt.close()
 
-def plot_upset_sets(train_df, val_df, c1_df, c2_df, c3_df, subscript):
+def plot_upset_sets(train_df, val_df, c1_df, c2_df, c3_df):
     """
     Creates UpSet plots showing which component nodes appear in:
         - Seen (train + val)
@@ -255,7 +255,7 @@ def plot_upset_sets(train_df, val_df, c1_df, c2_df, c3_df, subscript):
     plt.figure(figsize=(12, 6))
     UpSet(upset_data, subset_size="count", show_counts=True).plot()
     plt.title("Enzymes per data split")
-    out_path = os.path.join(FIGURES_DIR, f"upset_enzymes{subscript}.png"
+    out_path = os.path.join(FIGURES_DIR, "upset_enzymes.png"
     )
     plt.savefig(out_path, dpi=300, bbox_inches="tight")
     plt.close()
@@ -280,7 +280,7 @@ def plot_upset_sets(train_df, val_df, c1_df, c2_df, c3_df, subscript):
     plt.figure(figsize=(12, 6))
     UpSet(upset_data, subset_size="count", show_counts=True).plot()
     plt.title("Substrates per data split")
-    out_path = os.path.join(FIGURES_DIR,f"upset_substrate{subscript}.png"
+    out_path = os.path.join(FIGURES_DIR,"upset_substrate.png"
     )
     plt.savefig(out_path, dpi=300, bbox_inches="tight")
     plt.close()

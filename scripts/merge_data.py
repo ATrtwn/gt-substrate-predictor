@@ -4,9 +4,6 @@ from pathlib import Path
 from src.data.preprocessing import binarize_activity
 from src.data.data_split import stratified_split_by_entities, check_split
 from src.utils.visualization import (
-    plot_class_balance,
-    plot_sequence_length_distribution,
-    plot_molecular_property_distribution,
     plot_split_statistics,
     plot_upset_sets
 )
@@ -58,9 +55,9 @@ def split_and_analyse_dataset(df_analyse, plots=False):
 
     # plots
     if plots:
-        plot_split_statistics(df_split, protein_col, substrate_col, label_col="is_active", subscript='_merged')
+        plot_split_statistics(df_split, protein_col, substrate_col, label_col="is_active")
         if len(test) > 1:
-            plot_upset_sets(train, val, c1_test, c2_test, c3_test, subscript='_merged')
+            plot_upset_sets(train, val, c1_test, c2_test, c3_test)
 
     # save datasets
     train.to_csv(f"{data_dir}/train.csv", index=False)
