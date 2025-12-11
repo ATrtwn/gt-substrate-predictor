@@ -5,7 +5,7 @@ from collections import defaultdict, Counter
 from sklearn.model_selection import train_test_split
 from src.utils.visualization import plot_split_graph, plot_graph_connectivity, plot_connectivity_separate
 
-def stratified_split_by_entities(df, protein_col="UGT_ID", substrate_col="substrate", random_state=42, plot=False):
+def stratified_split_by_entities(df, protein_col="UGT_ID", substrate_col="substrate",label_col = "is_active", random_state=42, plot=False):
     """
     Perform stratified split according to generalization classes (C1, C2, C3).
 
@@ -18,7 +18,8 @@ def stratified_split_by_entities(df, protein_col="UGT_ID", substrate_col="substr
 
     graph = create_graph(df,
                          protein_col=protein_col,
-                         substrate_col=substrate_col)
+                         substrate_col=substrate_col,
+                         label_col=label_col)
 
 
     # split and re-balance if evaluation sets are too small
@@ -63,14 +64,19 @@ def stratified_split_by_entities(df, protein_col="UGT_ID", substrate_col="substr
     # perform split on df based on graph split
     c1_set =  {(u, v) for (u, v, l) in C1_edges}
     c1 = df[df.apply(lambda row: (row[protein_col], row[substrate_col]) in c1_set, axis=1)].copy()
+    c1['original_index'] = c1.index
     c2_set = {(u, v) for (u, v, l) in C2_edges}
     c2 = df[df.apply(lambda row: (row[protein_col], row[substrate_col]) in c2_set, axis=1)].copy()
+    c2['original_index'] = c2.index
     c3_set = {(u, v) for (u, v, l) in C3_edges}
     c3 = df[df.apply(lambda row: (row[protein_col], row[substrate_col]) in c3_set, axis=1)].copy()
+    c3['original_index'] = c3.index
     train_set = {(u, v) for (u, v, l) in train_edges}
     train_df = df[df.apply(lambda row: (row[protein_col], row[substrate_col]) in train_set, axis=1)].copy()
+    train_df['original_index'] = train_df.index
     val_set = {(u, v) for (u, v, l) in val_edges}
     val_df = df[df.apply(lambda row: (row[protein_col], row[substrate_col]) in val_set, axis=1)].copy()
+    val_df['original_index'] = val_df.index
 
     return {"train": train_df, "val": val_df , "C1": c1, "C2": c2, "C3": c3}
 

@@ -6,14 +6,20 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "dotenv>=0.9.9",
+    "joblib>=1.5.2",
     "matplotlib>=3.10.7",
+    "networkx>=3.6",
     "numpy>=2.3.4",
+    "optuna>=4.6.0",
+    "optuna-integration[wandb]>=4.6.0",
     "pandas>=2.3.3",
     "pathlib>=1.0.1",
     "rdkit>=2025.9.1",
     "requests>=2.32.5",
+    "scikit-learn>=1.7.2",
     "seaborn>=0.13.2",
     "sqlalchemy>=2.0.44",
     "sqlalchemy-access>=2.0.3",
     "tqdm>=4.67.1",
+    "wandb>=0.23.0",
 ]
