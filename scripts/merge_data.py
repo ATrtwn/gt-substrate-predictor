@@ -57,8 +57,7 @@ def split_and_analyse_dataset(df_analyse, plots=False):
     if plots:
         plot_split_statistics(df_split, protein_col, substrate_col, label_col="is_active")
         if len(test) > 1:
-            plot_upset_sets(train, val, c1_test, c2_test, c3_test, entity_col="UGT_ID")
-            plot_upset_sets(train, val, c1_test, c2_test, c3_test, entity_col="substrate")
+            plot_upset_sets(train, val, c1_test, c2_test, c3_test)
 
     # save datasets
     train.to_csv(f"{data_dir}/train.csv", index=False)

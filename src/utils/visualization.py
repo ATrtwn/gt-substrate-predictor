@@ -226,7 +226,7 @@ def plot_split_statistics(df_split, protein_col, substrate_col, label_col, split
     plt.savefig(output_path)
     plt.close()
 
-def plot_upset_sets(train_df, val_df, c1_df, c2_df, c3_df, subscript):
+def plot_upset_sets(train_df, val_df, c1_df, c2_df, c3_df):
     """
     Creates UpSet plots showing which component nodes appear in:
         - Seen (train + val)
@@ -255,7 +255,7 @@ def plot_upset_sets(train_df, val_df, c1_df, c2_df, c3_df, subscript):
     plt.figure(figsize=(12, 6))
     UpSet(upset_data, subset_size="count", show_counts=True).plot()
     plt.title("Enzymes per data split")
-    out_path = os.path.join(FIGURES_DIR, f"upset_enzymes{subscript}.png"
+    out_path = os.path.join(FIGURES_DIR, "upset_enzymes.png"
     )
     plt.savefig(out_path, dpi=300, bbox_inches="tight")
     plt.close()
@@ -280,7 +280,7 @@ def plot_upset_sets(train_df, val_df, c1_df, c2_df, c3_df, subscript):
     plt.figure(figsize=(12, 6))
     UpSet(upset_data, subset_size="count", show_counts=True).plot()
     plt.title("Substrates per data split")
-    out_path = os.path.join(FIGURES_DIR,f"upset_substrate{subscript}.png"
+    out_path = os.path.join(FIGURES_DIR,"upset_substrate.png"
     )
     plt.savefig(out_path, dpi=300, bbox_inches="tight")
     plt.close()

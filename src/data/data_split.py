@@ -94,6 +94,7 @@ def stratified_split_by_entities(df, protein_col="UGT_ID", substrate_col="substr
         plot_split_graph(graph, train, val, C1_test, C2_test, C3_test, seen_nodes)
         plot_graph_connectivity(graph)
         plot_connectivity_separate(graph)
+        plot_degree_distributions(graph)
     ###
 
     # perform split on df based on graph split
