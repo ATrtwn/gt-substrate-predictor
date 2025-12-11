@@ -15,7 +15,8 @@ def print_report():
         return
     
     # Read cluster file
-    df = pd.read_csv(CLUSTER_TSV, sep='\t', header=None, names=["seq_id", "rep_id"], dtype=str)
+    # Format: representative_id \t member_id
+    df = pd.read_csv(CLUSTER_TSV, sep='\t', header=None, names=["rep_id", "seq_id"], dtype=str)
     
     # Compute statistics
     cluster_sizes = df['rep_id'].value_counts()
