@@ -5,6 +5,7 @@ from matplotlib.colors import ListedColormap
 import pandas as pd
 from rdkit import Chem
 from rdkit.Chem import Descriptors
+from upsetplot import UpSet, from_indicators
 
 # set sns style
 sns.set_theme(
@@ -220,6 +221,70 @@ def plot_split_statistics(df_split, protein_col, substrate_col, label_col, split
     plt.legend(title=label_col)
     output_path = os.path.join(FIGURES_DIR, "data_split_stats_label_distr.png")
     plt.savefig(output_path)
+    plt.close()
+
+
+def plot_upset_sets(train_df, val_df, c1_df, c2_df, c3_df, entity_col="UGT_ID"):
+    """
+    Creates an UpSet plot showing which components appear in:
+        - Seen (train + val)
+        - C1 (both nodes seen)
+        - C2 (one unseen node)
+        - C3 (both unseen)
+    """
+
+    # Collect sets
+    seen_nodes = set(train_df[entity_col]) | set(val_df[entity_col])
+    c1_nodes = set(c1_df[entity_col])
+    c2_nodes = set(c2_df[entity_col])
+    c3_nodes = set(c3_df[entity_col])
+
+    # All nodes
+    all_nodes = seen_nodes | c1_nodes | c2_nodes | c3_nodes
+
+    # Build membership table (one row per node)
+    df = pd.DataFrame({
+        "node": list(all_nodes),
+        "Seen": [n in seen_nodes for n in all_nodes],
+        "C1": [n in c1_nodes for n in all_nodes],
+        "C2": [n in c2_nodes for n in all_nodes],
+        "C3": [n in c3_nodes for n in all_nodes],
+    })
+
+    # Convert to UpSet-compatible structure
+    upset_data = from_indicators(
+        ["Seen", "C1", "C2", "C3"],
+        df[["Seen", "C1", "C2", "C3"]]
+    )
+
+    # Plot
+    plt.figure(figsize=(12, 6))
+    UpSet(upset_data, subset_size='count', show_counts=True).plot()
+
+    output_path = os.path.join(FIGURES_DIR, f"upset_nodes_{entity_col}.png")
+    plt.savefig(output_path, dpi=300, bbox_inches="tight")
+    plt.close()
+
+def plot_degree_distributions(G):
+    degrees_protein = [deg for n, deg in G.degree()
+                       if G.nodes[n].get('bipartite') == "protein"]
+    degrees_sub = [deg for n, deg in G.degree()
+                   if G.nodes[n].get('bipartite') == "substrate"]
+
+    plt.figure(figsize=(8,5))
+    sns.histplot(degrees_protein, bins=30, kde=True)
+    plt.title("Enzyme Degree Distribution")
+    plt.xlabel("Degree")
+    out = f"{FIGURES_DIR}/degree_enzymes.png"
+    plt.savefig(out, dpi=300)
+    plt.close()
+
+    plt.figure(figsize=(8,5))
+    sns.histplot(degrees_sub, bins=30, kde=True)
+    plt.title("Substrate Degree Distribution")
+    plt.xlabel("Degree")
+    out = f"{FIGURES_DIR}/degree_substrates.png"
+    plt.savefig(out, dpi=300)
     plt.close()
 
 def plot_cluster_sizes(cluster_df, cluster_col="cluster_id"):
