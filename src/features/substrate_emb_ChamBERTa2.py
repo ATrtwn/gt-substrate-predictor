@@ -48,7 +48,6 @@ def generate_embeddings(smiles_list):
         embeddings.append(cls_embedding)
     return embeddings
 
-# Main processing function
 def process_substrates(csv_path, output_path=None):
     """Load substrate CSV with SMILES, generate embeddings, and save."""
     # Load data
@@ -90,14 +89,12 @@ def process_substrates(csv_path, output_path=None):
         npy_path = Path(output_path).parent / "substrate_embeddings_chemberta2.npy"
         np.save(npy_path, emb_array)
         print(f"Saved {emb_array.shape} embeddings to {npy_path}")
-    
-    return df
 
-if __name__ == "__main__":
+def generate_CB2_emb():
     # Process substrate data
     ROOT = Path(__file__).parent.parent.parent
     csv_path = ROOT / "data" / "Substrate_SMILES.csv"
-    df = process_substrates(csv_path)
+    process_substrates(csv_path)
 
 
 

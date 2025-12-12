@@ -37,6 +37,6 @@ def main ():
     args = Args(data_path = data_path, dataset = dataset, path_length = path_length)
     get_kpgt_embedding(args = args)
 
-if __name__ == '__main__':
+def generate_KPGT_emb():
     freeze_support()  # Optional, but recommended for frozen applications
     main()

@@ -196,38 +196,17 @@ def save_embeddings(
     print(f"\nSaved {len(substrates)} substrate embeddings to: {output_path}")
 
 
-def main():
-    parser = argparse.ArgumentParser(description="Compute ChemBERTa embeddings for substrates.")
-    parser.add_argument(
-        "--smiles_csv",
-        type=str,
-        default="../../data/Substrate_SMILES.csv",
-        help="Path to the CSV containing 'substrate' and SMILES columns.",
-    )
-    parser.add_argument(
-        "--output_path",
-        type=str,
-        default=f"../../data/Substrate_Embeddings/ChemBERTa3_substrate_embeddings_{POOLING}.pt",
-        help="Where to save the output .pt file.",
-    )
-    parser.add_argument(
-        "--batch_size",
-        type=int,
-        default=32,
-        help="Batch size for encoding SMILES.",
-    )
-    parser.add_argument(
-        "--max_length",
-        type=int,
-        default=128,
-        help="Maximum token length for SMILES sequences.",
-    )
+def generate_CB3_emb(
+    smiles_csv: str = "../../data/Substrate_SMILES.csv",
+    output_path: str = None,
+    batch_size: int = 32,
+    max_length: int = 128,
+):
 
-    args = parser.parse_args()
-
-    smiles_csv_path = Path(args.smiles_csv)
-
-    output_path = Path(args.output_path)
+    smiles_csv_path = Path(smiles_csv)
+    if output_path is None:
+        output_path = f"../../data/Substrate_Embeddings/ChemBERTa3_substrate_embeddings_{POOLING}.pt"
+    output_path = Path(output_path)
 
     print(f"Loading SMILES table from: {smiles_csv_path}")
     df = pd.read_csv(smiles_csv_path)
@@ -245,8 +224,8 @@ def main():
     pair_embeddings = embed_smiles_batch(
         smiles_list,
         device=device,
-        batch_size=args.batch_size,
-        max_length=args.max_length,
+        batch_size=batch_size,
+        max_length=max_length,
     )
 
     substrate_to_embedding = aggregate_by_substrate(long_df, pair_embeddings)
@@ -260,7 +239,3 @@ def main():
         smiles_source_file=smiles_csv_path,
     )
     print("\n[Done] ChemBERTa substrate embeddings computed successfully.")
-
-
-if __name__ == "__main__":
-    main()
