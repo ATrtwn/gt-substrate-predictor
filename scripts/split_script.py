@@ -1,6 +1,12 @@
 import os
 import pandas as pd
 from pathlib import Path
+
+#Add project root (one folder up from repository scripts/) to sys.path
+project_root = Path(__file__).resolve().parent.parent
+import sys
+sys.path.append(str(project_root))
+
 from src.data.preprocessing import binarize_activity
 from src.data.data_split import stratified_split_by_entities, check_split
 from src.utils.visualization import plot_split_statistics
