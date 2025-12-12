@@ -2,7 +2,7 @@
 optuna_config:
   study_name: "random_forest_optimization"
   direction: "maximize"  # or "minimize"
-  n_trials: 3
+  n_trials: 30
   n_jobs: 3  # For parallel execution
   model_name: "random_forest"
   
