@@ -54,12 +54,13 @@ def run_sklearn_experiment(
     protein_name:str,
     wandb_mode: str = "offline",
     project: str = "gt-substrate-predictor",
+    sweep: bool = False,
     concatenation_path:str=None,
-) -> float:
+) -> None:
     run = (
         wandb.init(
             project=project,
-            name=f"{model_name}_substrate-{substrate_name}_protein-{protein_name}_id-{datetime.now().strftime("%Y%m%d_%H%M%S")}",
+            name=f"{model_name}_substrate-{substrate_name}_protein-{protein_name}_id-{nano_id()}",
             config={
                 "model_name": model_name,
                 "model_params": model_params,
@@ -71,7 +72,6 @@ def run_sklearn_experiment(
 
     if model_name not in MODEL_MAPPING:
         raise ValueError(f"Unknown model_name '{model_name}'. Available: {list(MODEL_MAPPING.keys())}")
-
 
     sk_model = MODEL_MAPPING[model_name](**model_params)
 
@@ -213,6 +213,7 @@ def train_and_log(params: dict[str, Any] = None) -> None:
     for model_name, model_params in model_classes.items():
         logging.info(f"Preparing model: {model_name} with params: {model_params}")
         model_params_copy = model_params.copy()
+
         tasks.append(
             delayed(run_sklearn_experiment)(
                 model_name=model_name,

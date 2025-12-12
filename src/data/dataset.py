@@ -66,7 +66,7 @@ def create_csv():
     print("Fetching PubChem data for substrates...")
     tqdm.pandas()  # enables progress_apply for nice progress bar
 
-# Apply your function once per substrate and expand dict into columns
+    # Apply your function once per substrate and expand dict into columns
     tqdm.pandas()  # enables progress_apply for nice progress bar
 
     df_substrate[["MolecularFormula", "ConnectivitySMILES"]] = (

@@ -2,9 +2,11 @@ import os
 import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib.colors import ListedColormap
+import numpy as np
 import pandas as pd
-from rdkit import Chem
+from rdkit import Chem, RDLogger
 from rdkit.Chem import Descriptors
+from upsetplot import UpSet, from_indicators
 
 # set sns style
 sns.set_theme(
@@ -53,6 +55,8 @@ def plot_molecular_property_distribution(df_substrate):
     """Plot Pairplot of molecular properties."""
     # --- Compute molecular descriptors ---
     def compute_properties(smiles):
+        # Disable RDKit warnings
+        RDLogger.DisableLog('rdApp.warning')
         if type(smiles) != str:
             return None
         if smiles is None or smiles.strip() == "":
@@ -101,8 +105,8 @@ def plot_split_graph(G, train_edges, val_edges, C1_edges, C2_edges, C3_edges, se
 
     # Edge colors by split
     edge_color_map = []
-    for u, v, l in G.edges(data=True):
-        e = (u, v, l["label"])
+    for u, v, data in G.edges(data=True):
+        e = (u, v, data["label"], data["force_train"])
         if e in train_edges:
             edge_color_map.append("#8ad1e5") # green
         elif e in val_edges:
@@ -195,8 +199,8 @@ def plot_split_statistics(df_split, protein_col, substrate_col, label_col, split
         fractions = counts / counts.sum()
         label_stats.append({
             "split": split,
-            "active": fractions[1],
-            "inactive": fractions[0],
+            "active": fractions.get(1, 0.0),
+            "inactive": fractions.get(0, 0.0),
         })
 
     stats_df = pd.DataFrame(count_stats).set_index("split")
@@ -220,6 +224,88 @@ def plot_split_statistics(df_split, protein_col, substrate_col, label_col, split
     plt.legend(title=label_col)
     output_path = os.path.join(FIGURES_DIR, "data_split_stats_label_distr.png")
     plt.savefig(output_path)
+    plt.close()
+
+def plot_upset_sets(train_df, val_df, c1_df, c2_df, c3_df):
+    """
+    Creates UpSet plots showing which component nodes appear in:
+        - Seen (train + val)
+        - C1 (both nodes seen)
+        - C2 (one unseen node)
+        - C3 (both unseen)
+    """
+
+    # Enzymes
+    seen = set(train_df["UGT_ID"]) | set(val_df["UGT_ID"])
+    c1 = set(c1_df["UGT_ID"])
+    c2 = set(c2_df["UGT_ID"])
+    c3 = set(c3_df["UGT_ID"])
+    all_enzymes = seen | c1 | c2 | c3
+    df = pd.DataFrame({
+        "UGT_ID": list(all_enzymes),
+        "Seen": [e in seen for e in all_enzymes],
+        "C1":   [e in c1 for e in all_enzymes],
+        "C2":   [e in c2 for e in all_enzymes],
+        "C3":   [e in c3 for e in all_enzymes],
+    })
+    upset_data = from_indicators(
+        ["Seen", "C1", "C2", "C3"],
+        df[["Seen", "C1", "C2", "C3"]]
+    )
+    plt.figure(figsize=(12, 6))
+    UpSet(upset_data, subset_size="count", show_counts=True).plot()
+    plt.title("Enzymes per data split")
+    out_path = os.path.join(FIGURES_DIR, "upset_enzymes.png"
+    )
+    plt.savefig(out_path, dpi=300, bbox_inches="tight")
+    plt.close()
+
+    # substrates
+    seen = set(train_df["substrate"]) | set(val_df["substrate"])
+    c1 = set(c1_df["substrate"])
+    c2 = set(c2_df["substrate"])
+    c3 = set(c3_df["substrate"])
+    all_enzymes = seen | c1 | c2 | c3
+    df = pd.DataFrame({
+        "substrate": list(all_enzymes),
+        "Seen": [e in seen for e in all_enzymes],
+        "C1": [e in c1 for e in all_enzymes],
+        "C2": [e in c2 for e in all_enzymes],
+        "C3": [e in c3 for e in all_enzymes],
+    })
+    upset_data = from_indicators(
+        ["Seen", "C1", "C2", "C3"],
+        df[["Seen", "C1", "C2", "C3"]]
+    )
+    plt.figure(figsize=(12, 6))
+    UpSet(upset_data, subset_size="count", show_counts=True).plot()
+    plt.title("Substrates per data split")
+    out_path = os.path.join(FIGURES_DIR,"upset_substrate.png"
+    )
+    plt.savefig(out_path, dpi=300, bbox_inches="tight")
+    plt.close()
+
+
+def plot_degree_distributions(G):
+    degrees_protein = [deg for n, deg in G.degree()
+                       if G.nodes[n].get('bipartite') == "protein"]
+    degrees_sub = [deg for n, deg in G.degree()
+                   if G.nodes[n].get('bipartite') == "substrate"]
+
+    plt.figure(figsize=(8,5))
+    sns.histplot(degrees_protein, bins=30, kde=True)
+    plt.title("Enzyme Degree Distribution")
+    plt.xlabel("Degree")
+    output_path = os.path.join(FIGURES_DIR, f"data_enzyme_degree_distr.png")
+    plt.savefig(output_path, dpi=300)
+    plt.close()
+
+    plt.figure(figsize=(8,5))
+    sns.histplot(degrees_sub, bins=30, kde=True)
+    plt.title("Substrate Degree Distribution")
+    plt.xlabel("Degree")
+    output_path = os.path.join(FIGURES_DIR, f"data_substrate_degree_distr.png")
+    plt.savefig(output_path, dpi=300)
     plt.close()
 
 def plot_cluster_sizes(cluster_df, cluster_col="cluster_id"):
