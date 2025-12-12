@@ -10,6 +10,7 @@ data_dir = Path(__file__).parent.parent / "data"
 ACTIVITY_FILE = os.path.join(data_dir, "Activity.csv")
 UGT_FILE = os.path.join(data_dir, "UGT.csv")
 SUBSTRATE_FILE = os.path.join(data_dir, "Substrate.csv")
+MERGED_FILE = os.path.join(data_dir, "merged.csv")
 
 def main():
     # Load CSVs
@@ -23,8 +24,9 @@ def main():
 
     # binarize
     df = binarize_activity(df_merged)
+    df['dataset'] = 'original'
 
-    protein_col = "UGT_trivial_name"
+    protein_col = "UGT_ID"
     substrate_col = "substrate"
     label_col = "is_active"
     print(f"\nUnique enzymes ({protein_col}): {df[protein_col].nunique()}")
@@ -62,7 +64,14 @@ def main():
     c2["split"] = "C2"
     c3["split"] = "C3"
     df_split = pd.concat([train, val, c1, c2, c3], ignore_index=True).reindex(df.index).fillna({"split": "none"})
+    print(df_split['split'].unique())
     plot_split_statistics(df_split, protein_col, substrate_col, label_col="is_active")
+
+    train.to_csv(f"{data_dir}/train.csv", index=False)
+    val.to_csv(f"{data_dir}/val.csv", index=False)
+    c1.to_csv(f"{data_dir}/C1.csv", index=False)
+    c2.to_csv(f"{data_dir}/C2.csv", index=False)
+    c3.to_csv(f"{data_dir}/C3.csv", index=False)
 
 if __name__ == "__main__":
     main()

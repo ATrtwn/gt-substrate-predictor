@@ -11,6 +11,8 @@ from tqdm import tqdm
 import wandb
 from optuna.integration.wandb import WeightsAndBiasesCallback
 
+wandb.init(project="gt-substrate-predictor", mode="offline")
+
 import numpy as np
 import pandas as pd
 import optuna

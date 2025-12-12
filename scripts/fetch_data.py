@@ -24,6 +24,10 @@ def main():
     print(UGT.shape)
     print(substrate.shape)
 
+    df_merged = activity.merge(UGT, left_on="UGT_trivial_name", right_on="UGT_trivial_name", how="left")
+    df_merged = df_merged.merge(substrate, left_on="substrate", right_on="substrate", how="left")
+    df_merged.to_csv(os.path.join(data_dir, "merged.csv"), index=False)
+
 
 if __name__ == "__main__":
     main()

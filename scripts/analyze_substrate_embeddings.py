@@ -16,7 +16,7 @@ except Exception:
     HAS_TSNE = False
 
 ROOT = Path(__file__).parent.parent
-EMBEDDINGS_DIR = ROOT / "embeddings"
+EMBEDDINGS_DIR = ROOT / "data" / "embeddings"
 REPORTS_DIR = ROOT / "reports"
 
 EMB_NPY = EMBEDDINGS_DIR / "substrate_embeddings_chemberta2.npy"
