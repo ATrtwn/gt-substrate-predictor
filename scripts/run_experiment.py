@@ -15,6 +15,7 @@ import numpy as np
 import pandas as pd
 import optuna
 
+from sklearn.dummy import DummyClassifier
 from sklearn.linear_model import RidgeClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LogisticRegression
@@ -37,6 +38,8 @@ from datetime import datetime
 data_dir = Path(__file__).parent.parent 
 
 MODEL_MAPPING = {
+    "majority_classifier": DummyClassifier,
+    "random_classifier": DummyClassifier,
     "ridge_classifier": RidgeClassifier,
     "decision_tree" : DecisionTreeClassifier,
     "logistic_regression" : LogisticRegression,
