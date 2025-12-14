@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 import torch
 from pathlib import Path
+from src.features.feature_utils import compute_all_features
 
 
 def load_embeddings():
@@ -21,6 +22,12 @@ def load_embeddings():
     
     print("Loading embeddings...")
     
+    # Load SMILES table
+    smiles_df = pd.read_csv(
+        ROOT / "data" / "Substrate_SMILES.csv"
+    )[["substrate", "SMILES_isomeric_1"]]
+
+
     # Protein embeddings
     protein_emb = np.load(ROOT / 'data' / 'Protein_Embeddings' / 'protein_embeddings_prott5.npy')
     protein_df = pd.read_csv(ROOT / 'data' / 'UGT.csv')
@@ -51,11 +58,11 @@ def load_embeddings():
     # substrate_data['kpgt'] = (kpgt_emb, kpgt_df, 2304)
     # print(f"  KPGT: {kpgt_emb.shape}")
     
-    return protein_emb, protein_df, substrate_data
+    return protein_emb, protein_df, substrate_data, smiles_df
 
 
 def create_concatenated_dataset(protein_emb, protein_df, substrate_emb, substrate_df, 
-                                  activity_df, substrate_name, output_dir):
+                                  activity_df, substrate_name, output_dir, smiles_df):
     """
     Create concatenated embeddings for protein-substrate pairs in Activity.csv.
     
@@ -98,9 +105,35 @@ def create_concatenated_dataset(protein_emb, protein_df, substrate_emb, substrat
         
         p_emb = protein_emb[p_idx]
         s_emb = substrate_emb[s_idx]
-        
-        # Concatenate
-        concat_emb = np.concatenate([p_emb, s_emb])
+
+        # ===== NEW: get SMILES =====
+        smiles_row = smiles_df[smiles_df["substrate"] == substrate_name_val]
+        if smiles_row.empty:
+            smiles = None
+        else:
+            smiles = smiles_row.iloc[0]["SMILES_isomeric_1"]
+
+        # ===== NEW: get protein sequence =====
+        seq = protein_df.loc[
+            protein_df["UGT_trivial_name"] == protein_name,
+            "prot_seq"
+        ].values[0]
+
+        # ===== NEW: compute additional features =====
+        extra_feats = compute_all_features(smiles, seq)
+
+        # clean None / nan
+        extra_feats = np.array(
+            [
+                0.0 if (v is None or (isinstance(v, float) and np.isnan(v)))
+                else float(v)
+                for v in extra_feats
+            ],
+            dtype=float
+        )
+
+        # ===== FINAL concatenation =====
+        concat_emb = np.concatenate([p_emb, s_emb, extra_feats])
         
         X_list.append(concat_emb)
         y_list.append(activity)
@@ -151,7 +184,7 @@ def main():
     output_dir = ROOT / args.output_dir
     
     # Load data
-    protein_emb, protein_df, substrate_data = load_embeddings()
+    protein_emb, protein_df, substrate_data, smiles_df = load_embeddings()
     
     # Load activity data
     activity_df = pd.read_csv(ROOT / 'data' / 'Activity.csv')
@@ -169,7 +202,8 @@ def main():
             protein_emb, protein_df,
             sub_emb, sub_df,
             activity_df, sub_type,
-            output_dir
+            output_dir,
+            smiles_df
         )
     
     print("\n✅ All concatenations complete!")
