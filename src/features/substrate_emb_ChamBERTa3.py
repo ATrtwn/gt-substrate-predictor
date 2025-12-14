@@ -6,13 +6,16 @@ import pandas as pd
 from tqdm.auto import tqdm
 from transformers import AutoTokenizer, AutoModel
 
+# data directory
+data_dir = Path(__file__).parent.parent.parent / "data"
+
 # Global pooling setting for ChemBERTa-3 embeddings.
 # Allowed values: "cls" or "mean"
 POOLING = "cls"
 MODEL_NAME = "DeepChem/ChemBERTa-100M-MLM"
 TOKENIZER = AutoTokenizer.from_pretrained(MODEL_NAME)
-MODEL = AutoModel.from_pretrained(MODEL_NAME).eval()
-
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+MODEL = AutoModel.from_pretrained(MODEL_NAME, add_pooling_layer=False).to(device).eval()
 
 def find_smiles_columns(df: pd.DataFrame) -> List[str]:
     """
@@ -161,6 +164,7 @@ def save_embeddings(
     output_path: Path,
     model_name: str,
     smiles_source_file: Path,
+    verbose=False
 ) -> None:
     """
     Save embeddings and metadata to a .pt file.
@@ -193,43 +197,47 @@ def save_embeddings(
     }
 
     torch.save(payload, output_path)
-    print(f"\nSaved {len(substrates)} substrate embeddings to: {output_path}")
+    if verbose:
+        print(f"   -> Saved {len(substrates)} substrate embeddings to: {output_path}")
 
 
 def generate_CB3_emb(
-    smiles_csv: str = "../../data/Substrate_SMILES.csv",
+    smiles_csv: str = None,
     output_path: str = None,
-    batch_size: int = 32,
-    max_length: int = 128,
+    verbose=False
 ):
-
+    if smiles_csv is None:
+        smiles_csv = f"{data_dir}/Substrate_SMILES.csv"
     smiles_csv_path = Path(smiles_csv)
     if output_path is None:
-        output_path = f"../../data/Substrate_Embeddings/ChemBERTa3_substrate_embeddings_{POOLING}.pt"
+        output_path = f"{data_dir}/Substrate_Embeddings/ChemBERTa3_substrate_embeddings.pt"
     output_path = Path(output_path)
 
-    print(f"Loading SMILES table from: {smiles_csv_path}")
+    if verbose:
+        print(f"    Loading SMILES table from: {smiles_csv_path}")
     df = pd.read_csv(smiles_csv_path)
 
     smiles_cols = find_smiles_columns(df)
-    print(f"Detected SMILES columns: {smiles_cols}")
+    if verbose:
+        print(f"    Detected SMILES columns: {smiles_cols}")
 
     long_df = build_long_table(df, smiles_cols)
-    print(f"Number of (substrate, SMILES) pairs: {len(long_df)}")
+    if verbose:
+        print(f"    Number of (substrate, SMILES) pairs: {len(long_df)}")
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"Using device: {device}")
+    if verbose:
+        print(f"    Using device: {device}")
 
     smiles_list = long_df["smiles"].tolist()
     pair_embeddings = embed_smiles_batch(
         smiles_list,
-        device=device,
-        batch_size=batch_size,
-        max_length=max_length,
+        device=device
     )
 
     substrate_to_embedding = aggregate_by_substrate(long_df, pair_embeddings)
-    print(f"Number of unique substrates with embeddings: {len(substrate_to_embedding)}")
+    if verbose:
+        print(f"    Number of unique substrates with embeddings: {len(substrate_to_embedding)}")
 
     save_embeddings(
         substrate_to_embedding=substrate_to_embedding,
@@ -237,5 +245,7 @@ def generate_CB3_emb(
         output_path=output_path,
         model_name=MODEL_NAME,
         smiles_source_file=smiles_csv_path,
+        verbose=verbose
     )
-    print("\n[Done] ChemBERTa substrate embeddings computed successfully.")
+    if verbose:
+        print("    ChemBERTa substrate embeddings computed successfully.")

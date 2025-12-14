@@ -7,49 +7,67 @@ import requests
 from tqdm import tqdm  # progress bar
 
 # data directory
-data_dir = Path(__file__).parent.parent / "data"
+data_dir = Path(__file__).parent.parent.parent / "data"
 
-def prepare_dataset():
-    """Main preprocessing pipeline combining filtering, standardization, etc."""
-    prepare_kpgt_data()
-    create_fasta_file()
+def prepare_dataset(verbose=False):
+    """
+    Prepare the full dataset for downstream modeling.
 
-    merge_original_data()
-    df_all = create_full_dataset()
+    This function runs the complete preprocessing pipeline, including:
+    1. Preparing data required for KPGT descriptor generation
+    2. Creating FASTA files for protein sequence processing
+    3. Merging all original and auxiliary data sources
+    4. Constructing the final unified dataset used for modeling
+
+    Args:
+        verbose (bool): If True, prints progress messages for each preprocessing step.
+
+    Returns:
+        pd.DataFrame: The fully processed and merged dataset.
+    """
+    print("\n== [1/4] Preparing KPGT input data ==")
+    prepare_kpgt_data(verbose=verbose)
+
+    print("== [2/4] Creating FASTA file for protein sequences ==")
+    create_fasta_file(verbose=verbose)
+
+    print("== [3/4] Merging original data sources ==")
+    merge_original_data(verbose=verbose)
+
+    print("== [4/4] Creating full merged dataset ==")
+    df_all = create_full_dataset(verbose=verbose)
+
     return df_all
 
+def merge_original_data(verbose=False):
 
+    all_exist = all(os.path.exists(os.path.join(data_dir, f)) for f in ["UGT.csv", "Activity.csv", "Substrate_SMILES.csv"])
 
-"""
-All functions that are needed to prepare the data
-"""
-
-def merge_original_data():
-    # data directory
-    data_dir = Path(__file__).parent.parent / "data"
-
-    all_exist = all(os.path.exists(os.path.join(data_dir, f)) for f in ["UGT.csv", "Activity.csv", "Substrate.csv"])
     if all_exist:
-        print("All CSV files already exist. Skipping create_csv().")
+        if verbose:
+            print(" -  All CSV files already exist. Skipping create_csv()")
     else:
-        print("Some CSV files are missing. Running create_csv()...")
-        print("⚠️ Please make sure you have a .env file in the project root containing:")
-        print("   ACCESS_DB_PATH=/full/path/to/your/database.accdb")
-        print("   ACCESS_DB_PASSWORD=yourpassword")
-        create_csv()
+        if verbose:
+            print(" -  Some CSV files are missing. Running create_csv()...")
+            print("    ⚠️ Please make sure you have a .env file in the project root containing:")
+            print("   ACCESS_DB_PATH=/full/path/to/your/database.accdb")
+            print("   ACCESS_DB_PASSWORD=yourpassword")
+        create_csv(verbose=verbose)
 
     activity = pd.read_csv(os.path.join(data_dir, "Activity.csv"))
     UGT = pd.read_csv(os.path.join(data_dir, "UGT.csv"))
-    substrate = pd.read_csv(os.path.join(data_dir, "Substrate.csv"))
-    print(activity.shape)
-    print(UGT.shape)
-    print(substrate.shape)
+    substrate = pd.read_csv(os.path.join(data_dir, "Substrate_SMILES.csv"))
+    if verbose:
+        print(f" - Data overview: ")
+        print(f"    activity shape: {activity.shape}")
+        print(f"    UGT shape: {UGT.shape}")
+        print(f"    substrate shape: {substrate.shape}")
 
     df_merged = activity.merge(UGT, left_on="UGT_trivial_name", right_on="UGT_trivial_name", how="left")
     df_merged = df_merged.merge(substrate, left_on="substrate", right_on="substrate", how="left")
     df_merged.to_csv(os.path.join(data_dir, "merged.csv"), index=False)
 
-def create_full_dataset():
+def create_full_dataset(verbose=False):
     ### original gt/substrate dataset
     df_original = pd.read_csv(os.path.join(data_dir, "merged.csv"))
     # binarize
@@ -57,50 +75,64 @@ def create_full_dataset():
     df_original = df_original.sort_values('is_active', ascending=False)
     df_original = df_original.drop_duplicates(subset=['UGT_ID', 'substrate'], keep='first')
     df_original = df_original[['UGT_ID', 'substrate', 'UGT_Nomenclature',
-                               'nt_seq', 'prot_seq', 'MolecularFormula', 'ConnectivitySMILES',
+                               'nt_seq', 'prot_seq', 'molecule', 'SMILES_isomeric_1',
                                'is_active']].drop_duplicates()
     df_original['dataset'] = 'original'
-    print(f"original dataset size: {len(df_original)}")
-    print(df_original.columns)
+    if verbose:
+        print(f" - original dataset size: {len(df_original)}")
+        print(f"    columns: {df_original.columns}")
 
     ### ESP dataset
-    print("Get data from ESP...")
+    if verbose:
+        print(" - Get data from ESP...")
     df_new_ESP = pd.read_csv(os.path.join(data_dir, "data_ESP.csv"))
-    print(f"ESP dataset size: {len(df_new_ESP)}")
-    print(df_new_ESP.columns)
+    df_new_ESP = df_new_ESP.rename(columns={
+        "MolecularFormula": "molecule",
+        "ConnectivitySMILES": "SMILES_isomeric_1"
+    })
+    if verbose:
+        print(f" - ESP dataset size: {len(df_new_ESP)}")
+        print(f"    columns: {df_new_ESP.columns}")
 
     ### EZS dataset
-    print("Get data from EZS...")
+    if verbose:
+        print(" - Get data from EZS...")
     df_new_EZS = pd.read_csv(os.path.join(data_dir, "data_EZS.csv"))
-    print(f"EZS dataset size: {len(df_new_EZS)}")
-    print(df_new_EZS.columns)
+    df_new_EZS = df_new_EZS.rename(columns={
+        "MolecularFormula": "molecule",
+        "ConnectivitySMILES": "SMILES_isomeric_1"
+    })
+    if verbose:
+        print(f" - EZS dataset size: {len(df_new_EZS)}")
+        print(f"    columns: {df_new_EZS.columns}")
 
     ### Combine datasets
     factor = 3  # augmentation factor
     # count original positive labels
     orig_pos = df_original[df_original["is_active"] == 1]
     n_target = int(factor * len(orig_pos))
-    print("Original positives:", len(orig_pos))
-    original_pairs = set(zip(df_original["UGT_ID"], df_original["MolecularFormula"]))
+    original_pairs = set(zip(df_original["UGT_ID"], df_original["molecule"]))
     # keep only new pairs (not in original)
     df_ESP_tmp = df_new_ESP[~df_new_ESP.apply(
-        lambda row: (row["UGT_ID"], row["MolecularFormula"]) in original_pairs, axis=1
+        lambda row: (row["UGT_ID"], row["molecule"]) in original_pairs, axis=1
     )]
     df_EZS_tmp = df_new_EZS[~df_new_EZS.apply(
-        lambda row: (row["UGT_ID"], row["MolecularFormula"]) in original_pairs, axis=1
+        lambda row: (row["UGT_ID"], row["molecule"]) in original_pairs, axis=1
     )]
     # take sample from ESP and EZS
     n_each = n_target // 2
     df_ESP = df_ESP_tmp.sample(n=min(n_each, len(df_ESP_tmp)), random_state=42)
-    print(f"took {len(df_ESP)} (pos.) samples from ESP")
     df_EZS = df_EZS_tmp.sample(n=min(n_each, len(df_EZS_tmp)), random_state=42)
-    print(f"took {len(df_EZS)} (pos.) samples from EZS")
     df_all = pd.concat([df_original, df_ESP, df_EZS], ignore_index=True)
+    if verbose:
+        print(f" - Original positives: {len(orig_pos)}")
+        print(f" - took {len(df_ESP)} (pos.) samples from ESP")
+        print(f" - took {len(df_EZS)} (pos.) samples from EZS")
+        print(f" - Merged dataset shape: {df_all.shape}")
 
-    print(f"Merged dataset shape: {df_all.shape}\n")
     return df_all
 
-def create_csv():
+def create_csv(verbose=False):
     from sqlalchemy import create_engine
 
     # Load environment variables
@@ -114,8 +146,8 @@ def create_csv():
     absolute_path = os.path.abspath(db_file)
 
     # Check if file exists
-    if os.path.exists(absolute_path):
-        print("File exists ✅")
+    if not os.path.exists(absolute_path):
+        raise FileNotFoundError(f" - File not found at: {absolute_path}")
 
     # Build ODBC connection string
     odbc_conn_str = (
@@ -132,18 +164,21 @@ def create_csv():
     # Save as CSV
     output_path_ugt = location / "UGT.csv"
     df_ugt.to_csv(output_path_ugt, index=False)
-    print(f"✅ Table UGT exported to {output_path_ugt}")
+    if verbose:
+        print(f" -> Table UGT exported to {output_path_ugt}")
 
     # Read Activity table
     df_act = pd.read_sql(f"SELECT ID,UGT_trivial_name, substrate,activity FROM Activity WHERE activity <>'missing' ", engine)
     # Save as CSV
     output_path_act = location / "Activity.csv"
     df_act.to_csv(output_path_act, index=False)
-    print(f"✅ Table Activity exported to {output_path_act}")
+    if verbose:
+        print(f" -> Table Activity exported to {output_path_act}")
 
     # Read activity table and get distinct substrates
     df_substrate = pd.read_sql(f"SELECT DISTINCT substrate FROM Activity WHERE activity <>'missing' ", engine)
-    print("Fetching PubChem data for substrates...")
+    if verbose:
+        print(" - Fetching PubChem data for substrates...")
     tqdm.pandas()  # enables progress_apply for nice progress bar
 
     # Apply your function once per substrate and expand dict into columns
@@ -154,9 +189,10 @@ def create_csv():
         .progress_apply(lambda name: pd.Series(get_pubchem_info(name)))
     )
     # Save as CSV
-    output_path_substrate = location / "Substrate.csv"
+    output_path_substrate = location / "Substrate_SMILES.csv"
     df_substrate.to_csv(output_path_substrate, index=False)
-    print(f"✅ Substrates exported to {output_path_substrate}")
+    if verbose:
+        print(f" -> Substrates exported to {output_path_substrate}")
 
 # Function to query PubChem
 def get_pubchem_info(name):
@@ -173,7 +209,7 @@ def get_pubchem_info(name):
     except Exception:
         return None
 
-def prepare_kpgt_data():
+def prepare_kpgt_data(verbose=False):
     """
     Prepare substrate data in KPGT format.
     KPGT expects: data/Substrate/Substrate.csv with 'smiles' column
@@ -198,14 +234,16 @@ def prepare_kpgt_data():
     # Remove rows with missing SMILES
     df_kpgt = df_kpgt.dropna(subset=['smiles'])
 
-    print(f"Prepared {len(df_kpgt)} substrates with valid SMILES")
-    print(f"First few rows:")
-    print(df_kpgt.head())
+    if verbose:
+        print(f" - Prepared {len(df_kpgt)} substrates with valid SMILES")
+        print(f" - First few rows:")
+        print(df_kpgt.head())
 
     # Save to KPGT format
     output_path = substrate_dir / "Substrate.csv"
     df_kpgt.to_csv(output_path, index=False)
-    print(f"\nSaved to: {output_path}")
+    if verbose:
+        print(f" -> Saved to: {output_path}")
 
 def binarize_activity(df, label_col="activity"):
     """Convert multi-level activity values to binary (active/inactive)."""
@@ -213,7 +251,7 @@ def binarize_activity(df, label_col="activity"):
     df["is_active"] = df[label_col].apply(lambda x: 1 if x in active_labels else 0)
     return df
 
-def create_fasta_file():
+def create_fasta_file(verbose=False):
 
     ugt_path = data_dir / "UGT.csv"
 
@@ -224,7 +262,7 @@ def create_fasta_file():
     df = pd.read_csv(ugt_path)
 
     # Open a new FASTA file
-    output_dir = Path(__file__).parent.parent / "data" / "Protein"
+    output_dir = data_dir / "Protein"
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path = output_dir / "UGT.fasta"
 
@@ -240,7 +278,8 @@ def create_fasta_file():
                 continue
             fasta_file.write(f">{header}\n{sequence}\n")
 
-    print(f"Wrote FASTA to: {output_path}")
+    if verbose:
+        print(f" -> Wrote FASTA to: {output_path}")
 
 
 

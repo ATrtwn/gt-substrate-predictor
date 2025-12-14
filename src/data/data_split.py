@@ -3,6 +3,9 @@ import random
 import networkx as nx
 from pathlib import Path
 from collections import defaultdict
+
+from sympy import false
+
 from src.utils.visualization import (
     plot_split_statistics,
     plot_upset_sets
@@ -13,27 +16,17 @@ from src.utils.visualization import (plot_split_graph,
                                      plot_degree_distributions)
 
 # data directory
-data_dir = Path(__file__).parent.parent / "data"
+data_dir = Path(__file__).parent.parent.parent / "data"
 
-def split_dataset(dataset):
-    """splitting."""
-    df_split = split_and_analyse_dataset(dataset, plots=False)
-    return df_split
-
-
-"""
-All functions that are needed to perform the data split
-"""
-
-def split_and_analyse_dataset(df_analyse, plots=False):
+def split_and_analyse_dataset(df_analyse, plots=False, verbose=False):
     protein_col = "UGT_ID"
     substrate_col = "substrate"
     label_col = "is_active"
-    print(f"\nUnique enzymes ({protein_col}): {df_analyse[protein_col].nunique()}")
-    print(f"Unique substrates ({substrate_col}): {df_analyse[substrate_col].nunique()}")
-    if label_col in df_analyse.columns:
-        print(f"\nClass distribution ({label_col}):")
-        print(df_analyse[label_col].value_counts())
+    if verbose:
+        print(f" - Unique enzymes ({protein_col}): {df_analyse[protein_col].nunique()}")
+        print(f" - Unique substrates ({substrate_col}): {df_analyse[substrate_col].nunique()}")
+        print(f" - Class distribution ({label_col}):")
+        print(f"{df_analyse[label_col].value_counts()}")
 
     df_split = stratified_split_by_entities(df_analyse,
                                           protein_col=protein_col,
@@ -50,17 +43,20 @@ def split_and_analyse_dataset(df_analyse, plots=False):
     train = df_split[df_split['split'] == 'train']
 
     dataset_len = len(df_analyse[[protein_col, substrate_col]].drop_duplicates())
-    print(f"\nOut of {dataset_len} distinct pairs ")
-    print("Class distribution per split:")
+    if verbose:
+        print(f" - Out of {dataset_len} distinct pairs ")
+        print(" - Class distribution per split:")
     for name, subset in [("Training", train),
                          ("C1_val", c1_val), ("C2_val", c2_val), ("C3_val", c3_val),
                          ("C1_test", c1_test), ("C2_test", c2_test), ("C3_test", c3_test)]:
         counts = subset["is_active"].value_counts(normalize=True).sort_index()
-        print(f"{name}: {dict(counts)} (n={len(subset)})")
+        if verbose:
+            print(f"   {name}: {dict(counts)} (n={len(subset)})")
 
     val = pd.concat([c1_val, c2_val, c3_val], axis=0)
     test = pd.concat([c1_test, c2_test, c3_test], axis=0)
-    print(f"Training: {len(train)} | val: {len(val)} | test: {len(test)}")
+    if verbose:
+        print(f"   Training: {len(train)} | val: {len(val)} | test: {len(test)}")
 
     # check if split is valid
     check_split(train, c1_val, c2_val, c3_val, c1_test, c2_test, c3_test, protein_col, substrate_col)
@@ -81,6 +77,11 @@ def split_and_analyse_dataset(df_analyse, plots=False):
     c3_test.to_csv(f"{data_dir}/C3_test.csv", index=False)
 
     return df_split
+
+
+"""
+All functions that are needed to perform the data split
+"""
 
 def stratified_split_by_entities(df, protein_col="UGT_ID", substrate_col="substrate",label_col = "is_active", random_state=42, plot=False):
     """
