@@ -10,7 +10,7 @@ def load_feature_config():
     return raw_cfg.get("features", {}) 
 
 def _safe_float(val): 
-    """Convert feature value to float; None -> nan.""" 
+    # Convert feature value to float; None -> nan.
     if val is None: 
         return float("nan") 
     return float(val) 

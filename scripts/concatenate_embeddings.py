@@ -106,20 +106,20 @@ def create_concatenated_dataset(protein_emb, protein_df, substrate_emb, substrat
         p_emb = protein_emb[p_idx]
         s_emb = substrate_emb[s_idx]
 
-        # ===== NEW: get SMILES =====
+        # get SMILES
         smiles_row = smiles_df[smiles_df["substrate"] == substrate_name_val]
         if smiles_row.empty:
             smiles = None
         else:
             smiles = smiles_row.iloc[0]["SMILES_isomeric_1"]
 
-        # ===== NEW: get protein sequence =====
+        # get protein sequence
         seq = protein_df.loc[
             protein_df["UGT_trivial_name"] == protein_name,
             "prot_seq"
         ].values[0]
 
-        # ===== NEW: compute additional features =====
+        # compute additional features
         extra_feats = compute_all_features(smiles, seq)
 
         # clean None / nan
@@ -132,7 +132,7 @@ def create_concatenated_dataset(protein_emb, protein_df, substrate_emb, substrat
             dtype=float
         )
 
-        # ===== FINAL concatenation =====
+        # concatenation
         concat_emb = np.concatenate([p_emb, s_emb, extra_feats])
         
         X_list.append(concat_emb)

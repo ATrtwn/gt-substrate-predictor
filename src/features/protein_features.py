@@ -16,7 +16,7 @@ def compute_protein_features(sequence: str, selected: list[str]):
     p = ProteinAnalysis(sequence)
     length = len(sequence)
 
-    # --- Amino acid composition-based groups ---
+    # Amino acid composition-based groups
     aa_counts = p.count_amino_acids()  # dict like {"A": 10, "C": 3, ...}
     total = float(length) if length > 0 else 1.0  # avoid division by zero
 
@@ -34,13 +34,13 @@ def compute_protein_features(sequence: str, selected: list[str]):
     frac_negative = _frac(negative)
     frac_polar = _frac(polar)
 
-    # --- Base features from BioPython ---
+    # Base features from BioPython
     feature_map = {
         "length": length,
         "aromaticity": p.aromaticity(),
         "instability_index": p.instability_index(),
         "isoelectric_point": p.isoelectric_point(),
-        "gravy": p.gravy(),  # hydrophobicity (global)
+        "gravy": p.gravy(),                    # hydrophobicity (global)
         "frac_hydrophobic": frac_hydrophobic,  # fraction of hydrophobic residues
         "frac_positive": frac_positive,        # fraction of positively charged residues
         "frac_negative": frac_negative,        # fraction of negatively charged residues

@@ -4,7 +4,7 @@ from rdkit.Chem.Lipinski import NumHDonors, NumHAcceptors
 
 
 def _count_smarts(mol, smarts: str) -> int:
-    """Helper: count matches of a SMARTS pattern."""
+    # count matches of a SMARTS pattern.
     patt = Chem.MolFromSmarts(smarts)
     if patt is None:
         return 0
@@ -12,7 +12,7 @@ def _count_smarts(mol, smarts: str) -> int:
 
 
 def compute_substrate_features(smiles: str, selected: list[str]):
-    # ---- Basic checks ----
+    # Basic checks
     if not isinstance(smiles, str) or smiles.strip() == "":
         return {name: None for name in selected}
 
@@ -24,7 +24,7 @@ def compute_substrate_features(smiles: str, selected: list[str]):
     if mol is None:
         return {name: None for name in selected}
 
-    # ---- Basic counts ----
+    # Basic counts
     atoms = list(mol.GetAtoms())
     n_atoms = mol.GetNumAtoms()
     if n_atoms == 0:
@@ -76,7 +76,7 @@ def compute_substrate_features(smiles: str, selected: list[str]):
         1 for a in atoms if a.GetIsAromatic() and a.GetSymbol() == "O"
     )
 
-    # ---- Topological + physchem descriptors ----
+    # Topological + physchem descriptors
     molwt = Descriptors.MolWt(mol)
     logp = Descriptors.MolLogP(mol)
     tpsa = Descriptors.TPSA(mol)
@@ -122,7 +122,7 @@ def compute_substrate_features(smiles: str, selected: list[str]):
     # Bertz complexity
     bertz_ct = Descriptors.BertzCT(mol)
 
-    # ---- Functional groups via SMARTS (approximate) ----
+    # Functional groups via SMARTS (approximate)
     # All hydroxyl groups (OH)
     num_hydroxyl_groups = _count_smarts(mol, "[OX2H]")
 
@@ -214,7 +214,7 @@ def compute_substrate_features(smiles: str, selected: list[str]):
         else 0.0
     )
 
-    # ---- Put everything in one big dict ----
+    # Put everything in one big dict
     feature_map = {
         # basic physchem
         "molwt": molwt,
@@ -274,7 +274,7 @@ def compute_substrate_features(smiles: str, selected: list[str]):
         "ratio_heteroatoms": ratio_heteroatoms,
     }
 
-    # ---- Safely convert outputs to float ----
+    # convert outputs to float
     def _to_float(x):
         """
         Convert descriptor outputs to float.
