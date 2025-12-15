@@ -9,38 +9,7 @@ from tqdm import tqdm  # progress bar
 # data directory
 data_dir = Path(__file__).parent.parent.parent / "data"
 
-def prepare_dataset(verbose=False):
-    """
-    Prepare the full dataset for downstream modeling.
-
-    This function runs the complete preprocessing pipeline, including:
-    1. Preparing data required for KPGT descriptor generation
-    2. Creating FASTA files for protein sequence processing
-    3. Merging all original and auxiliary data sources
-    4. Constructing the final unified dataset used for modeling
-
-    Args:
-        verbose (bool): If True, prints progress messages for each preprocessing step.
-
-    Returns:
-        pd.DataFrame: The fully processed and merged dataset.
-    """
-    print("\n== [1/4] Preparing KPGT input data ==")
-    prepare_kpgt_data(verbose=verbose)
-
-    print("== [2/4] Creating FASTA file for protein sequences ==")
-    create_fasta_file(verbose=verbose)
-
-    print("== [3/4] Merging original data sources ==")
-    merge_original_data(verbose=verbose)
-
-    print("== [4/4] Creating full merged dataset ==")
-    df_all = create_full_dataset(verbose=verbose)
-
-    return df_all
-
-def merge_original_data(verbose=False):
-
+def create_original_dataset(verbose=False):
     all_exist = all(os.path.exists(os.path.join(data_dir, f)) for f in ["UGT.csv", "Activity.csv", "Substrate_SMILES.csv"])
 
     if all_exist:
@@ -214,12 +183,6 @@ def prepare_kpgt_data(verbose=False):
     Prepare substrate data in KPGT format.
     KPGT expects: data/Substrate/Substrate.csv with 'smiles' column
     """
-    # Set up paths
-    substrate_dir = data_dir / "Substrate"
-
-    # Create Substrate directory if it doesn't exist
-    substrate_dir.mkdir(exist_ok=True)
-
     # Load substrate SMILES data
     df = pd.read_csv(data_dir / "Substrate_SMILES.csv")
 
@@ -240,6 +203,11 @@ def prepare_kpgt_data(verbose=False):
         print(df_kpgt.head())
 
     # Save to KPGT format
+    # which expects data_path/dataset_name/dataset_name.csv
+    # Set up paths
+    substrate_dir = data_dir / "Substrate"
+    # Create Substrate directory if it doesn't exist
+    substrate_dir.mkdir(exist_ok=True)
     output_path = substrate_dir / "Substrate.csv"
     df_kpgt.to_csv(output_path, index=False)
     if verbose:
@@ -262,9 +230,7 @@ def create_fasta_file(verbose=False):
     df = pd.read_csv(ugt_path)
 
     # Open a new FASTA file
-    output_dir = data_dir / "Protein"
-    output_dir.mkdir(parents=True, exist_ok=True)
-    output_path = output_dir / "UGT.fasta"
+    output_path = data_dir / "UGT.fasta"
 
     # Create FASTA
     with output_path.open("w", encoding="utf8") as fasta_file:

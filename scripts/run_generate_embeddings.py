@@ -1,3 +1,8 @@
+import warnings
+warnings.filterwarnings(
+    "ignore",
+    message="TypedStorage is deprecated"
+)
 from src.features.protein_emb import generate_protein_emb
 from src.features.KPGT_emb import generate_KPGT_emb
 from src.features.substrate_emb_ChamBERTa2 import generate_CB2_emb
@@ -6,7 +11,7 @@ from src.features.concatenate_embeddings import concatenate_embeddings
 from pathlib import Path
 
 # data directory
-data_dir = Path(__file__).parent.parent.parent / "data"
+data_dir = Path(__file__).parent.parent / "data"
 
 def create_embeddings(
     embeddings_to_generate = None,
@@ -28,9 +33,11 @@ def create_embeddings(
                 - 'kpgt'
                 - 'chemberta2'
                 - 'chemberta3'
-            Use 'all' or None to generate all available embeddings.
+            Use 'all' or None to generate all available embeddings
         concat (bool):
-            If True, concatenates the generated embeddings into combined datasets.
+            If True, concatenates the generated embeddings into combined datasets
+        verbose (bool):
+            If True, prints progress messages for each preprocessing step
     """
     # default = all embeddings
     all_embeddings = {
@@ -71,3 +78,8 @@ def create_embeddings(
         concatenate_embeddings(embeddings=embeddings_for_concat, verbose=verbose)
     else:
         print("== Skipping embedding concatenation ==")
+
+
+if __name__ == "__main__":
+    print("==== Generating embeddings ====")
+    create_embeddings(embeddings_to_generate='all', concat=True, verbose=False)
