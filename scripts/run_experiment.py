@@ -13,8 +13,6 @@ from optuna.integration.wandb import WeightsAndBiasesCallback
 
 from src.training.evaluation import compute_f1_score
 
-wandb.init(project="gt-substrate-predictor", mode="offline")
-
 import numpy as np
 import pandas as pd
 import optuna
