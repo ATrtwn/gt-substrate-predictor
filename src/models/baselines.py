@@ -1,65 +1,89 @@
-
-from sklearn.dummy import DummyClassifier
-from sklearn.neighbors import KNeighborsClassifier
+import numpy as np
 from sklearn.ensemble import RandomForestClassifier
-from src.training.evaluation import compute_accuracy, compute_roc_auc, compute_f1_score, compute_mcc
 
-class BaselineWrapper:
-    #TODO ESP, EZSpecificity, GT-predict (for GT1 only)
 
-    def __init__(self, model_type='majority', **kwargs):
-        """
-        model_type: 'majority', 'knn', 'rf'
-        kwargs: additional parameters for the model
-        """
-        self.model_type = model_type.lower()
-        self.kwargs = kwargs
-        self.model = self._init_model()
+def random_classifier(X_tests):
+    """
+    Make a random probability and turn it into a class label using 0.5 as the threshold.
+    """
+    np.random.seed(42)
 
-    # RF, KNN, GNB, SV
-    def _init_model(self):
-        if self.model_type == 'majority':
-            return DummyClassifier(strategy='most_frequent', **self.kwargs)
-        elif self.model_type == 'knn':
-            return KNeighborsClassifier(**self.kwargs)
-        elif self.model_type == 'rf':
-            return RandomForestClassifier(**self.kwargs)
-        elif self.model_type == 'other':
-            # TODO: implement baseline from literature
-            return None
-        else:
-            raise ValueError(f"Unknown model_type: {self.model_type}")
+    results = {}
 
-    def fit(self, X_train, y_train):
-        """Train the baseline model"""
-        if self.model_type in ['majority', 'knn', 'rf']:
-            self.model.fit(X_train, y_train)
-        elif self.model_type == 'other':
-            pass  # TODO
+    for split_name, X in X_tests.items():
+        N = X.shape[0]
 
-    def predict(self, X):
-        """Return predictions"""
-        if self.model_type in ['majority', 'knn', 'rf']:
-            return self.model.predict(X)
-        elif self.model_type == 'other':
-            return None  # TODO
+        # random probability
+        proba = np.random.randint(0, 1001, size=N) / 1000
 
-    def predict_proba(self, X):
-        """Return probability estimates"""
-        if self.model_type in ['majority', 'knn', 'rf']:
-            return self.model.predict_proba(X)
-        elif self.model_type == 'other':
-            return None  # TODO
+        # prediction based on probability
+        pred = (proba > 0.5).astype(int)
 
-    def evaluate(self, X, y_true):
-        """Compute evaluation metrics"""
-        y_pred = self.predict(X)
-        y_probs = self.predict_proba(X)
-        # TODO: add task-specific metrics if needed
-        metrics = {
-            'accuracy': compute_accuracy(y_true, y_pred),
-            'f1': compute_f1_score(y_true, y_pred, average='macro'),
-            'auc': compute_roc_auc(y_true, y_probs),
-            'mcc': compute_mcc(y_true, y_pred)
+        results[split_name] = {
+            "pred": pred.tolist(),
+            "proba": proba.tolist(),
         }
-        return metrics
+
+    return results
+
+
+
+# ESP
+
+def majority_classifier(y_train, X_tests):
+    """
+    Predict the class that appears most often in y_train.
+    """
+    # find majority class
+    unique, counts = np.unique(y_train, return_counts=True)
+    majority_class = unique[np.argmax(counts)]
+
+    # probability = fraction of majority class in training
+    prob_majority = counts[np.argmax(counts)] / len(y_train)
+
+    results = {}
+
+    for split_name, X in X_tests.items():
+        N = X.shape[0]
+
+        pred = np.full(N, majority_class, dtype=int)
+        proba = np.full(N, prob_majority, dtype=float)
+
+        results[split_name] = {
+            "pred": pred.tolist(),
+            "proba": proba.tolist(),
+        }
+
+    return results
+
+
+
+def random_forest_classifier(X_train, y_train, X_tests, n_estimators=200):
+    """
+    Train a RandomForest model on concatenated embeddings.
+    """
+    # initialize RF
+    rf = RandomForestClassifier(
+        n_estimators=n_estimators,
+        random_state=42,
+        class_weight="balanced"
+    )
+
+    # train
+    rf.fit(X_train, y_train)
+
+    results = {}
+
+    for split_name, X in X_tests.items():
+        # predict class
+        pred = rf.predict(X)
+
+        # predict probability for class 1
+        proba = rf.predict_proba(X)[:, 1]
+
+        results[split_name] = {
+            "pred": pred.tolist(),
+            "proba": proba.tolist(),
+        }
+
+    return results
