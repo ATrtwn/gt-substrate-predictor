@@ -116,6 +116,38 @@ project_root/
     Follow the installation and environment setup instructions provided in the KPGT repository.
     Once installed, the embedding generation script in this project will call the KPGT code as part of the embedding pipeline.
     
+    **Add Substrate and Protein Features into the Embeddings (Optional)** 
+
+    This project allows you to append substrate features and protein features to the final concatenated embedding vector. These features are configured via the YAML file `configs/features.yml`.
+
+    1. Enable or Disable All Features Inside `configs/features.yml`:
+       ```
+       features:
+       use_features: true
+       ```
+       - Set to true → when you run the commands in 3. Generate Concatenated Embeddings, the substrate features and protein features will be automatically computed and appended to the concatenated embedding vector. Final vector becomes:[ protein_embedding || substrate_embedding || selected_features ] 
+       - Set to false → the concatenation process will produce embeddings that contain only the original protein and substrate embedding vectors, without adding any features.
+
+    2. Available Features (Reference Lists) 
+
+        The YAML file defines two complete catalogs of all implemented features: 
+           - `available_substrate_features:` — all substrate feature types supported by the project 
+           - `available_protein_features:` — all protein feature types supported by the project 
+
+        These lists exist only as references. They do not affect the model unless selected. 
+
+    3. Active Features (Used in Model Input) 
+
+       To use any feature during concatenation, you must explicitly list it:
+        - Add substrate features to `substrate_features:` 
+        - Add protein features to `protein_features:` 
+
+       Only the names listed under these two sections will be computed and appended to the concatenated embedding vector. 
+
+       Feature selection summary: 
+            - `available_*_features` = everything you could choose 
+            - `*_features` = the items you actually activate by listing them
+
 
 4.  Recommended Usage Order
     
