@@ -9,6 +9,9 @@ import shutil
 import pickle
 import os
 from os.path import join
+ESP_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# ESP_ROOT = src/prior_work/ESP
+
 import torch
 import torch.nn as nn
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -16,7 +19,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 import warnings
 warnings.filterwarnings("ignore")
 
-df_metabolites = pd.read_pickle(join(".", "src", "prior_work", "ESP", "data", "additional_data", "all_substrates.pkl"))
+df_metabolites = pd.read_pickle(join(ESP_ROOT, "data", "additional_data", "all_substrates.pkl"))
 
 save_folder = join("..", "data", "temp_met", "GNN_input_data")
 
@@ -216,7 +219,7 @@ def calculate_atom_and_bond_feature_vectors(df_met):
     df_met["LogP"], df_met["MW"] = np.nan, np.nan
     #Creating a temporary directory to save data for metabolites
 
-    df_count_met = pd.read_csv(join("..", "data", "additional_data", "all_training_metabolites.csv"), sep = "\t")
+    df_count_met = pd.read_csv(join(ESP_ROOT, "data", "additional_data", "all_training_metabolites.csv"), sep = "\t")
 
     try:
         os.mkdir(join("..", "data", "temp_met"))
