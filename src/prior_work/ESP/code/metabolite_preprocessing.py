@@ -23,7 +23,7 @@ save_folder = join("..", "data", "temp_met", "GNN_input_data")
 
 def metabolite_preprocessing(metabolite_list):
     #removing duplicated entries and creating a pandas DataFrame with all metabolites
-    os.chdir("./src/prior_work/ESP/code")
+   # os.chdir("./src/prior_work/ESP/code")
     df_met = pd.DataFrame(data = {"metabolite" : list(set(metabolite_list))})
     df_met["type"], df_met["ID"] = np.nan, np.nan
 
