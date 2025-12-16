@@ -21,7 +21,7 @@ warnings.filterwarnings("ignore")
 
 df_metabolites = pd.read_pickle(join(ESP_ROOT, "data", "additional_data", "all_substrates.pkl"))
 
-save_folder = join("..", "data", "temp_met", "GNN_input_data")
+save_folder = join(ESP_ROOT, "data", "temp_met", "GNN_input_data")
 
 
 def metabolite_preprocessing(metabolite_list):
@@ -50,7 +50,7 @@ def metabolite_preprocessing(metabolite_list):
     N_max = maximal_number_of_atoms(df_met = df_met)
     df_met = calculate_input_matrices(df_met = df_met, N_max = 70)
     df_met = get_substrate_representations(df = df_met, N_max = 70)
-    shutil.rmtree(join("..", "data", "temp_met"))
+    shutil.rmtree(join(ESP_ROOT, "data", "temp_met"))
     return(df_met)
 
 
@@ -71,7 +71,7 @@ def get_representation_input(cid_list):
 
 def get_substrate_representations(df, N_max):
     model = GNN(D= 100, N = N_max, F1 = 32 , F2 = 10).to(device)
-    model.load_state_dict(torch.load(join(".." ,"data", "GNN", "Pytorch_GNN_with_pretraining")))
+    model.load_state_dict(torch.load(join(ESP_ROOT, "data", "GNN", "Pytorch_GNN_with_pretraining")))
     model.eval()
     df["substrate_rep"] = ""
     
@@ -221,13 +221,7 @@ def calculate_atom_and_bond_feature_vectors(df_met):
 
     df_count_met = pd.read_csv(join(ESP_ROOT, "data", "additional_data", "all_training_metabolites.csv"), sep = "\t")
 
-    try:
-        os.mkdir(join("..", "data", "temp_met"))
-        os.mkdir(join("..", "data", "temp_met", "mol_feature_vectors"))  
-    except FileExistsError:
-        shutil.rmtree(join("..", "data", "temp_met"))
-        os.mkdir(join("..", "data", "temp_met"))
-        os.mkdir(join("..", "data", "temp_met", "mol_feature_vectors"))
+    os.makedirs(join(ESP_ROOT, "data", "temp_met", "mol_feature_vectors"), exist_ok=True)
 
     for ind in df_met.index:
         ID, met_type, met = df_met["ID"][ind], df_met["type"][ind], df_met["metabolite"][ind]
@@ -235,7 +229,7 @@ def calculate_atom_and_bond_feature_vectors(df_met):
                 mol = None
         elif met_type == "KEGG":
             try:
-                mol = Chem.MolFromMolFile(join("..", "data", "mol-files",  met + ".mol"))
+                mol = Chem.MolFromMolFile(join(ESP_ROOT, "data", "mol-files",  met + ".mol"))
             except:
                 print(".......Mol file for KEGG ID '%s' is not available. Try to enter InChI string or SMILES for the metabolite instead." % met)
                 mol = None
@@ -272,7 +266,7 @@ def calculate_atom_feature_vector_for_mol(mol, mol_ID):
         features.append(str(atom.GetHybridization())), features.append(atom.GetIsAromatic()), features.append(atom.GetMass())
         features.append(atom.GetTotalNumHs()), features.append(str(atom.GetChiralTag()))
         atom_list.append(features)
-    with open(join("..", "data", "temp_met", "mol_feature_vectors",
+    with open(join(ESP_ROOT, "data", "temp_met", "mol_feature_vectors",
                                     mol_ID + "-atoms.txt"), "wb") as fp:   #Pickling
         pickle.dump(atom_list, fp)
                         
@@ -286,7 +280,7 @@ def calculate_bond_feature_vector_for_mol(mol, mol_ID):
                 features.append(str(bond.GetBondType())), features.append(bond.GetIsAromatic()),
                 features.append(bond.IsInRing()), features.append(str(bond.GetStereo()))
                 bond_list.append(features)
-        with open(join("..", "data", "temp_met", "mol_feature_vectors",
+        with open(join(ESP_ROOT, "data", "temp_met", "mol_feature_vectors",
                                         mol_ID + "-bonds.txt"), "wb") as fp:   #Pickling
                 pickle.dump(bond_list, fp)
 
@@ -340,7 +334,7 @@ def create_input_data_for_GNN_for_substrates(substrate_ID, N_max, print_error = 
 def create_bond_feature_matrix(mol_name, N):
         '''create adjacency matrix A and bond feature matrix/tensor E'''
         try:
-                with open(join("..", "data", "temp_met", "mol_feature_vectors",
+                with open(join(ESP_ROOT, "data", "temp_met", "mol_feature_vectors",
                                              mol_name + "-bonds.txt"), "rb") as fp:   # Unpickling
                         bond_features = pickle.load(fp)
         except FileNotFoundError:
@@ -361,7 +355,7 @@ def create_bond_feature_matrix(mol_name, N):
 
 def create_atom_feature_matrix(mol_name, N):
     try:
-        with open(join("..", "data", "temp_met", "mol_feature_vectors",
+        with open(join(ESP_ROOT, "data", "temp_met", "mol_feature_vectors",
                                         mol_name + "-atoms.txt"), "rb") as fp:   # Unpickling
             atom_features = pickle.load(fp)
     except FileNotFoundError:
