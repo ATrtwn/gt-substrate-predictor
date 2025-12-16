@@ -58,27 +58,111 @@ project_root/
 
 3. Result: CSV files will be saved in the data/ folder, ready for preprocessing and analysis.
 
-#### 2. Generate Concatenated Embeddings
+#### 2. Data Processing and Embedding Generation Pipeline
 
-After generating protein embeddings (ProtT5) and substrate embeddings (ChemBERTa2, ChemBERTa3, KPGT), concatenate them for ML model training:
+1. Dataset Preprocessing
+    Entry point:
+    ```bash
+    python run_data_preprocessing.py
+    ```
+    This step prepares all raw input data required for downstream processing. It includes:
+      - Filtering and standardizing substrate SMILES
+      - Preparing KPGT-compatible input files
+      - Creating FASTA files for protein sequences
+      - Merging original data sources
+      - Creating the full, cleaned interaction dataset
+   
+    **This step only needs to be run once unless the raw data changes.**
 
-**Generate all substrate embedding types:**
-```bash
-python scripts/concatenate_embeddings.py --substrate all
-```
 
-**Generate specific substrate type only:**
-```bash
-# ChemBERTa2 (384D) + ProtT5 (1024D) = 1408D
-python scripts/concatenate_embeddings.py --substrate chemberta2
+2. Dataset Splitting (C1 / C2 / C3)
+    Entry point:
+    ```bash
+    python run_data_split.py
+    ```
+    This script performs dataset splitting according to enzyme–substrate generalization settings:
+     - Training
+     - Validation (C1 / C2 / C3 splits)
+     - Test (C1 / C2 / C3 splits)
+   
+    **The splits are stored explicitly in the dataset (via a split column or separate files), allowing downstream steps to operate without recomputing splits.**
 
-# ChemBERTa3 (768D) + ProtT5 (1024D) = 1792D
-python scripts/concatenate_embeddings.py --substrate chemberta3
 
-# KPGT (2304D) + ProtT5 (1024D) = 3328D
-python scripts/concatenate_embeddings.py --substrate kpgt
-```
-3. Run the clustering:
+3. Embedding Generation and Concatenation
+    Entry point:
+    ```bash
+    python run_generate_embeddings.py
+    ```
+    This script generates embeddings for proteins and substrates and optionally concatenates them for model training.
+     - Protein embeddings 
+       - (ProtT5 (1024D))
+     - Substrate embeddings
+       - ChemBERTa-2 
+       - ChemBERTa-3 
+       - KPGT
+       
+    You can configure which embeddings are generated and whether concatenation is performed via function arguments.
+    
+    **About KPGT:**
+    KPGT embeddings are generated using the method described in:
+    "A Knowledge-Guided Pre-training Framework for Improving Molecular Representation Learning"
+
+    The implementation is not included directly in this repository.
+
+    Before generating KPGT embeddings, you must clone the official KPGT repository:
+    ```bash
+    git clone https://github.com/lihan97/KPGT
+    ```
+    Follow the installation and environment setup instructions provided in the KPGT repository.
+    Once installed, the embedding generation script in this project will call the KPGT code as part of the embedding pipeline.
+    
+    **Add Substrate and Protein Features into the Embeddings (Optional)** 
+
+    This project allows you to append substrate features and protein features to the final concatenated embedding vector. These features are configured via the YAML file `configs/features.yml`.
+
+    1. Enable or Disable All Features Inside `configs/features.yml`:
+       ```
+       features:
+       use_features: true
+       ```
+       - Set to true → when you run the commands in 3. Generate Concatenated Embeddings, the substrate features and protein features will be automatically computed and appended to the concatenated embedding vector. Final vector becomes:[ protein_embedding || substrate_embedding || selected_features ] 
+       - Set to false → the concatenation process will produce embeddings that contain only the original protein and substrate embedding vectors, without adding any features.
+
+    2. Available Features (Reference Lists) 
+
+        The YAML file defines two complete catalogs of all implemented features: 
+           - `available_substrate_features:` — all substrate feature types supported by the project 
+           - `available_protein_features:` — all protein feature types supported by the project 
+
+        These lists exist only as references. They do not affect the model unless selected. 
+
+    3. Active Features (Used in Model Input) 
+
+       To use any feature during concatenation, you must explicitly list it:
+        - Add substrate features to `substrate_features:` 
+        - Add protein features to `protein_features:` 
+
+       Only the names listed under these two sections will be computed and appended to the concatenated embedding vector. 
+
+       Feature selection summary: 
+            - `available_*_features` = everything you could choose 
+            - `*_features` = the items you actually activate by listing them
+
+
+4.  Recommended Usage Order
+    
+    To run the full pipeline from raw data to embeddings:
+ 
+    ```bash
+    python run_data_preprocessing.py
+    python run_data_split.py
+    python run_generate_embeddings.py
+    ```
+   
+    **Each step can be rerun independently if needed (e.g. regenerating embeddings without reprocessing data)**
+
+
+#### 3. Run the clustering:
 -Once MMseqs2 is ready, run the clustering command (adjust filenames if needed):
 ´´´powershell tools\mmseqs\bin\mmseqs.exe easy-cluster UGT.fasta GT_cluster tmp --min-seq-id 0.7 -c 0.7´´´
   -min-seq-id 0.7 sets 70% minimum sequence identity (agreed on the meeting)
@@ -94,7 +178,7 @@ The script automatically:
 - Only includes pairs with both protein and substrate embeddings
 - Generates 2251 valid concatenated pairs (100% coverage)
 
-5. Report output:
+Report output:
   -´´´powershell python .\scripts\print_cluster_report.p´´´ for the report output -> CONCLUSION: dataset is diverse enough, no need for omiting the sequences
 
 #### 🧬 Substrate embeddings

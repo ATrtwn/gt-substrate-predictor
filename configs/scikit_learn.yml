@@ -1,4 +1,10 @@
 models:
+  majority_classifier:
+    strategy: "most_frequent"
+
+  random_classifier:
+    strategy: "uniform"
+
   ridge_classifier:
     alpha: 0.5
     fit_intercept: true

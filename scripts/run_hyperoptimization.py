@@ -247,7 +247,7 @@ class OptunaWandbSweep:
         for i, trial in enumerate(best_trials):
             wandb.init(
                 project=self.wandb_par["project"],
-                name=f"best_trial_{i+1}_{self.optuna_config["model_name"]}_{nano_id(6)}",
+                name=f"best_trial_{i+1}_{self.optuna_config['model_name']}_{nano_id(6)}",
                 config=trial.params,
                 reinit=True
             )
