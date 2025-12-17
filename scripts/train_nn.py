@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt
 # Add project root to path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
-from src.models.nn_model import GT_NN, DeepMLP, BilinearInteractionNet, AttentionMLP, save_model
+from src.models.nn_model import GT_NN, BilinearInteractionNet, AttentionMLP, save_model
 from src.data.data_split import stratified_split_by_entities, check_split
 from src.utils.helper_function import get_params, setup_logging, nano_id
 from sklearn.metrics import accuracy_score, roc_auc_score, f1_score, matthews_corrcoef
@@ -202,10 +202,7 @@ def train_nn_experiment(
     protein_dim = 1024
     substrate_dim = input_dim - protein_dim
     
-    if model_type.lower() == "deep":
-        model = DeepMLP(input_dim=input_dim, hidden_dims=hidden_dims, dropout=dropout).to(device)
-        logging.info(f"Using DeepMLP with hidden_dims={hidden_dims}")
-    elif model_type.lower() == "bilinear":
+    if model_type.lower() == "bilinear":
         model = BilinearInteractionNet(
             protein_dim=protein_dim, 
             substrate_dim=substrate_dim, 
