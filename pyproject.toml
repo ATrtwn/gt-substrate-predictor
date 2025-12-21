@@ -11,7 +11,7 @@ dependencies = [
     "matplotlib>=3.10.7",
     "networkx>=3.6",
     "optuna>=4.6.0",
-    "torch">2.2,
+    "torch>2.2",
     "optuna-integration[wandb]>=4.6.0",
     "pandas>=2.3.3",
     "pathlib>=1.0.1",
