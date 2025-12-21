@@ -10,7 +10,6 @@ dependencies = [
     "joblib>=1.5.2",
     "matplotlib>=3.10.7",
     "networkx>=3.6",
-    "numpy>=2.3.4",
     "optuna>=4.6.0",
     "optuna-integration[wandb]>=4.6.0",
     "pandas>=2.3.3",
@@ -21,10 +20,12 @@ dependencies = [
     "scikit-learn==1.6.1",
     "seaborn>=0.13.2",
     "sqlalchemy>=2.0.44",
-    "sqlalchemy-access>=2.0.3",
     "torch>=2.9.1",
     "tqdm>=4.67.1",
     "transformers>=4.57.3",
     "upsetplot>=0.9.0",
     "wandb==0.18.7",
 ]
+[tool.uv]
+concurrent-downloads = 1
+
