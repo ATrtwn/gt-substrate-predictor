@@ -1,4 +1,12 @@
 models:
+  ridge_classifier:
+    alpha: 0.5
+    fit_intercept: true
+
+  decision_tree:
+    max_depth: 10
+    min_samples_split: 2
+    random_state: 42
 
   logistic_regression:
     penalty: l2
@@ -37,6 +45,11 @@ models:
     algorithm: auto
     leaf_size: 30
 
+concatenation_path: "data/concatenated_embeddings/"
+substrate_name: "chemberta2"
+protein_name: "prott5"
+project: "gt-substrate-predictor"
+wandb_mode: "online"
 optuna_sweep_configs:
   model: random_forest
   param_distributions:

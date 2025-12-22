@@ -11,6 +11,10 @@ from tqdm import tqdm
 import wandb
 from optuna.integration.wandb import WeightsAndBiasesCallback
 
+from src.training.evaluation import compute_f1_score
+
+wandb.init(project="gt-substrate-predictor", mode="offline")
+
 import numpy as np
 import pandas as pd
 import optuna
@@ -34,7 +38,8 @@ from src.training.train import SklearnTrainer
 
 from datetime import datetime
 
-data_dir = Path(__file__).parent.parent 
+# data directory
+ROOT = Path(__file__).parent.parent
 
 MODEL_MAPPING = {
     "ridge_classifier": RidgeClassifier,
@@ -54,12 +59,13 @@ def run_sklearn_experiment(
     protein_name:str,
     wandb_mode: str = "offline",
     project: str = "gt-substrate-predictor",
+    sweep: bool = False,
     concatenation_path:str=None,
-) -> float:
+) -> None:
     run = (
         wandb.init(
             project=project,
-            name=f"{model_name}_substrate-{substrate_name}_protein-{protein_name}_id-{datetime.now().strftime("%Y%m%d_%H%M%S")}",
+            name=f"{model_name}_substrate-{substrate_name}_protein-{protein_name}_id-{nano_id()}",
             config={
                 "model_name": model_name,
                 "model_params": model_params,
@@ -74,7 +80,6 @@ def run_sklearn_experiment(
     if model_name not in MODEL_MAPPING:
         raise ValueError(f"Unknown model_name '{model_name}'. Available: {list(MODEL_MAPPING.keys())}")
 
-
     sk_model = MODEL_MAPPING[model_name](**model_params)
 
     # Wrap in SklearnTrainer
@@ -82,17 +87,17 @@ def run_sklearn_experiment(
 
     # --- Load the embeddings here ---
     if concatenation_path is not None:
-        concatenated_embeddings = np.load( data_dir/concatenation_path / f'X_{substrate_name}.npy')
-        activity = np.load(data_dir / concatenation_path / f'y_{substrate_name}.npy')
-    meta_name = "metadata_"+substrate_name+"_"+protein_name+".csv"
-    metadata = pd.read_csv(data_dir / concatenation_path /  meta_name )
+        concatenated_embeddings = np.load( ROOT/concatenation_path / f'X_{substrate_name}.npy')
+        activity = np.load(ROOT / concatenation_path / f'y_{substrate_name}.npy')
+    meta_name = "metadata_"+substrate_name+".csv"
+    metadata = pd.read_csv(ROOT / concatenation_path /  meta_name )
     # Convert activity to binary: 0 if value is the string "None", else 1
 
     activity = (activity != "none").astype(int)
 
     protein_col = "UGT_trivial_name"
     substrate_col = "substrate"
-    label_col = "activity"
+    label_col = "is_active"
 
     unique_proteins = metadata[protein_col].unique()
     unique_substrates = metadata[substrate_col].unique()
@@ -101,24 +106,14 @@ def run_sklearn_experiment(
         "unique_proteins": len(unique_proteins),
         "unique_substrates": len(unique_substrates)
     })
-    logging.info("Create Split ...")
+    logging.info("Load Split ...")
 
-    splits = stratified_split_by_entities(metadata,
-                                          protein_col=protein_col,
-                                          substrate_col=substrate_col,
-                                          label_col=label_col,
-                                          plot=False)
-
-    # check stratification
-    c1 = splits['C1']
-    c2 = splits['C2']
-    c3 = splits['C3']
-    train = splits['train']
-    val = splits['val']
-
-
-    check_split(train, val, c1, c2, c3, protein_col, substrate_col)
-    logging.info("Split check passed.")
+    splits = pd.read_csv(f"{ROOT}/data/split.csv")
+    train = splits[splits["split"] == "train"]
+    val = splits[splits["split"].str.endswith("_val")]
+    c1 = splits[splits["split"] == "C1_test"]
+    c2 = splits[splits["split"] == "C2_test"]
+    c3 = splits[splits["split"] == "C3_test"]
 
     dataset_len = len(metadata[[protein_col, substrate_col]].drop_duplicates())
     wandb.log({
@@ -128,19 +123,19 @@ def run_sklearn_experiment(
     table = wandb.Table(columns=["Subset", "Class", "Frequency"])
 
     for name, subset in [("Training", train), ("val", val), ("C1", c1), ("C2", c2), ("C3", c3)]:
-        counts = subset["activity"].value_counts(normalize=True).sort_index()
+        counts = subset[label_col].value_counts(normalize=True).sort_index()
         for cls, freq in counts.items():
             table.add_data(name, cls, freq)
         wandb.log({f"{name}/distribution_table": table})
 
-    c1_emb = concatenated_embeddings[metadata.index.isin(c1.original_index)]
-    c2_emb = concatenated_embeddings[metadata.index.isin(c2.original_index)]
+    c1_emb = concatenated_embeddings[metadata.index.isin(c1.index)]
+    c2_emb = concatenated_embeddings[metadata.index.isin(c2.index)]
     #c3_emb = concatenated_embeddings[metadata.index.isin(c3.original_index)]
-    train_emb = concatenated_embeddings[metadata.index.isin(train.original_index)]
-    val_emb = concatenated_embeddings[metadata.index.isin(val.original_index)]
+    train_emb = concatenated_embeddings[metadata.index.isin(train.index)]
+    val_emb = concatenated_embeddings[metadata.index.isin(val.index)]
 
-    train_activity = activity[metadata.index.isin(train.original_index)]
-    val_activity = activity[metadata.index.isin(val.original_index)]
+    train_activity = activity[metadata.index.isin(train.index)]
+    val_activity = activity[metadata.index.isin(val.index)]
 
     # Fit the model
     logging.info("Start training" + model_name + " with params :" + str(model_params))
@@ -155,11 +150,11 @@ def run_sklearn_experiment(
     # Evaluate on sets
     results = {}
     return_metrics = 0.0
-    for emb,name in [(train_emb,'train'), (val_emb,'val'),(c1_emb, "C1"), (c2_emb, "C2") ]:#,(c3_emb, "C3")
+    for emb,name in [(train_emb,'train'), (val_emb,'val'),(c1_emb, "C1_test"), (c2_emb, "C2_test") ]:#,(c3_emb, "C3")
         y_pred = trainer.predict(emb)
         results[name] = y_pred
 
-    test_sets = ["train", "val","C1","C2"]#,"C3"]
+    test_sets = ["train", "val" ,"C1_test","C2_test"]#,"C3"]
     metrics = [accuracy_score, roc_auc_score, f1_score, matthews_corrcoef]
 
     # Prepare a W&B Table
@@ -170,7 +165,10 @@ def run_sklearn_experiment(
 
     for split_name in test_sets:
 
-        true_activities = metadata[metadata.index.isin(splits[split_name].original_index)]["activity"].values
+        split = splits[splits["split"]==split_name]
+        if split_name == "val":
+            split = splits[splits["split"].str.endswith("_val")]
+        true_activities = metadata[metadata.index.isin(split.index)]["activity"].values
         binary_true_activities = (true_activities != "none").astype(int)
 
         predicted_activities_prob = results[split_name]
@@ -181,7 +179,7 @@ def run_sklearn_experiment(
             if metric_fn == roc_auc_score:
                 value = metric_fn(binary_true_activities,predicted_activities_prob)  # pass probabilities
             else:
-                value = metric_fn(binary_true_activities,predicted_activities_bin)  # pass binary predictions)
+                value = metric_fn(binary_true_activities,predicted_activities_bin)  # pass binary predictions
             if split_name == "val" and metric_fn == f1_score:
                 return_metrics = value
             metrics_table.add_data(split_name, metric_fn.__name__, value)
@@ -207,6 +205,7 @@ def train_and_log(params: dict[str, Any] = None) -> None:
     for model_name, model_params in model_classes.items():
         logging.info(f"Preparing model: {model_name} with params: {model_params}")
         model_params_copy = model_params.copy()
+
         tasks.append(
             delayed(run_sklearn_experiment)(
                 model_name=model_name,

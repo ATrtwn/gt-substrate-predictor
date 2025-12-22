@@ -97,25 +97,63 @@ project_root/
 
 #### 3. Generate Concatenated Embeddings
 
-After generating protein embeddings (ProtT5) and substrate embeddings (ChemBERTa2, ChemBERTa3, KPGT), concatenate them for ML model training:
+1. Dataset Preprocessing
+    Entry point:
+    ```bash
+    python run_data_preprocessing.py
+    ```
+    This step prepares all raw input data required for downstream processing. It includes:
+      - Filtering and standardizing substrate SMILES
+      - Preparing KPGT-compatible input files
+      - Creating FASTA files for protein sequences
+      - Merging original data sources
+      - Creating the full, cleaned interaction dataset
+   
+    **This step only needs to be run once unless the raw data changes.**
 
-**Generate all substrate embedding types:**
-```bash
-python scripts/concatenate_embeddings.py --substrate all
-```
 
-**Generate specific substrate type only:**
-```bash
-# ChemBERTa2 (384D) + ProtT5 (1024D) = 1408D
-python scripts/concatenate_embeddings.py --substrate chemberta2
+2. Dataset Splitting (C1 / C2 / C3)
+    Entry point:
+    ```bash
+    python run_data_split.py
+    ```
+    This script performs dataset splitting according to enzyme–substrate generalization settings:
+     - Training
+     - Validation (C1 / C2 / C3 splits)
+     - Test (C1 / C2 / C3 splits)
+   
+    **The splits are stored explicitly in the dataset (via a split column or separate files), allowing downstream steps to operate without recomputing splits.**
 
-# ChemBERTa3 (768D) + ProtT5 (1024D) = 1792D
-python scripts/concatenate_embeddings.py --substrate chemberta3
 
-# KPGT (2304D) + ProtT5 (1024D) = 3328D
-python scripts/concatenate_embeddings.py --substrate kpgt
-```
-3. Run the clustering:
+3. Embedding Generation and Concatenation
+    Entry point:
+    ```bash
+    python run_generate_embeddings.py
+    ```
+    This script generates embeddings for proteins and substrates and optionally concatenates them for model training.
+     - Protein embeddings 
+       - (ProtT5 (1024D))
+     - Substrate embeddings
+       - ChemBERTa-2 
+       - ChemBERTa-3 
+       - KPGT
+       
+    You can configure which embeddings are generated and whether concatenation is performed via function arguments.
+    
+    **About KPGT:**
+    KPGT embeddings are generated using the method described in:
+    "A Knowledge-Guided Pre-training Framework for Improving Molecular Representation Learning"
+
+    The implementation is not included directly in this repository.
+
+    Before generating KPGT embeddings, you must clone the official KPGT repository:
+    ```bash
+    git clone https://github.com/lihan97/KPGT
+    ```
+    Follow the installation and environment setup instructions provided in the KPGT repository.
+    Once installed, the embedding generation script in this project will call the KPGT code as part of the embedding pipeline.
+
+    Run the clustering:
 
   -Once MMseqs2 is ready, run the clustering command (adjust filenames if needed):
 ```powershell 
@@ -134,12 +172,25 @@ The script automatically:
 - Maps protein-substrate pairs from `Activity.csv`
 - Only includes pairs with both protein and substrate embeddings
 - Generates 2251 valid concatenated pairs (100% coverage)
-
-5. Report output:
+  
+  Report output:
   ```powershell 
    python .\scripts\print_cluster_report.p
   ``` 
   for the report output -> CONCLUSION: dataset is diverse enough, no need for omiting the sequences
+
+4.  Recommended Usage Order
+    
+    To run the full pipeline from raw data to embeddings:
+ 
+    ```bash
+    python run_data_preprocessing.py
+    python run_data_split.py
+    python run_generate_embeddings.py
+    ```
+   
+    **Each step can be rerun independently if needed (e.g. regenerating embeddings without reprocessing data)**
+
 
 #### 🧬 Substrate embeddings
 To use RDKit in this project, follow these steps:
@@ -163,6 +214,83 @@ ANALYSIS: ´´´powershell $env:OMP_NUM_THREADS = "1"
 python .\scripts\analyze_substrate_embeddings.py´´´
 And for the conection between cluster classes and activity:
 ´´´python .\scripts\analyze_cluster_properties.py´´´
+---
+
+### 🤖 Neural Network Training
+
+Train neural networks for GT-substrate activity prediction using concatenated embeddings.
+
+#### Available Model Types
+
+1. **Simple MLP (`model_type: "simple"`)**
+   - 3-layer feedforward network
+   - Fast and effective baseline
+
+2. **Deep MLP (`model_type: "deep"`)**
+   - 5-layer deep network with residual-style connections
+
+3. **Bilinear Interaction Network (`model_type: "bilinear"`)**
+   - Explicitly models protein-substrate interactions
+   - Projects embeddings to lower dimensions
+
+4. **Attention MLP (`model_type: "attention"`)**
+   - Cross-attention mechanism between protein and substrate
+   - Multi-head attention captures diverse interaction patterns
+
+#### Configuration
+
+Edit `configs/neural_network.yml`:
+
+```yaml
+# Model architecture
+model_type: "attention"  # "simple", "deep", "bilinear", or "attention"
+hidden_dims: [512, 256]  # Hidden layer dimensions
+dropout: 0.4  # Dropout rate (0.3-0.5 recommended)
+
+# Attention-specific parameters (only for model_type: "attention")
+num_heads: 4  # Number of attention heads (4 recommended, 8 may overfit)
+use_residual: true  # Use residual connections (recommended)
+
+# Data augmentation (optional)
+data_augmentation: false  # Enable Gaussian noise during training
+noise_std: 0.02  # Standard deviation for noise (if augmentation enabled)
+
+# Training hyperparameters
+learning_rate: 0.001
+batch_size: 16
+epochs: 100
+weight_decay: 0.0005  # L2 regularization
+
+# Data
+substrate_name: "chemberta3"  # "chemberta2", "chemberta3", or "kpgt"
+protein_name: "prott5"
+
+# W&B tracking
+wandb_mode: "offline"  # "online" or "offline"
+```
+
+#### Running Training
+
+```bash
+# Train with current config
+python scripts/train_nn.py
+```
+
+The script will:
+- Automatically normalize embeddings (StandardScaler)
+- Create stratified train/val/test splits
+- Apply early stopping (patience=10)
+- Save best model checkpoint
+- Generate training curves (loss, accuracy, F1, ROC-AUC)
+- Save metrics to JSON file
+- Log to Weights & Biases
+
+#### Outputs
+
+- **Model checkpoint**: `experiments/best_model_{substrate_name}.pth`
+- **Training curves**: `reports/figures/nn_training_{substrate_name}_{id}.png`
+- **Metrics JSON**: `reports/metrics/nn_metrics_{substrate_name}_{id}.json`
+- **W&B logs**: `wandb/offline-run-*/` (sync with `wandb sync <run-dir>`)
 ---
 
 ### 📈 Experiments

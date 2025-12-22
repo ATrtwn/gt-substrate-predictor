@@ -1,11 +1,17 @@
 import pandas as pd
 import random
 import networkx as nx
+from pathlib import Path
 from collections import defaultdict
+
 from src.utils.visualization import (plot_split_graph,
                                      plot_graph_connectivity,
                                      plot_connectivity_separate,
                                      plot_degree_distributions)
+
+# data directory
+data_dir = Path(__file__).parent.parent.parent / "data"
+
 
 def stratified_split_by_entities(df, protein_col="UGT_ID", substrate_col="substrate",label_col = "is_active", random_state=42, plot=False):
     """

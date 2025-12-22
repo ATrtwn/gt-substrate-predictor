@@ -9,4 +9,7 @@ sqlalchemy-access
 transformers
 torch
 seaborn
-skikit-learn
+scikit-learn
+wandb
+joblib
+pyyaml
