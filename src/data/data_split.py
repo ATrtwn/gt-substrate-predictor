@@ -142,6 +142,7 @@ def create_graph(df, protein_col="UGT_ID", substrate_col="substrate", label_col=
     G.add_nodes_from(proteins, bipartite="protein")
     G.add_nodes_from(substrates, bipartite="substrate")
 
+    # TODO: Add cluster informations
     # edges = if pairs occurs in dataset there is an edge
     for _, row in df.iterrows():
         p = row[protein_col]
@@ -165,6 +166,8 @@ def split_graph(G, train_frac=0.7, test_frac=0.15, reserve_frac = 0.1, random_st
 
     # --- GET ALL EDGES ---
     edges = list(G.edges(data=True))
+
+    # TODO: split by clusters
 
     # --- 1) RESERVE A FIXED FRACTION OF EDGES BEFORE ANY SPLITTING ---
     reserved_edges, remaining_edges = reserve_edges_by_degree(G, reserve_frac=reserve_frac)
