@@ -6,7 +6,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).parent.parent
 REPORTS = ROOT / "reports"
-CLUSTER_TSV = REPORTS / "GT_cluster_cluster.tsv"
+DATA = ROOT / "data"
+CLUSTER_TSV = DATA / "GT_cluster_cluster.tsv"
 
 def print_report():
     """Read cluster TSV and print statistics."""
