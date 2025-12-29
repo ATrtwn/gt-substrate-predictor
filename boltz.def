@@ -1,0 +1,16 @@
+Bootstrap: docker
+From: nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
+
+%environment
+    export BOLTZ_CACHE=/boltz_cache
+    export PYTHONUNBUFFERED=1
+
+%post
+    apt-get update && apt-get install -y python3.10 python3-pip git ca-certificates
+    pip install --upgrade pip
+    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+    pip install boltz[cuda]
+    pip install pyproject.toml
+
+%runscript
+    exec boltz "$@"
