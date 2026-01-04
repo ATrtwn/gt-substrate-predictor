@@ -3,6 +3,9 @@ from pathlib import Path
 from sklearn.metrics import accuracy_score, roc_auc_score, f1_score, matthews_corrcoef
 from src.prior_work.ESP.code.ES_prediction import ESP_predicton
 
+RESULT_DIR = Path("results/esp")
+RESULT_DIR.mkdir(parents=True, exist_ok=True)
+
 def evaluate_esp(
         split_name: str, 
         df: pd.DataFrame, 
@@ -10,7 +13,7 @@ def evaluate_esp(
         substrate_col: str = "ConnectivitySMILES", 
         is_active_col: str = 'is_active'
     ):
-    df = df[:3]
+    # df = df[:3]
     # Ground truth
     y_true = df[is_active_col].values
 
@@ -20,7 +23,20 @@ def evaluate_esp(
         substrate_list=df[substrate_col].tolist()
     )
 
-    print(esp_out)
+    # --- save outputs ---
+    out_path = RESULT_DIR / f"{split_name.replace(' ', '_')}.csv"
+
+    if isinstance(esp_out, pd.DataFrame):
+        out_df = esp_out.copy()
+    else:
+        out_df = pd.DataFrame({"esp_output": list(esp_out) if isinstance(esp_out, (list, tuple)) else [str(esp_out)]})
+
+    out_df.insert(0, "split", split_name)
+    out_df.insert(1, "y_true", y_true[:len(out_df)])
+
+    out_df.to_csv(out_path, index=False)
+    print(f"[{split_name}] saved -> {out_path}")
+
 
 def main():
     data_dir = Path(__file__).parent.parent / "data"
