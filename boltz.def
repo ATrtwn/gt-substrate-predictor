@@ -6,11 +6,22 @@ From: nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
     export PYTHONUNBUFFERED=1
 
 %post
-    apt-get update && apt-get install -y python3.10 python3-pip git ca-certificates
-    pip install --upgrade pip
-    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-    pip install boltz[cuda]
-    pip install pyproject.toml
+    apt-get update && apt-get install -y \
+        python3.10 \
+        python3-pip \
+        git \
+        ca-certificates
 
-%runscript
-    exec boltz "$@"
+    python3.10 -m pip install --upgrade pip
+
+    # Pin PyTorch stack EXACTLY
+    python3.10 -m pip install \
+        torch==2.1.2+cu121 \
+        torchvision==0.16.2+cu121 \
+        torchaudio==2.1.2+cu121 \
+        --extra-index-url https://download.pytorch.org/whl/cu121
+
+    # Install boltz AFTER torch is fixed
+    python3.10 -m pip install "boltz[cuda]"
+
+    python3.10 -m pip install pyproject.toml
