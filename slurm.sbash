@@ -1,0 +1,27 @@
+#!/bin/bash
+#SBATCH --job-name=boltz
+#SBATCH --partition=booster
+#SBATCH --gres=gpu:1
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=16G
+#SBATCH --time=01:00:00
+#SBATCH --output=logs/boltz_%j.out
+#SBATCH --error=logs/boltz_%j.err
+#SBATCH --account=hai_1031
+
+set -e
+set -x
+
+mkdir -p logs
+module load Apptainer-Tools/2025
+
+export BOLTZ_CACHE=$HOME/.boltz_cache
+
+apptainer exec --nv \
+  --bind "$BOLTZ_CACHE:/boltz_cache" \
+  --bind "$PWD:/work" \
+  boltz.sif \
+  boltz predict /work/inputs \
+    --cache /boltz_cache \
+    --use_msa_server \
+    --outdir /work/outputs

@@ -13,12 +13,11 @@ from optuna.integration.wandb import WeightsAndBiasesCallback
 
 from src.training.evaluation import compute_f1_score
 
-wandb.init(project="gt-substrate-predictor", mode="offline")
-
 import numpy as np
 import pandas as pd
 import optuna
 
+from sklearn.dummy import DummyClassifier
 from sklearn.linear_model import RidgeClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LogisticRegression
@@ -42,6 +41,8 @@ from datetime import datetime
 ROOT = Path(__file__).parent.parent
 
 MODEL_MAPPING = {
+    "majority_classifier": DummyClassifier,
+    "random_classifier": DummyClassifier,
     "ridge_classifier": RidgeClassifier,
     "decision_tree" : DecisionTreeClassifier,
     "logistic_regression" : LogisticRegression,
@@ -73,8 +74,6 @@ def run_sklearn_experiment(
             },
             mode=wandb_mode,
         )
-        if not sweep
-        else wandb.init(mode=wandb_mode)
     )
 
     if model_name not in MODEL_MAPPING:
@@ -188,10 +187,18 @@ def run_sklearn_experiment(
         ):
             pred_table.add_data(split_name, idx, raw, int(true), float(prob), int(pred))
     # Log the table
+    metrics_df = pd.DataFrame(metrics_table.data, columns=metrics_table.columns)
+    pred_df = pd.DataFrame(pred_table.data, columns=pred_table.columns)
+
+    metrics_df.to_csv(f'metrics_before_logging_{model_name}.csv', index=False)
+    pred_df.to_csv(f'predictions_before_logging_{model_name}.csv', index=False)
+
+    print(f"Saved tables locally: {len(metrics_df)} metrics, {len(pred_df)} predictions")
     wandb.log({
         "metrics": metrics_table,
         "predictions": pred_table
     })
+
     run.finish()
     return return_metrics
 
@@ -214,7 +221,6 @@ def train_and_log(params: dict[str, Any] = None) -> None:
                 protein_name=params["protein_name"],
                 project=params["project"],
                 wandb_mode=params["wandb_mode"],
-                sweep=False,
                 concatenation_path=params.get("concatenation_path", None)
             )
         )
