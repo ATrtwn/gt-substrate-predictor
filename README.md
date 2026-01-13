@@ -37,6 +37,8 @@ project_root/
 └── reports/ # Figures and summaries of results
 ```
 
+---
+
 ### ⚡ Usage
 
 #### 1. Generate CSV files from the Access database
@@ -161,25 +163,46 @@ project_root/
    
     **Each step can be rerun independently if needed (e.g. regenerating embeddings without reprocessing data)**
 
+#### Clustering GT sequences with MMseqs2
+1.  Install MMseqs2
 
-#### 3. Run the clustering:
--Once MMseqs2 is ready, run the clustering command (adjust filenames if needed):
-´´´powershell tools\mmseqs\bin\mmseqs.exe easy-cluster UGT.fasta GT_cluster tmp --min-seq-id 0.7 -c 0.7´´´
-  -min-seq-id 0.7 sets 70% minimum sequence identity (agreed on the meeting)
-  -c 0.7 sets 70% minimum coverage (share ≥70% of their length)
+    - Go to the MMseqs2 GitHub releases page:
+    
+    👉 https://github.com/soedinglab/MMseqs2/releases
+    
+    - Download mmseqs-win64.zip (Windows)
+    
+    - Extract it to the tools/ folder inside your project (so you have tools/mmseqs/bin/mmseqs.bat)
+    
+    - You can either:
 
-**Output:**
-- `data/concatenated_embeddings/X_{substrate_type}.npy` - Concatenated embeddings (N, dim)
-- `data/concatenated_embeddings/y_{substrate_type}.npy` - Activity labels (N,)
-- `data/concatenated_embeddings/metadata_{substrate_type}.csv` - Protein names, substrate names, indices
+        - Use the full path when running it, or 
 
-The script automatically:
-- Maps protein-substrate pairs from `Activity.csv`
-- Only includes pairs with both protein and substrate embeddings
-- Generates 2251 valid concatenated pairs (100% coverage)
+        - Add tools/mmseqs/bin to your PATH environment variable.
 
-Report output:
-  -´´´powershell python .\scripts\print_cluster_report.p´´´ for the report output -> CONCLUSION: dataset is diverse enough, no need for omiting the sequences
+2. Run the clustering:
+
+   - Once MMseqs2 is ready, run the clustering command (adjust filenames if needed, UGT.fasta is created by the preprocessing step):
+    ```powershell 
+    tools\mmseqs\bin\mmseqs.bat easy-cluster data\UGT.fasta data\GT_cluster tmp --min-seq-id 0.7 -c 0.7
+    ```
+   - min-seq-id 0.5 sets 50% minimum sequence identity
+    
+   - c 0.8 sets 80% minimum coverage
+
+3. Output files: After running, MMseqs2 will generate several output files:
+
+    - GT_cluster_cluster.tsv → sequence-to-cluster assignments
+    
+    - GT_cluster_rep_seq.fasta → one representative sequence per cluster
+    
+    - GT_cluster_all_seqs.fasta → all clustered sequences
+
+4. Report output:
+   ```powershell 
+     python .\scripts\print_cluster_report.p
+    ``` 
+    for the report output -> CONCLUSION: dataset is diverse enough, no need for omiting the sequences
 
 #### 🧬 Substrate embeddings
 To use RDKit in this project, follow these steps:

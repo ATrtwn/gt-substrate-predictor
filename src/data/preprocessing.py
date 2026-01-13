@@ -1,3 +1,5 @@
+import pandas as pd
+from pathlib import Path
 
 import os
 import pandas as pd
@@ -213,11 +215,41 @@ def prepare_kpgt_data(verbose=False):
     if verbose:
         print(f" -> Saved to: {output_path}")
 
-def binarize_activity(df, label_col="activity"):
-    """Convert multi-level activity values to binary (active/inactive)."""
-    active_labels = ["low", "medium", "high", "low, high", "low, medium", "medium, high"]
-    df["is_active"] = df[label_col].apply(lambda x: 1 if x in active_labels else 0)
-    return df
+def prepare_kpgt_data_all(verbose=False):
+    """
+    Prepare substrate data in KPGT format.
+    KPGT expects: data/Substrate/Substrate.csv with 'smiles' column
+    """
+
+    # Load substrate SMILES data
+    df = pd.read_csv(data_dir / "full_dataset.csv")
+
+    # KPGT expects a 'smiles' column (lowercase)
+    # We'll use the SMILES_isomeric_1 column
+    # Note: For feature extraction only, we need a dummy label column
+    df_kpgt = pd.DataFrame({
+        'smiles': df['SMILES_isomeric_1'].values,
+        'dummy_label': 0  # Dummy label for feature extraction
+    })
+
+    # Remove rows with missing SMILES
+    df_kpgt = df_kpgt.dropna(subset=['smiles'])
+
+    if verbose:
+        print(f" - Prepared {len(df_kpgt)} substrates with valid SMILES")
+        print(f" - First few rows:")
+        print(df_kpgt.head())
+
+    # Save to KPGT format
+    # which expects data_path/dataset_name/dataset_name.csv
+    # Set up paths
+    substrate_dir = data_dir / "Substrate"
+    # Create Substrate directory if it doesn't exist
+    substrate_dir.mkdir(exist_ok=True)
+    output_path = substrate_dir / "Substrate.csv"
+    df_kpgt.to_csv(output_path, index=False)
+    if verbose:
+        print(f" -> Saved to: {output_path}")
 
 def create_fasta_file(verbose=False):
 
@@ -246,6 +278,42 @@ def create_fasta_file(verbose=False):
 
     if verbose:
         print(f" -> Wrote FASTA to: {output_path}")
+
+def create_fasta_file_all(verbose=False):
+    data_path = data_dir / "full_dataset.csv"
+
+    if not data_path.exists():
+        raise FileNotFoundError(f"File not found at: {data_path.resolve()}")
+
+    # Read CSV
+    df = pd.read_csv(data_path)
+
+    # Open a new FASTA file
+    output_path = data_dir / "UGT.fasta"
+
+    # Create FASTA
+    with output_path.open("w", encoding="utf8") as fasta_file:
+        for _, row in df.iterrows():
+            # use ID as it is unique and there are no nans
+            header = row.get("UGT_ID")
+            # prefer nucleotide sequence
+            sequence = row.get("prot_seq")
+            if pd.isna(sequence) or pd.isna(header) or sequence is None or header is None:
+                # skip rows without sequence
+                continue
+            fasta_file.write(f">{header}\n{sequence}\n")
+    if verbose:
+        print(f" -> Wrote FASTA to: {output_path}")
+
+def mmseqs_clustering(fasta_path, output_dir, identity_threshold=0.9, coverage=0.8):
+    """Run MMseqs2 clustering and redundancy reduction"""
+    pass
+
+def binarize_activity(df, label_col="activity"):
+    """Convert multi-level activity values to binary (active/inactive)."""
+    active_labels = ["low", "medium", "high", "low, high", "low, medium", "medium, high"]
+    df["is_active"] = df[label_col].apply(lambda x: 1 if x in active_labels else 0)
+    return df
 
 
 

@@ -1,7 +1,9 @@
 import os
 import pandas as pd
-from src.data.data_split import stratified_split_by_entities, check_split
+
+from src.data.data_split import stratified_split_by_entities, check_split, get_clusters
 from src.utils.visualization import plot_split_statistics, plot_upset_sets
+from itertools import combinations
 
 from pathlib import Path
 
@@ -33,6 +35,19 @@ def split_and_analyse_dataset(df, plots=False, verbose=False):
         print(f" - Class distribution ({label_col}):")
         print(f"{df[label_col].value_counts()}")
 
+    # add cluster id to df
+    cluster_df = get_clusters()
+    cluster_map = dict(
+        zip(cluster_df["seq_id"], cluster_df["cluster_id"])
+    )
+    # assign cluster id to proteins
+    df["cluster_id"] = df["UGT_ID"].map(cluster_map)
+    # Safety check
+    missing = df["cluster_id"].isna().sum()
+    if missing > 0:
+        print(f"Warning: {missing} sequences have no cluster assignment")
+
+    # split dataset
     df_split = stratified_split_by_entities(df,
                                           protein_col=protein_col,
                                           substrate_col=substrate_col,
@@ -47,9 +62,26 @@ def split_and_analyse_dataset(df, plots=False, verbose=False):
     c3_val = df_split[df_split['split'] == 'C3_val']
     train = df_split[df_split['split'] == 'train']
 
+    if verbose:
+        print("\n=== Cluster presence per split ===")
+        for split, df_s in df_split.groupby("split"):
+            clusters = sorted(df_s["cluster_id"].dropna().unique())
+            print(f"{split:10s}: {len(clusters):4d} clusters")
+
+        print("\n=== Cluster overlap between splits ===")
+        split_clusters = {
+            split: set(df_s["cluster_id"].dropna().unique())
+            for split, df_s in df_split.groupby("split")
+        }
+
+        for (s1, c1), (s2, c2) in combinations(split_clusters.items(), 2):
+            overlap = c1 & c2
+            if overlap and (s1=="train" or s2=="train"):
+                print(f"{s1} ↔ {s2}: {len(overlap)} shared clusters")
+
     dataset_len = len(df[[protein_col, substrate_col]].drop_duplicates())
     if verbose:
-        print(f" - Out of {dataset_len} distinct pairs ")
+        print(f"\n - Out of {dataset_len} distinct pairs ")
         print(" - Class distribution per split:")
     for name, subset in [("Training", train),
                          ("C1_val", c1_val), ("C2_val", c2_val), ("C3_val", c3_val),
@@ -89,4 +121,4 @@ def split_and_analyse_dataset(df, plots=False, verbose=False):
 if __name__ == "__main__":
     print("==== Splitting into C1/C2/C3 ====")
     df = pd.read_csv(os.path.join(data_dir, "full_dataset.csv"))
-    df_all = split_and_analyse_dataset(df, plots=False, verbose=False)
+    df_all = split_and_analyse_dataset(df, plots=False, verbose=True)
