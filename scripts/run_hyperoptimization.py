@@ -260,6 +260,9 @@ class OptunaWandbSweep:
                 "predictions_table": trial.user_attrs["predictions_table"],
                 "metrics_table": trial.user_attrs["metrics_table"]
             })
+            print(f"logged metrics table with size {len(trial.user_attrs['metrics_table'].data)}")
+            print(f"logged predictions table with size {len(trial.user_attrs['predictions_table'].data)} ")
+
         return study
 
 # Usage

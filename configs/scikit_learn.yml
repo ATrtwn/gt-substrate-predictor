@@ -51,11 +51,6 @@ models:
     algorithm: auto
     leaf_size: 30
 
-concatenation_path: "data/concatenated_embeddings/"
-substrate_name: "chemberta2"
-protein_name: "prott5"
-project: "gt-substrate-predictor"
-wandb_mode: "online"
 optuna_sweep_configs:
   model: random_forest
   param_distributions:
@@ -80,7 +75,7 @@ optuna_sweep_configs:
       - 'entropy'
       - 'log_loss'
 concatenation_path: "data/concatenated_embeddings/"
-substrate_name: "chemberta3"
+substrate_name: "chemberta2"
 protein_name: "prott5"
 project: "gt-substrate-predictor"
 group: "rf_optuna_sweep"
