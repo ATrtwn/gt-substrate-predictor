@@ -2,7 +2,6 @@ import pandas as pd
 import random
 import networkx as nx
 from pathlib import Path
-from collections import defaultdict
 
 from src.utils.visualization import (plot_split_graph,
                                      plot_graph_connectivity,
@@ -11,6 +10,28 @@ from src.utils.visualization import (plot_split_graph,
 
 # data directory
 data_dir = Path(__file__).parent.parent.parent / "data"
+
+def get_clusters():
+    cluster_tsv = data_dir / "GT_cluster_cluster.tsv"
+    if not cluster_tsv.exists():
+        raise FileNotFoundError(f"Missing required .tsv file: {cluster_tsv}\n"
+                                "Run clustering via:\n"
+                                "tools\\mmseqs\\bin\\mmseqs.bat easy-cluster data\\UGT.fasta data\\GT_cluster tmp --min-seq-id 0.7 -c 0.7")
+
+    df_clusters = pd.read_csv(
+        cluster_tsv,
+        sep="\t",
+        header=None,
+        names=["rep_id", "seq_id"],
+        dtype=int
+    )
+    # Assign numeric cluster IDs
+    rep_to_cluster = {
+        rep: i for i, rep in enumerate(df_clusters["rep_id"].unique())
+    }
+    df_clusters["cluster_id"] = df_clusters["rep_id"].map(rep_to_cluster)
+
+    return df_clusters
 
 
 def stratified_split_by_entities(df, protein_col="UGT_ID", substrate_col="substrate",label_col = "is_active", random_state=42, plot=False):
@@ -55,7 +76,7 @@ def stratified_split_by_entities(df, protein_col="UGT_ID", substrate_col="substr
         # choose an edge from c1
         random.seed(random_state)
         edge_to_move = random.choice(C1_test)
-        u, v, l, t = edge_to_move
+        u, v, l, c = edge_to_move
         # choose which component to move from seen to unseen
         unseen_component = u # protein as they are underrepresented in data
         # remove now unseen components from train and val sets
@@ -73,7 +94,7 @@ def stratified_split_by_entities(df, protein_col="UGT_ID", substrate_col="substr
         # choose an edge from c1
         random.seed(random_state)
         edge_to_move = random.choice(C1_val)
-        u, v, l, t = edge_to_move
+        u, v, l, c = edge_to_move
         # choose which component to move from seen to unseen
         unseen_component = u  # protein as they are underrepresented in data
         # remove now unseen components from train and val sets
@@ -90,10 +111,10 @@ def stratified_split_by_entities(df, protein_col="UGT_ID", substrate_col="substr
         # all val edges in one list
         val = C1_val + C2_val + C3_val
         seen_nodes = set()
-        for u, v, l, t in train:
+        for u, v, l, c in train:
             seen_nodes.add(u)
             seen_nodes.add(v)
-        for u, v, l, t in val:
+        for u, v, l, c in val:
             seen_nodes.add(u)
             seen_nodes.add(v)
         # make plots
@@ -101,11 +122,14 @@ def stratified_split_by_entities(df, protein_col="UGT_ID", substrate_col="substr
         plot_graph_connectivity(graph)
         plot_connectivity_separate(graph)
         plot_degree_distributions(graph)
-    ###
 
     # perform split on df based on graph split
     df_split = df.copy()
     df_split['split'] = ''
+    df_split = df_split.sort_values(
+        by=["UGT_ID", "substrate"],
+        ascending=[True, True]
+    ).reset_index(drop=True)
 
     def assign_split(row, edge_list, split_name):
         if row['split'] == '':
@@ -113,13 +137,13 @@ def stratified_split_by_entities(df, protein_col="UGT_ID", substrate_col="substr
                 return split_name
         return row['split']
 
-    c1_val_pairs = [(u, v, l) for (u, v, l, t) in C1_val]
-    c2_val_pairs = [(u, v, l) for (u, v, l, t) in C2_val]
-    c3_val_pairs = [(u, v, l) for (u, v, l, t) in C3_val]
-    c1_test_pairs = [(u, v, l) for (u, v, l, t) in C1_test]
-    c2_test_pairs = [(u, v, l) for (u, v, l, t) in C2_test]
-    c3_test_pairs = [(u, v, l) for (u, v, l, t) in C3_test]
-    train_pairs = [(u, v, l) for (u, v, l, t) in train]
+    c1_val_pairs = [(u, v, l) for (u, v, l, c) in C1_val]
+    c2_val_pairs = [(u, v, l) for (u, v, l, c) in C2_val]
+    c3_val_pairs = [(u, v, l) for (u, v, l, c) in C3_val]
+    c1_test_pairs = [(u, v, l) for (u, v, l, c) in C1_test]
+    c2_test_pairs = [(u, v, l) for (u, v, l, c) in C2_test]
+    c3_test_pairs = [(u, v, l) for (u, v, l, c) in C3_test]
+    train_pairs = [(u, v, l) for (u, v, l, c) in train]
 
     for pairs, split_name in [
         (train_pairs, 'train'),
@@ -153,74 +177,63 @@ def create_graph(df, protein_col="UGT_ID", substrate_col="substrate", label_col=
         p = row[protein_col]
         s = row[substrate_col]
         l = row[label_col]
+        c = row['cluster_id']
         force = None
         if row["dataset"]=='ESP' or row["dataset"]=='EZS':
             force = True
         else:
             force = False
-        G.add_edge(p, s, label=l, force_train=force)
+        G.add_edge(p, s, label=l, force_train=force, cluster=c)
 
     return G
 
-def split_graph(G, train_frac=0.7, test_frac=0.15, reserve_frac = 0.1, random_state=42):
+
+def split_graph(G, train_frac=0.7, test_frac=0.15, reserve_frac=0.1, random_state=42):
     """
         Perform split on graph level
     """
     val_frac = (1 - train_frac - test_frac)
     assert (1 - train_frac - test_frac - val_frac) <= 0.0001, "Fractions don't add to 1!"
 
-    # --- GET ALL EDGES ---
-    edges = list(G.edges(data=True))
-
-    # --- 1) RESERVE A FIXED FRACTION OF EDGES BEFORE ANY SPLITTING ---
-    reserved_edges, remaining_edges = reserve_edges_by_degree(G, reserve_frac=reserve_frac)
+    # get all edges: edges = list(G.edges(data=True))
+    # edges contain: ugt, substrate, label, force_train (ESP and EZS are not allowed in val/test sets), cluster id
+    edges = [
+        (u, v,
+         data.get("label"),
+         data.get("force_train"),
+         data.get("cluster"))
+        for u, v, data in G.edges(data=True)
+    ]
 
     # separate remaining edges into force_train vs non_force
-    force_train_edges = [(u, v, l, t) for (u, v, l, t) in remaining_edges if t==True]
-    non_force_edges = [(u, v, l, t) for (u, v, l, t) in remaining_edges if t==False]
+    force_train_edges = [(u, v, l, c) for (u, v, l, t, c) in edges if t == True]
+    non_force_edges = [(u, v, l, c) for (u, v, l, t, c) in edges if t == False]
 
+    # reserve a fixed fraction of edges before any splitting
+    neighbor_counts = dict(G.degree())
+    reserved_edges, remaining_edges = reserve_edges_by_degree(non_force_edges, neighbor_counts,
+                                                              reserve_frac=reserve_frac)
+
+    # determine split sizes
     n_force_train = len(force_train_edges)
     n_reserved_test = len(reserved_edges)
-    n_remaining = len(non_force_edges)
-    if n_remaining == 0:
-        n_remaining = 1
-
-    total_edges = n_force_train + n_reserved_test + n_remaining
-    desired_train_total_frac = train_frac  # e.g., 0.7
-    desired_test_total_frac = test_frac  # e.g., 0.15
+    n_remaining = len(remaining_edges)
 
     # Already assigned edges
     current_train = n_force_train
     current_test = n_reserved_test
 
-    # Remaining fraction for the remaining edges
-    remaining_train_frac = max(0, (desired_train_total_frac * total_edges - current_train) / n_remaining)
-    remaining_test_frac = max(0, (desired_test_total_frac * total_edges - current_test) / n_remaining)
-    remaining_val_frac = 1.0 - remaining_train_frac - remaining_test_frac
+    # assign clusters to train/val/test and balance labels (as good as possible)
+    train_target = max(0, int(train_frac * len(edges) - current_train))
+    test_target = max(0, int(test_frac * len(edges) - current_test))
+    val_target = n_remaining - train_target - test_target
 
-    groups = defaultdict(list)
-    for u, v, l, t in non_force_edges:
-        groups[l].append((u, v, l, t))
+    train_edges, val_edges, test_edges = assign_clusters(remaining_edges,
+                                                         train_target,
+                                                         val_target,
+                                                         test_target)
 
-    train_edges, val_edges, test_edges = [], [], []
-
-    for label, group in groups.items():
-        group = group[:]  # copy
-        random.seed(random_state)
-        random.shuffle(group)
-
-        n = len(group)
-        n_train = int(remaining_train_frac * n)
-        n_val = int(remaining_val_frac * n)
-
-        # select subset of edges = training pairs
-        train_edges.extend(group[:n_train])
-        # select subset of remaining edges = val pairs (unseen edges maybe seen nodes)
-        val_edges.extend(group[n_train:n_train + n_val])
-        # rest for evaluation
-        test_edges.extend(group[n_train + n_val:])
-
-    # --- 3) ADD RESERVED EDGES TO TEST SET AND FORCE TRAIN TO TRAIN SET---
+    # add reserved edges to test set and force train to train set
     test_edges.extend(reserved_edges)
     train_edges.extend(force_train_edges)
 
@@ -229,63 +242,131 @@ def split_graph(G, train_frac=0.7, test_frac=0.15, reserve_frac = 0.1, random_st
     #   unseen edges with one seen node = C2
     #   unseen edges with unseen nodes = C3
     (C1_edges_val, C2_edges_val, C3_edges_val,
-     C1_edges_test, C2_edges_test, C3_edges_test) = create_c_sets(train_edges,val_edges,test_edges)
+     C1_edges_test, C2_edges_test, C3_edges_test) = create_c_sets(train_edges, val_edges, test_edges)
 
     return {"train": train_edges,
             "C1_val": C1_edges_val, "C2_val": C2_edges_val, "C3_val": C3_edges_val,
             "C1_test": C1_edges_test, "C2_test": C2_edges_test, "C3_test": C3_edges_test}
 
-def reserve_edges_by_degree(G, reserve_frac=0.10):
+def reserve_edges_by_degree(edges, neighbor_counts, reserve_frac=0.10):
     """
     Reserve edges based on degree heuristic.
     Returns reserved_edges (list of (u, v, label))
     and remaining_edges in the same format.
     """
 
-    # 1) Node degrees
-    neighbor_counts = dict(G.degree())
-
-    # 2a) Build dataframe with edge features
+    # Build dataframe with edge features
     edge_data = []
-    for u, v, data in G.edges(data=True): # data zB {'force_train': False, 'label': 1}
+    for u, v, l, c in edges: # data zB {'force_train': False, 'label': 1}
         deg_u = neighbor_counts.get(u, 0)
         deg_v = neighbor_counts.get(v, 0)
         sum_deg = deg_u + deg_v
-        label = data.get("label")
-        train = data.get("force_train")
-        edge_data.append((u, v, deg_u, deg_v, sum_deg, label, train))
-
-    df_edges = pd.DataFrame(edge_data,
-        columns=["node_protein", "node_sub", "deg_protein",
-                 "deg_sub", "sum_deg", "label", "force_train"]
-    )
-    # 2b) Separate force_train edges
-    force_train_df = df_edges[df_edges["force_train"]].copy()
-    non_force_df = df_edges[~df_edges["force_train"]].copy()
+        edge_data.append((u, v, deg_u, deg_v, sum_deg, l, c))
 
     # Sort edges ascending by sum of degrees
-    df_edges_sorted = non_force_df.sort_values("sum_deg", ascending=True).reset_index(drop=True)
+    edge_data.sort(key=lambda e: e[4])  # sort by sum_deg (ascending)
 
-    # 3) Reserve edges based on 10% of lowest-degree edges
-    n_total = len(df_edges_sorted)
+    # Reserve edges based on 10% of lowest-degree edges
+    n_total = len(edge_data)
     n_reserve = int(reserve_frac * n_total)
 
-    reserved_df = df_edges_sorted.iloc[:n_reserve].copy()
-    remaining_df_test = df_edges_sorted.iloc[n_reserve:].copy()
-    remaining_df = pd.concat([remaining_df_test, force_train_df], ignore_index=True)
+    reserved_raw = edge_data[:n_reserve]
+    remaining_raw = edge_data[n_reserve:]
 
-    # 4) Convert both to list-of-tuples format: (u, v, label, force_train)
-    reserved_edges = list(zip(reserved_df["node_protein"],
-                              reserved_df["node_sub"],
-                              reserved_df["label"],
-                              reserved_df["force_train"]))
+    # Convert both to list-of-tuples format: (u, v, data)
+    reserved_edges = [
+        (u, v, label, cluster)
+        for (u, v, _, _, _, label, cluster) in reserved_raw
+    ]
 
-    remaining_edges = list(zip(remaining_df["node_protein"],
-                               remaining_df["node_sub"],
-                               remaining_df["label"],
-                               remaining_df["force_train"]))
+    remaining_edges = [
+        (u, v, label, cluster)
+        for (u, v, _, _, _, label, cluster) in remaining_raw
+    ]
 
     return reserved_edges, remaining_edges
+
+def assign_clusters(valid_edges, train_target, val_target, test_target):
+    from collections import defaultdict
+
+    cluster_stats = defaultdict(lambda: {
+        "edges": [],
+        "n": 0,
+        "pos": 0,
+        "neg": 0
+    })
+
+    for u, v, label, cluster in valid_edges:
+        s = cluster_stats[cluster]
+        s["edges"].append((u, v, label, cluster))
+        s["n"] += 1
+        if label == 1:
+            s["pos"] += 1
+        else:
+            s["neg"] += 1
+
+    targets = {
+        "train": train_target,
+        "val": val_target,
+        "test": test_target
+    }
+
+    splits = {
+        "train": {"edges": [], "n": 0, "pos": 0, "neg": 0},
+        "val": {"edges": [], "n": 0, "pos": 0, "neg": 0},
+        "test": {"edges": [], "n": 0, "pos": 0, "neg": 0},
+    }
+
+    clusters_sorted = sorted(
+        cluster_stats.items(),
+        key=lambda x: x[1]["n"],
+        reverse=True
+    )
+
+    for cluster_id, stats in clusters_sorted:
+        best_split = None
+        best_score = float("inf")
+
+        for name in ["test", "val", "train"]:
+            score = score_assignment(splits[name], stats, targets[name])
+            if score < best_score:
+                best_score = score
+                best_split = name
+
+        # assign cluster
+        splits[best_split]["edges"].extend(stats["edges"])
+        splits[best_split]["n"] += stats["n"]
+        splits[best_split]["pos"] += stats["pos"]
+        splits[best_split]["neg"] += stats["neg"]
+
+    train_edges = splits["train"]["edges"]
+    val_edges = splits["val"]["edges"]
+    test_edges = splits["test"]["edges"]
+
+    return train_edges, val_edges, test_edges
+
+def score_assignment(split, cluster, target):
+    """
+    Lower score = better assignment
+    """
+    # asymmetric size penalty
+    after = split["n"] + cluster["n"]
+    if after <= target:
+        size_pen = (target - after) * 0.1
+    else:
+        size_pen = (after - target) * 2.0
+
+    # label imbalance penalty
+    total = split["n"] + cluster["n"]
+    if total == 0:
+        label_penalty = 0
+    else:
+        pos_frac = (split["pos"] + cluster["pos"]) / total
+        label_penalty = abs(pos_frac - 0.5)
+
+    penalty = size_pen + 0.5 * label_penalty * total
+
+    return penalty
 
 def create_c_sets(train_edges, val_edges, test_edges):
     """
@@ -295,11 +376,11 @@ def create_c_sets(train_edges, val_edges, test_edges):
             - C3: both unseen
     """
     train_seen = set()
-    for u, v, l, t in train_edges:
+    for u, v, l, c in train_edges:
         train_seen.add(u)
         train_seen.add(v)
     train_val_seen = set(train_seen)
-    for u, v, l, t in val_edges:
+    for u, v, l, c in val_edges:
         train_val_seen.add(u)
         train_val_seen.add(v)
 
@@ -307,27 +388,27 @@ def create_c_sets(train_edges, val_edges, test_edges):
     C1_test, C2_test, C3_test = [], [], []
     C1_val, C2_val, C3_val = [], [], []
 
-    for u, v, l, t in test_edges:
+    for u, v, l, c in test_edges:
         u_seen = u in train_val_seen
         v_seen = v in train_val_seen
 
         if u_seen and v_seen: # both seen
-            C1_test.append((u, v, l, t))
+            C1_test.append((u, v, l, c))
         elif u_seen or v_seen: # one unseen
-            C2_test.append((u, v, l, t))
+            C2_test.append((u, v, l, c))
         else: # both unseen
-            C3_test.append((u, v, l, t))
+            C3_test.append((u, v, l, c))
 
-    for u, v, l, t in val_edges:
+    for u, v, l, c in val_edges:
         u_seen = u in train_seen
         v_seen = v in train_seen
 
         if u_seen and v_seen: # both seen
-            C1_val.append((u, v, l, t))
+            C1_val.append((u, v, l, c))
         elif u_seen or v_seen: # one unseen
-            C2_val.append((u, v, l, t))
+            C2_val.append((u, v, l, c))
         else: # both unseen
-            C3_val.append((u, v, l, t))
+            C3_val.append((u, v, l, c))
 
     return (
         C1_val, C2_val, C3_val,
