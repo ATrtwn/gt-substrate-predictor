@@ -17,7 +17,7 @@ output_path = Path(__file__).resolve().parent.parent / "boltz_input"
 from ruamel.yaml import YAML
 
 
-def write_boltz_yaml(sequence: str, smiles: str, output_path: Path, msa_path:str = None):
+def write_boltz_yaml(sequence: str, smiles: str,prot_name :str, output_path: Path, msa_path:str = None):
     if msa_path== None:
         use_msa = False
     else:
@@ -27,7 +27,7 @@ def write_boltz_yaml(sequence: str, smiles: str, output_path: Path, msa_path:str
         "sequences": [
             {
                 "protein": {
-                    "id": "101",
+                    "id": prot_name,
                     "sequence": sequence,
                     **({"msa": str(msa_path)} if use_msa else {})  # conditionally add msa
                 }
@@ -36,6 +36,12 @@ def write_boltz_yaml(sequence: str, smiles: str, output_path: Path, msa_path:str
                 "ligand": {
                     "id": ["B"],
                     "smiles": smiles,
+                }
+            },
+            {
+                "ligand": {
+                    "id": ["C"],
+                    "smiles": "C1=CN(C(=O)NC1=O)[C@H]2[C@@H]([C@@H]([C@H](O2)COP(=O)(O)OP(=O)(O)O[C@@H]3[C@@H]([C@H]([C@@H]([C@H](O3)CO)O)O)O)O)O",
                 }
             }
         ]
@@ -70,12 +76,14 @@ if __name__ == "__main__":
     output_path = args.output
     msa_path = args.msa
     
+    
     for row in df.itertuples(index=False):
+        prot_name = row.UGT_trivial_name
         sequence = row.prot_seq
         smiles = row.SMILES_isomeric_1
         msa_name = row.UGT_trivial_name
         job_id = str(row.ID)
-        write_boltz_yaml(sequence = sequence,smiles = smiles, output_path = Path(output_path) / f"config{job_id}.yaml", msa_path=Path(msa_path) / f"{msa_name}.a3m")
+        write_boltz_yaml(sequence = sequence,smiles = smiles, prot_name = prot_name,output_path = Path(output_path) / f"config{job_id}.yaml", msa_path=Path(msa_path) / f"{msa_name}.a3m")
     # append proteins sequence
 
   
