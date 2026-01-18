@@ -24,13 +24,15 @@ export BOLTZ_CACHE=/p/scratch/hai_1031/.boltz_cache
 export BOLTZ_INPUT=/p/project1/hai_1031/gordin1/boltz_input
 export BOLTZ_OUTPUTS=/p/project1/hai_1031/gordin1/boltz_output
 
-apptainer exec --cleanenv --nv \
-  --bind /p/scratch/hai_1031/.boltz_cache:/boltz_cache \
-  --bind /p/project1/hai_1031/gordin1/boltz_input:/inputs \
-  --bind /p/project1/hai_1031/gordin1/msa:/msa \
-  --bind /p/project1/hai_1031/gordin1/boltz_output:/outputs \
-  /p/project1/hai_1031/gordin1/boltz.sif \
-  boltz predict /inputs \
-    --cache /boltz_cache \
-    --out_dir /outputs \
-    --override
+for yaml_file in "$BOLTZ_INPUT"/*.yaml; do
+  apptainer exec --cleanenv --nv \
+    --bind /p/scratch/hai_1031/.boltz_cache:/boltz_cache \
+    --bind /p/project1/hai_1031/gordin1/boltz_input:/inputs \
+    --bind /p/project1/hai_1031/gordin1/msa:/msa \
+    --bind /p/project1/hai_1031/gordin1/boltz_output:/outputs \
+    /p/project1/hai_1031/gordin1/boltz.sif \
+    boltz predict "$yaml_file" \
+      --cache /boltz_cache \
+      --out_dir /outputs \
+      --override
+done
