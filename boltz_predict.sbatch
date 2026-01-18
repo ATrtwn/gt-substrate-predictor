@@ -13,6 +13,9 @@ set -e
 set -x
 
 mkdir -p logs
+mkdir -p /p/scratch/hai_1031/.numba_cache
+export NUMBA_CACHE_DIR=/p/scratch/hai_1031/.numba_cache
+export NUMBA_DISABLE_JIT_CACHING=0
 
 module purge
 module load Stages/2025
