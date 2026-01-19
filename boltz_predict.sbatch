@@ -52,6 +52,7 @@ for yaml_file in "$BOLTZ_INPUT"/*.yaml; do
         "$BOLTZ_SIF" \
         boltz predict "/inputs/$filename" \
             --cache /boltz_cache \
+            --diffusion_samples 5 \
             --out_dir /outputs \
             --override
 done
