@@ -29,7 +29,7 @@ def write_boltz_yaml(sequence: str, smiles: str,prot_name :str, output_path: Pat
                 "protein": {
                     "id": prot_name,
                     "sequence": sequence,
-                    **({"msa": str(msa_path)} if use_msa else {})  # conditionally add msa
+                    **({"msa": "/"+str(msa_path)} if use_msa else {})  # conditionally add msa
                 }
             },
             {
