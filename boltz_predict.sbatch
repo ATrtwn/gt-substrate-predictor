@@ -15,6 +15,9 @@ set -x
 mkdir -p logs
 NUMBA_CACHE_PATH="/p/scratch/hai_1031/numba_cache_$(whoami)"
 mkdir -p "$NUMBA_CACHE_PATH"
+# Create a general folder for those math libraries on scratch
+GEN_CACHE_PATH="/p/scratch/hai_1031/gen_cache_$(whoami)"
+mkdir -p "$GEN_CACHE_PATH"
 
 export BOLTZ_INPUT=/p/project1/hai_1031/gordin1/boltz_input
 export BOLTZ_OUTPUTS=/p/project1/hai_1031/gordin1/boltz_output
@@ -38,7 +41,9 @@ for yaml_file in "$BOLTZ_INPUT"/*.yaml; do
 
     apptainer exec --cleanenv --nv \
         --env NUMBA_CACHE_DIR=/numba_cache \
+        --env XDG_CACHE_HOME=/gen_cache \
         --bind "$NUMBA_CACHE_PATH":/numba_cache \
+        --bind "$GEN_CACHE_PATH":/gen_cache \
         --bind /p/scratch/hai_1031/.boltz_cache:/boltz_cache \
         --bind "$BOLTZ_INPUT":/inputs \
         --bind /p/project1/hai_1031/gordin1/msa:/msa \
