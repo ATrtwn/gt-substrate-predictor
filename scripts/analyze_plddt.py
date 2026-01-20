@@ -1,17 +1,13 @@
 import sys
 from pathlib import Path
 import numpy as np
-
-# --- Non-interactive backend for clusters ---
 import matplotlib
 matplotlib.use("Agg")
-
 from matplotlib import pyplot as plt
 from tqdm import tqdm
 
-
-N_CONFIGS = 1780
-N_MODELS = 5
+N_CONFIGS = 1
+N_MODELS = 1
 PLDDT_KEY = "plddt"
 
 
@@ -44,8 +40,8 @@ def analyze(root_dir: Path):
             continue
 
         for m in range(N_MODELS):
-            f = config_dir / f"config{c}" /f"plddt_config{c}_model_{m}.npz"
-
+            f = config_dir / f"config{c}" / f"plddt_config{c}_model_{m}.npz"
+            f = root_dir / f"plddt_config{c}_model_{m}.npz"
             if not f.exists():
                 print(f"Warning: missing {f}")
                 continue
@@ -67,10 +63,14 @@ def analyze(root_dir: Path):
         print("ERROR: No pLDDT files found.")
         return
 
-    all_profiles = np.stack(all_profiles)
+    # --- Handle variable-length profiles safely ---
+    max_len = max(len(p) for p in all_profiles)
+    padded_profiles = np.full((len(all_profiles), max_len), np.nan, dtype=np.float32)
+    for i, p in enumerate(all_profiles):
+        padded_profiles[i, :len(p)] = p
 
-    mean_profile = all_profiles.mean(axis=0)
-    std_profile = all_profiles.std(axis=0)
+    mean_profile = np.nanmean(padded_profiles, axis=0)
+    std_profile = np.nanstd(padded_profiles, axis=0)
 
     print("\nBest model found:")
     print(f"  Config: {best_ref[0]}")
@@ -96,24 +96,9 @@ def visualize(mean_profile, best_profile, std_profile, global_scores, output_dir
 
     # --- Main comparison plot ---
     plt.figure(figsize=(14, 5))
-
     plt.plot(residues, mean_profile, label="Ensemble Mean pLDDT", linewidth=2)
-    plt.plot(
-        residues,
-        best_profile,
-        label="Best Model pLDDT",
-        linestyle="--",
-        linewidth=2,
-    )
-
-    plt.fill_between(
-        residues,
-        mean_profile - std_profile,
-        mean_profile + std_profile,
-        alpha=0.2,
-        label="±1 Std Dev",
-    )
-
+    plt.plot(residues[:len(best_profile)], best_profile, label="Best Model pLDDT", linestyle="--", linewidth=2)
+    plt.fill_between(residues, mean_profile - std_profile, mean_profile + std_profile, alpha=0.2, label="±1 Std Dev")
     plt.xlabel("Residue Index")
     plt.ylabel("pLDDT")
     plt.title("Residue-wise Confidence: Ensemble vs Best Model")
@@ -155,5 +140,3 @@ if __name__ == "__main__":
 
     root_dir = Path(sys.argv[1]).resolve()
     analyze(root_dir)
-
-    
