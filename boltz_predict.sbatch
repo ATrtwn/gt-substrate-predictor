@@ -15,7 +15,7 @@ set -x
 mkdir -p logs
 NUMBA_CACHE_PATH="/p/scratch/hai_1031/numba_cache_$(whoami)"
 mkdir -p "$NUMBA_CACHE_PATH"
-# Create a general folder for those math libraries on scratch
+
 GEN_CACHE_PATH="/p/scratch/hai_1031/gen_cache_$(whoami)"
 mkdir -p "$GEN_CACHE_PATH"
 
@@ -25,17 +25,19 @@ export BOLTZ_SIF=/p/project1/hai_1031/gordin1/boltz.sif
 
 for yaml_file in "$BOLTZ_INPUT"/*.yaml; do
     filename=$(basename "$yaml_file")
-    
-    # 1. Get the base name (e.g., config1)
     base_name="${filename%.yaml}"
-    
-    # 2. Match the actual Boltz output folder name (boltz_results_config1)
     output_folder="boltz_results_$base_name"
+    full_output_path="$BOLTZ_OUTPUTS/$output_folder"
+    prediction_path="$full_output_path/predictions"
 
     # --- UPDATED SKIP LOGIC ---
-    if [ -d "$BOLTZ_OUTPUTS/$output_folder" ]; then
-        echo "Skipping $filename: Folder $output_folder already exists."
+    # Check if directory exists AND if the predictions folder is NOT empty
+    # [ "$(ls -A "$prediction_path" 2>/dev/null)" ] checks if any files exist in that folder
+    if [ -d "$full_output_path" ] && [ -d "$prediction_path" ] && [ "$(ls -A "$prediction_path" 2>/dev/null)" ]; then
+        echo "Skipping $filename: Valid predictions already exist in $output_folder."
         continue
+    else
+        echo "Processing $filename: Output missing or predictions folder is empty."
     fi
     # --------------------------
 
