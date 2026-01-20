@@ -44,7 +44,7 @@ def analyze(root_dir: Path):
             continue
 
         for m in range(N_MODELS):
-            f = config_dir / f"plddt_config{c}_model_{m}.npz"
+            f = config_dir / f"config{c}_model_{m}.npz"
 
             if not f.exists():
                 print(f"Warning: missing {f}")
