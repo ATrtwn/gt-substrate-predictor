@@ -6,8 +6,8 @@ matplotlib.use("Agg")
 from matplotlib import pyplot as plt
 from tqdm import tqdm
 
-N_CONFIGS = 1
-N_MODELS = 1
+N_CONFIGS = 1780
+N_MODELS = 5
 PLDDT_KEY = "plddt"
 
 
