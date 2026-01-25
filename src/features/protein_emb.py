@@ -60,7 +60,7 @@ def compute_prott5_embeddings(sequences: list[str], tokenizer: T5Tokenizer, mode
         attention_mask = torch.tensor(ids["attention_mask"]).to(device)
 
         with torch.no_grad():
-            with autocast():
+            with torch.amp.autocast('cuda'):
                 outputs = model(
                     input_ids=input_ids,
                     attention_mask=attention_mask
@@ -91,8 +91,40 @@ def generate_protein_emb(verbose=False):
         Args:
             verbose (bool): If True, prints progress and information.
         """
-    df = pd.read_csv(f"{data_dir}/UGT.csv")
-    seqs = df["prot_seq"].tolist()
+
+    # Try to use full_dataset.csv if available, else fallback to UGT.csv
+    import os
+    full_dataset_path = data_dir / "full_dataset.csv"
+    if full_dataset_path.exists():
+        df = pd.read_csv(full_dataset_path)
+        # Try to find the protein sequence column
+        if "prot_seq" in df.columns:
+            seqs = df["prot_seq"].tolist()
+        else:
+            # Try to find a column containing 'seq' (case-insensitive)
+            seq_cols = [col for col in df.columns if "seq" in col.lower()]
+            if seq_cols:
+                seqs = df[seq_cols[0]].tolist()
+                if verbose:
+                    print(f"    Using protein sequences from column: {seq_cols[0]}")
+            else:
+                raise ValueError("No protein sequence column found. Expected 'prot_seq' or a column containing 'seq'.")
+        # Save mapping of UGT_ID and UGT_Nomenclature for each embedding
+        mapping_cols = []
+        if 'UGT_ID' in df.columns:
+            mapping_cols.append('UGT_ID')
+        elif 'ugt_id' in df.columns:
+            mapping_cols.append('ugt_id')
+        if 'UGT_Nomenclature' in df.columns:
+            mapping_cols.append('UGT_Nomenclature')
+        elif 'ugt_nomenclature' in df.columns:
+            mapping_cols.append('ugt_nomenclature')
+        mapping_cols.append('prot_seq')
+        protein_mapping = df[mapping_cols].copy()
+    else:
+        df = pd.read_csv(f"{data_dir}/UGT.csv")
+        seqs = df["prot_seq"].tolist()
+        protein_mapping = df[["UGT_ID", "UGT_Nomenclature", "prot_seq"]].copy()
 
     tokenizer, model, device = load_prott5_model()
 
@@ -109,3 +141,12 @@ def generate_protein_emb(verbose=False):
     # Save NumPy array
     embeddings_np = embeddings.detach().cpu().numpy()
     np.save(f"{output_dir}/protein_embeddings_prott5.npy", embeddings_np)
+
+    # Save mapping CSV for robust downstream lookup
+    protein_mapping.to_csv(f"{output_dir}/protein_embedding_mapping.csv", index=False)
+    if verbose:
+        print(f"    Saved protein embedding mapping to {output_dir}/protein_embedding_mapping.csv")
+
+
+if __name__ == "__main__":
+    generate_protein_emb(verbose=True)
