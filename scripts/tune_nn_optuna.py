@@ -85,16 +85,16 @@ def objective(trial, config):
     # =============================================================
     
     # Substrate embedding selection
-    substrate_name = trial.suggest_categorical('substrate_name', ['chemberta2', 'chemberta3', 'kpgt'])
+    substrate_name = trial.suggest_categorical('substrate_name', ['chemberta2', 'chemberta3'])
     
     # Model architecture - choose between MLP, Attention, or Bilinear
     model_type = trial.suggest_categorical('model_type', ['mlp', 'attention', 'bilinear'])
     
     # Hidden layer configuration (applies to all model types)
-    n_layers = trial.suggest_int('n_layers', 1, 3)
+    n_layers = trial.suggest_int('n_layers', 1, 5)
     hidden_dims = []
     for i in range(n_layers):
-        dim = trial.suggest_categorical(f'hidden_dim_{i}', [128, 256, 512, 768])
+        dim = trial.suggest_categorical(f'hidden_dim_{i}', [128, 256, 512, 1024])
         hidden_dims.append(dim)
     
     # Regularization
@@ -127,39 +127,55 @@ def objective(trial, config):
     # substrate_name is now from trial suggestion, not config
     protein_name = config['protein_name']
     concatenation_path = config['concatenation_path']
+
+    concatenated_embeddings = np.load(f"{concatenation_path}/X_{substrate_name}.npy")
+    activity = np.load(f"{concatenation_path}/y_{substrate_name}.npy")
+    meta_name = f"metadata_{substrate_name}.csv"
+    metadata = pd.read_csv(f"{concatenation_path}/{meta_name}")
+
+    # Load precomputed splits from CSVs
+    train = pd.read_csv("data/train.csv")
+    val1 = pd.read_csv("data/C1_val.csv")
+    val2 = pd.read_csv("data/C2_val.csv")
+    val3 = pd.read_csv("data/C3_val.csv")
+    val = pd.concat([val1, val2, val3], ignore_index=True)
     
-    data_dir = Path(__file__).parent.parent
-    concatenated_embeddings = np.load(data_dir / concatenation_path / f'X_{substrate_name}.npy')
-    activity = np.load(data_dir / concatenation_path / f'y_{substrate_name}.npy')
-    meta_name = f"metadata_{substrate_name}_{protein_name}.csv"
-    metadata = pd.read_csv(data_dir / concatenation_path / meta_name)
-    
-    # Convert to binary
-    activity_binary = (activity != "none").astype(int)
-    
-    # Create splits
-    splits = stratified_split_by_entities(
-        metadata,
-        protein_col="UGT_trivial_name",
-        substrate_col="substrate",
-        label_col="activity",
-        plot=False
-    )
-    
-    train = splits['train']
-    val = splits['val']
-    
-    # Get embeddings
-    train_emb = concatenated_embeddings[metadata.index.isin(train.index)]
-    val_emb = concatenated_embeddings[metadata.index.isin(val.index)]
+
+    def get_embeddings_for_split(split_df, metadata, concatenated_embeddings):
+        # Handle case-insensitive column matching for robust merging
+        split_cols = {col.lower(): col for col in split_df.columns}
+        meta_cols = {col.lower(): col for col in metadata.columns}
+        merge_cols = []
+        # Try to match 'UGT_ID' (train) with 'ugt_id' (metadata)
+        if 'ugt_id' in meta_cols and ('ugt_id' in split_cols or 'ugt_id' in [c.lower() for c in split_df.columns] or 'ugt_id' in [c.lower() for c in split_df.columns]):
+            merge_cols.append(('UGT_ID' if 'UGT_ID' in split_df.columns else split_cols.get('ugt_id', 'ugt_id'), meta_cols['ugt_id']))
+        elif 'ugt_id' in meta_cols and 'UGT_ID' in split_cols:
+            merge_cols.append(('UGT_ID', meta_cols['ugt_id']))
+        # Try to match 'substrate' (case-insensitive)
+        if 'substrate' in meta_cols and 'substrate' in split_cols:
+            merge_cols.append(('substrate', 'substrate'))
+        # If merge_cols found, perform merge with left_on/right_on
+        if merge_cols:
+            left_on = [mc[0] for mc in merge_cols]
+            right_on = [mc[1] for mc in merge_cols]
+            merged = pd.merge(split_df, metadata.reset_index(), left_on=left_on, right_on=right_on, how='inner')
+            indices = merged['index'].values.astype(int)
+        else:
+            # fallback: use DataFrame index intersection
+            indices = metadata.index.isin(split_df.index).nonzero()[0]
+        return concatenated_embeddings[indices], indices
+
+    train_emb, train_indices = get_embeddings_for_split(train, metadata, concatenated_embeddings)
+    val_emb, val_indices = get_embeddings_for_split(val, metadata, concatenated_embeddings)
     
     # Normalize
     scaler = StandardScaler()
     train_emb = scaler.fit_transform(train_emb)
     val_emb = scaler.transform(val_emb)
-    
-    train_labels = activity_binary[metadata.index.isin(train.index)]
-    val_labels = activity_binary[metadata.index.isin(val.index)]
+
+    # Extract labels using robust indices
+    train_labels = activity[train_indices]
+    val_labels = activity[val_indices]
     
     # Create DataLoaders
     train_dataset = TensorDataset(
@@ -503,7 +519,7 @@ if __name__ == "__main__":
         'substrate_name': nn_config['substrate_name'],
         'protein_name': nn_config['protein_name'],
         'concatenation_path': nn_config.get('concatenation_path', 'data/concatenated_embeddings'),
-        'n_trials': 1000,      
+        'n_trials': 150,      
         'max_epochs': 60,
         'timeout': None,  # Optional: max time in seconds (e.g., 3600 for 1 hour)
     }
