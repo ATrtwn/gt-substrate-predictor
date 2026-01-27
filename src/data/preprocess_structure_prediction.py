@@ -8,12 +8,22 @@ from Bio.PDB import MMCIFParser, NeighborSearch
 from Bio.PDB.Polypeptide import is_aa
 from torch_geometric.data import Data
 from sklearn.neighbors import NearestNeighbors
+import json
+
+data_dir = Path(__file__).parent.parent / "boltz_test" 
 
 # Constants
 N_CONFIGS = 1780
 N_MODELS = 5
 BINDING_SITE_CUTOFF = 6.0  # Angstroms
 K_NEIGHBORS = 10           # Connect to k-nearest atom neighbors
+REGISTRY_PATH = Path("substrate_registry.json")
+
+def load_registry():
+    if REGISTRY_PATH.exists():
+        return json.loads(REGISTRY_PATH.read_text())
+    return {}
+
 
 def get_atom_feature(atom):
     """
@@ -103,26 +113,34 @@ def collect(root_dir: Path):
     # Setup paths and load labels
     data_dir = Path(__file__).parent.parent.parent / "data"
     df = pd.read_csv(data_dir / "split.csv")
+    registry = load_registry()
     
     output_base = root_dir / "pocket_graphs"
     output_base.mkdir(parents=True, exist_ok=True)
 
-    split_collections = {"train": [], "val": [], "test": []}
+    split_collections = {"train": [], "val": [{"C1":[],"C2":[],"C3":[]}], "test": [{"C1":[],"C2":[],"C3":[]}]}
 
     print("Building Atom-Level Pocket Graphs...")
 
-    for c in tqdm(range(1, N_CONFIGS + 1)):
-        config_dir = root_dir / f"boltz_results_config{c}" / "predictions"
+    for folder in data_dir.iterdir():
+        if not folder.is_dir(): continue
+        folder_name = folder.name
+        c = folder_name.split("config")[-1]
+        config_dir = folder / "predictions" 
         if not config_dir.exists(): continue
         
         # Match UGT_ID to labels
-        row = df.loc[df["UGT_ID"] == c]
+        UGT_ID,substrate_id = c.split("_")
+        smiles = registry[substrate_id] if substrate_id in registry else None
+        if smiles is None: continue
+        row = df.loc[df["UGT_ID"] == UGT_ID, df["SMILES_isomeric_1"] == smiles]
+
         if row.empty: continue
             
         is_active = int(row["is_active"].values[0])
         split_name = row["dataset_split"].values[0]
         category = "val" if "val" in split_name.lower() else ("test" if "test" in split_name.lower() else "train")
-
+        c_category = "C1" if "C1" in split_name else ("C2" if "C2" in split_name else "C3")
         for m in range(N_MODELS):
             cif_path = config_dir / f"config{c}" / f"plddt_config{c}_model_{m}.cif"
             if cif_path.exists():
@@ -130,12 +148,21 @@ def collect(root_dir: Path):
                 if data:
                     data.config_id = c
                     data.model_id = m
-                    split_collections[category].append(data)
+                    if category == "train":
+                        split_collections[category].append(data)
+                    else:
+                        split_collections[category][0][c_category].append(data)
 
     # Save splits
     for category, data_list in split_collections.items():
         if data_list:
-            torch.save(data_list, output_base / f"{category}_pocket_dataset.pt")
+            if category in ["val", "test"]:
+                for c_category, graphs in data_list[0].items():
+                    torch.save(graphs, output_base / f"{category}_{c_category}_pocket_dataset.pt")
+                    print(f"Saved {len(graphs)} pocket graphs to {category}_{c_category}_pocket_dataset.pt")
+            else:
+
+                torch.save(data_list, output_base / f"{category}_pocket_dataset.pt")
             print(f"Saved {len(data_list)} pocket graphs to {category}_pocket_dataset.pt")
 
 if __name__ == "__main__":
