@@ -1,10 +1,10 @@
 # Neural Network Configuration
 
 # Model architecture
-model_type: "attention"  # "simple" (GT_NN), "deep" (DeepMLP), "bilinear" (BilinearInteractionNet), or "attention" (AttentionMLP)
-hidden_dims: [512, 256]  # 3 layers total: input->512->256->output
-dropout: 0.4  # Dropout rate
-projection_dim: 128  # Projection dimension for bilinear model (reduces parameters)
+model_type: "bilinear"  # "simple" (GT_NN), "bilinear" (BilinearInteractionNet), or "attention" (AttentionMLP)
+hidden_dims: [256, 256, 256]  # 3 uniform layers - Optuna optimized
+dropout: 0.4  # Dropout rate - Optuna optimized
+projection_dim: 64  # Compact projection - Optuna optimized
 
 # Attention-specific parameters
 num_heads: 4  # Number of attention heads (4 or 8 recommended)
@@ -15,14 +15,14 @@ data_augmentation: false  # Enable Gaussian noise augmentation during training
 noise_std: 0.02  # Standard deviation for Gaussian noise (0.01-0.05 recommended)
 
 # Training hyperparameters
-learning_rate: 0.001
-batch_size: 16  # Increased with simpler model
+learning_rate: 0.000305  # Optuna optimized
+batch_size: 16  # Optuna optimized
 epochs: 100
-weight_decay: 0.0005  # Moderate L2 regularization
+weight_decay: 0.000936  # Optuna optimized
 
 # Data
 concatenation_path: "data/concatenated_embeddings/"
-substrate_name: "chemberta3" 
+substrate_name: "chemberta2"  # Optuna found ChemBERTa2 (384D) beats ChemBERTa3!
 protein_name: "prott5"
 
 # W&B

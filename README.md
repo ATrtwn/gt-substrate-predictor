@@ -150,7 +150,6 @@ project_root/
             - `available_*_features` = everything you could choose 
             - `*_features` = the items you actually activate by listing them
 
-
 4.  Recommended Usage Order
     
     To run the full pipeline from raw data to embeddings:
@@ -228,26 +227,85 @@ And for the conection between cluster classes and activity:
 ´´´python .\scripts\analyze_cluster_properties.py´´´
 ---
 
+### 🚀 Quick Start Guide
+
+#### Step-by-Step: Training a Model
+
+1. **Prepare your data** (if not already done):
+   ```bash
+   python scripts/fetch_data.py
+   python scripts/concatenate_embeddings.py --substrate chemberta3
+   ```
+
+2. **Choose your approach:**
+
+   **Option A: Quick Training (with default parameters)**
+   ```bash
+   python scripts/train_nn.py
+   ```
+   Uses settings from `configs/neural_network.yml`. Good for testing or if you already have optimized parameters.
+
+   **Option B: Hyperparameter Optimization First (Recommended)**
+   ```bash
+   # Find best hyperparameters (takes ~45-60 minutes)
+   python scripts/tune_nn_optuna.py
+   
+   # Copy best parameters from output to configs/neural_network.yml
+   # Then train with optimized settings:
+   python scripts/train_nn.py
+   ```
+   Optuna automatically tests 50 different configurations to find the best model.
+
+3. **View results:**
+   - Training curves: `reports/figures/nn_training_*.png`
+   - Metrics JSON: `reports/metrics/nn_metrics_*.json`
+   - Best model: `experiments/best_model_*.pth`
+
+#### Making Predictions with Trained Model
+
+```python
+import torch
+from src.models.nn_model import AttentionMLP, GT_NN, BilinearInteractionNet
+
+# Load model
+model = AttentionMLP(input_dim=1792, hidden_dims=[512, 256], num_heads=4)
+model.load_state_dict(torch.load('experiments/best_model_chemberta3.pth'))
+model.eval()
+
+# Load your concatenated embedding
+X_test = np.load('data/concatenated_embeddings/X_chemberta3.npy')
+
+# Make prediction
+with torch.no_grad():
+    prediction = model(torch.FloatTensor(X_test[0:1]))
+    probability = torch.sigmoid(prediction).item()
+    print(f"Activity probability: {probability:.2%}")
+```
+
+---
+
 ### 🤖 Neural Network Training
 
 Train neural networks for GT-substrate activity prediction using concatenated embeddings.
 
 #### Available Model Types
 
-1. **Simple MLP (`model_type: "simple"`)**
-   - 3-layer feedforward network
+1. **Standard MLP (`model_type: "simple"`)**
+   - Flexible feedforward network with configurable layers
+   - Examples: `[512, 256]` for 2 layers, `[1024, 512, 256, 128]` for deeper networks
    - Fast and effective baseline
 
-2. **Deep MLP (`model_type: "deep"`)**
-   - 5-layer deep network with residual-style connections
+2. **Bilinear Interaction Network (`model_type: "bilinear"`)**
+   - Explicitly models protein-substrate interactions via projections
+   - Computes Hadamard product and dot product between features
+   - Projects embeddings to lower dimensions for efficiency
 
-3. **Bilinear Interaction Network (`model_type: "bilinear"`)**
-   - Explicitly models protein-substrate interactions
-   - Projects embeddings to lower dimensions
-
-4. **Attention MLP (`model_type: "attention"`)**
+3. **Attention MLP (`model_type: "attention"`)** - Best Performance ✅
    - Cross-attention mechanism between protein and substrate
    - Multi-head attention captures diverse interaction patterns
+   - Bidirectional: protein attends to substrate AND substrate attends to protein
+   - Residual connections + LayerNorm for stable training
+   - **Best results**: 84.2% C1, 93% C2, 98.2% ROC-AUC (ChemBERTa3, 4 heads)
 
 #### Configuration
 
@@ -255,8 +313,8 @@ Edit `configs/neural_network.yml`:
 
 ```yaml
 # Model architecture
-model_type: "attention"  # "simple", "deep", "bilinear", or "attention"
-hidden_dims: [512, 256]  # Hidden layer dimensions
+model_type: "attention"  # "simple", "bilinear", or "attention"
+hidden_dims: [512, 256]  # Hidden layer dimensions (flexible - can be any depth)
 dropout: 0.4  # Dropout rate (0.3-0.5 recommended)
 
 # Attention-specific parameters (only for model_type: "attention")
@@ -283,31 +341,103 @@ wandb_mode: "offline"  # "online" or "offline"
 
 #### Running Training
 
+**Basic training:**
 ```bash
-# Train with current config
 python scripts/train_nn.py
 ```
 
-The script will:
-- Automatically normalize embeddings (StandardScaler)
-- Create stratified train/val/test splits
-- Apply early stopping (patience=10)
-- Save best model checkpoint
-- Generate training curves (loss, accuracy, F1, ROC-AUC)
-- Save metrics to JSON file
-- Log to Weights & Biases
+**Monitor training:**
+- Real-time metrics printed to console
+- Training curves auto-generated after completion
+- Weights & Biases tracking (if configured)
 
 #### Outputs
 
-- **Model checkpoint**: `experiments/best_model_{substrate_name}.pth`
-- **Training curves**: `reports/figures/nn_training_{substrate_name}_{id}.png`
-- **Metrics JSON**: `reports/metrics/nn_metrics_{substrate_name}_{id}.json`
-- **W&B logs**: `wandb/offline-run-*/` (sync with `wandb sync <run-dir>`)
+- **Model checkpoint**: `experiments/best_model_{substrate_name}.pth` - Saved automatically when validation accuracy improves
+- **Training curves**: `reports/figures/nn_training_{substrate_name}_{timestamp}.png` - Loss, accuracy, F1, ROC-AUC plots
+- **Metrics JSON**: `reports/metrics/nn_metrics_{substrate_name}_{timestamp}.json` - Complete evaluation results
+- **W&B logs**: `wandb/offline-run-*/` (if enabled) - Sync with `wandb sync <run-dir>` for online dashboard
+
+---
+
+### 🎯 Hyperparameter Optimization with Optuna
+
+Automatically find the best hyperparameters using Optuna - a smart optimization framework that learns from previous trials.
+
+#### How to Use
+
+1. **Install Optuna:**
+```bash
+pip install optuna
+```
+
+2. **Run hyperparameter optimization:**
+```bash
+python scripts/tune_nn_optuna.py
+```
+
+**What happens during optimization:**
+- Prunes unpromising trials early
+- Tracks all metrics: F1-score (primary), accuracy, ROC-AUC, loss
+- Generates comprehensive 6-plot visualization dashboard
+
+3. **Review results:**
+
+The script automatically saves:
+- `reports/optuna/best_params_{substrate_name}.json` - Best hyperparameters found
+- `reports/optuna/optuna_study_{substrate_name}.png` - 6-plot visualization dashboard:
+  - Optimization history with rolling average
+  - Parameter importance ranking
+  - Learning rate vs performance
+  - Dropout vs performance  
+  - Model architecture comparison
+  - Substrate embedding comparison
+
+#### Customizing Optimization
+
+**What Optuna searches over:**
+- **Substrate embeddings**: ChemBERTa2 (384D), ChemBERTa3 (768D), KPGT (2304D)
+- **Model architectures**: MLP, Attention MLP, Bilinear Interaction Network
+- **Network depth**: 1-3 hidden layers
+- **Layer widths**: [128, 256, 512, 768]
+- **Learning rate**: [1e-6, 1e-5, 1e-4, 1e-3, 1e-2]
+- **Regularization**: Dropout (0.2-0.9), Weight decay (1e-5 to 1e-3)
+- **Training**: Batch size (8, 16, 32)
+- **Attention-specific**: Number of heads (2, 4, 8), Projection dim (64, 128, 256)
+
+**Modify search parameters:**
+
+Edit `scripts/tune_nn_optuna.py` at the bottom (lines ~495-505):
+```python
+config = {
+    'n_trials': 1000,      # Number of configurations to test
+    'max_epochs': 60,    # Max epochs per trial (most converge by 30)
+    'timeout': None,     # Optional: max time in seconds (e.g., 3600)
+}
+```
+
+**Change optimization metric:**
+
+By default, Optuna maximizes F1-score. To optimize for a different metric, edit line ~228:
+```python
+# Current: return val_f1
+# Options: return val_accuracy, val_roc_auc, val_f1
+```
+
+**Adjust pruning aggressiveness:**
+
+Edit line ~275 in `objective()` function:
+```python
+# Current: MedianPruner(n_startup_trials=5, n_warmup_steps=10)
+# More aggressive (faster): n_warmup_steps=5
+# Less aggressive (thorough): n_warmup_steps=15
+```
 ---
 
 ### 📈 Experiments
 - **Baseline models:** Random classifier, majority class, logistic regression.
-- **Neural networks:** Simple MLP, Deep MLP, Bilinear Interaction Network.
+- **Neural networks:** Flexible MLP, Bilinear Interaction Network, Attention MLP.
+- **Hyperparameter optimization:** Optuna for automated tuning.
 - **Future work:** GNN on molecular graphs, multi-modal transformer, AlphaFold2 integration.
 
 #### Baseline models
