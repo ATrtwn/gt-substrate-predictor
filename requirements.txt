@@ -13,3 +13,12 @@ scikit-learn
 wandb
 joblib
 pyyaml
+optuna
+upsetplot
+biopython
+torchdata
+dgl
+rdkit
+pubchempy
+matplotlib
+py3Dmol

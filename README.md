@@ -183,7 +183,7 @@ project_root/
 
    - Once MMseqs2 is ready, run the clustering command (adjust filenames if needed, UGT.fasta is created by the preprocessing step):
     ```powershell 
-    tools\mmseqs\bin\mmseqs.bat easy-cluster data\UGT.fasta data\GT_cluster tmp --min-seq-id 0.7 -c 0.7
+    .\tools\mmseqs\bin\mmseqs.exe easy-cluster data\UGT.fasta data\GT_cluster tmp --min-seq-id 0.7 -c 0.8
     ```
    - min-seq-id 0.5 sets 50% minimum sequence identity
     
@@ -201,7 +201,7 @@ project_root/
    ```powershell 
      python .\scripts\print_cluster_report.p
     ``` 
-    for the report output -> CONCLUSION: dataset is diverse enough, no need for omiting the sequences
+    for the report output -> CONCLUSION: 90% redundancy reduction
 
 #### 🧬 Substrate embeddings
 To use RDKit in this project, follow these steps:
@@ -290,7 +290,7 @@ Train neural networks for GT-substrate activity prediction using concatenated em
 
 #### Available Model Types
 
-1. **Standard MLP (`model_type: "simple"`)**
+1. **Standard MLP**
    - Flexible feedforward network with configurable layers
    - Examples: `[512, 256]` for 2 layers, `[1024, 512, 256, 128]` for deeper networks
    - Fast and effective baseline
@@ -303,9 +303,9 @@ Train neural networks for GT-substrate activity prediction using concatenated em
 3. **Attention MLP (`model_type: "attention"`)** - Best Performance ✅
    - Cross-attention mechanism between protein and substrate
    - Multi-head attention captures diverse interaction patterns
-   - Bidirectional: protein attends to substrate AND substrate attends to protein
+   - Bidirectional: protein attends to substrate and substrate attends to protein
    - Residual connections + LayerNorm for stable training
-   - **Best results**: 84.2% C1, 93% C2, 98.2% ROC-AUC (ChemBERTa3, 4 heads)
+
 
 #### Configuration
 
@@ -322,7 +322,7 @@ num_heads: 4  # Number of attention heads (4 recommended, 8 may overfit)
 use_residual: true  # Use residual connections (recommended)
 
 # Data augmentation (optional)
-data_augmentation: false  # Enable Gaussian noise during training
+data_augmentation: true  # Enable Gaussian noise during training
 noise_std: 0.02  # Standard deviation for noise (if augmentation enabled)
 
 # Training hyperparameters
@@ -330,6 +330,12 @@ learning_rate: 0.001
 batch_size: 16
 epochs: 100
 weight_decay: 0.0005  # L2 regularization
+
+# Oversampling
+oversample: true  # Minority class oversampling in training set
+
+# Feature incorporation
+use_handcrafted_features: true  # Handcrafted feature incorporation
 
 # Data
 substrate_name: "chemberta3"  # "chemberta2", "chemberta3", or "kpgt"
@@ -357,6 +363,24 @@ python scripts/train_nn.py
 - **Training curves**: `reports/figures/nn_training_{substrate_name}_{timestamp}.png` - Loss, accuracy, F1, ROC-AUC plots
 - **Metrics JSON**: `reports/metrics/nn_metrics_{substrate_name}_{timestamp}.json` - Complete evaluation results
 - **W&B logs**: `wandb/offline-run-*/` (if enabled) - Sync with `wandb sync <run-dir>` for online dashboard
+
+**Ensemble Setup:**
+- 5 models with different random seeds: [42, 123, 456, 789, 1337]
+- Simple averaging of prediction probabilities
+- Each model trained independently with data augmentation
+- Saves to: `experiments/best_model_chemberta2_aug_seed_{seed}.pth`
+
+**Running the Ensemble:**
+```bash
+# Train ensemble models (run 5 times with different seeds)
+python scripts/train_nn.py --seed 42 --save_path experiments/best_model_chemberta2_aug_seed_42.pth
+python scripts/train_nn.py --seed 123 --save_path experiments/best_model_chemberta2_aug_seed_123.pth
+python scripts/train_nn.py --seed 456 --save_path experiments/best_model_chemberta2_aug_seed_456.pth
+python scripts/train_nn.py --seed 789 --save_path experiments/best_model_chemberta2_aug_seed_789.pth
+python scripts/train_nn.py --seed 1337 --save_path experiments/best_model_chemberta2_aug_seed_1337.pth
+
+# Evaluate ensemble
+python scripts/ensemble_predict.py --models experiments/best_model_chemberta2_aug_seed_*.pth
 
 ---
 
@@ -398,19 +422,22 @@ The script automatically saves:
 **What Optuna searches over:**
 - **Substrate embeddings**: ChemBERTa2 (384D), ChemBERTa3 (768D), KPGT (2304D)
 - **Model architectures**: MLP, Attention MLP, Bilinear Interaction Network
-- **Network depth**: 1-3 hidden layers
-- **Layer widths**: [128, 256, 512, 768]
-- **Learning rate**: [1e-6, 1e-5, 1e-4, 1e-3, 1e-2]
-- **Regularization**: Dropout (0.2-0.9), Weight decay (1e-5 to 1e-3)
-- **Training**: Batch size (8, 16, 32)
-- **Attention-specific**: Number of heads (2, 4, 8), Projection dim (64, 128, 256)
+- **Network depth**: 1-4 hidden layers
+- **Layer widths**: [128, 256, 512, 1024]
+- **Learning rate and scheduler**: [1e-6, 1e-5, 1e-4, 1e-3, 1e-2], StepLR (step size, gamma) or ReduceOnPlateau 
+- **Regularization**: Dropout (0.2-0.9), Weight decay (1e-6 to 1e-2)
+- **Optimizer**: Adam, AdamW, SGD eith momentum
+- **Training**: Batch size (16, 32, 64)
+- **Activation function**: ReLu, GeLu, Tanh, Sigmoid, Leaky ReLu
+- **Attention-specific**: Number of heads (2, 4, 8), Residual conncections (True, False)
+- **Bilinear model specific**: (64, 128, 256)
 
 **Modify search parameters:**
 
 Edit `scripts/tune_nn_optuna.py` at the bottom (lines ~495-505):
 ```python
 config = {
-    'n_trials': 1000,      # Number of configurations to test
+    'n_trials': 150,      # Number of configurations to test
     'max_epochs': 60,    # Max epochs per trial (most converge by 30)
     'timeout': None,     # Optional: max time in seconds (e.g., 3600)
 }
@@ -479,7 +506,50 @@ In order to run the baseline models one has to specify the settings of the exper
     ```
 
 ### 💡 Results
-tba
+
+#### Best Model Performance
+
+Our final production model uses the below written parameters from Optuna study and with Gaussian noise (std=0.02) , label smoothing (0.05), oversampling on minority class (Random sampler on inactive protein-substrate pairs) and incorporates hand-crafted features for improving performance.  
+
+**Performance on Test Sets:**
+
+| Test Set | F1 Score | Accuracy | ROC-AUC | MCC |
+|----------|----------|----------|---------|-----|
+| **C1** | 0.95028 | 0.92857 | 0.98305 | 0.832 |
+| **C2** | 0.77301 | 0.79928 | 0.87521 | 0.61597 |
+| **C3** | 0.52174 | 0.52174 | 0.87521 | 0.61597 | 
+
+**Key Findings:**
+- **C3 is hardest** (as expected) - both protein and substrate are completely new to the model
+- Regularization techniques help the model generalise on C2 and C3 and hand-crafted features help the overall performance
+- Ensemble did not improve performance
+
+**Training Configuration:**
+```yaml
+# Best configuration from experiments
+substrate_name: chemberta3
+model_type: attention (num_heads = 2 , use_residual = True)
+hidden_dims: [1024, 512] (n_layers = 2)
+dropout: 0.4
+weight_decay: 0.00011761899025546045
+learning_rate: 0.0001
+batch_size: 32
+optimizer: AdamW
+scheduler: StepLR (step_size = 7, gamma = 0.8)
+activation: tanh
+data_augmentation: true
+noise_std: 0.02
+label_smoothing: 0.05
+oversample: true
+use_handcrafted_features: true
+```
+
+**What We Tested:**
+1. ✅ **Data Augmentation** - Gaussian noise (std=0.02) improves robustness
+2. ✅ **Label Smoothing** - epsilon=0.05 improved performance
+3. ✅ **Oversampling** - helped with the class imbalance
+4. ✅ **Adding features into training** - improved overall performance
+3. ❌ **Ensemble Method** - Simple averaging did not outperform the individual models
 
 ### References
 tba
