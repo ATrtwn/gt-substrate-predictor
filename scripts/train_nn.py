@@ -123,6 +123,7 @@ def train_nn_experiment(
     label_smoothing: float = 0.0,
     seed: int = None,
     save_path: str = None,
+    params: dict = None,
 ):
     """
     Train neural network experiment.
@@ -169,13 +170,66 @@ def train_nn_experiment(
     
     # Load data and metadata
     concatenated_embeddings = np.load(f"{concatenation_path}/X_{substrate_name}.npy")
-    activity = np.load(f"{concatenation_path}/y_{substrate_name}.npy")
     meta_name = f"metadata_{substrate_name}.csv"
     metadata = pd.read_csv(f"{concatenation_path}/{meta_name}")
+    # Load full_dataset.csv and use is_active for activity labels
+    full_df = pd.read_csv("data/full_dataset.csv")
+    # Ensure merge columns are string for robust matching
+    if 'UGT_ID' in full_df.columns:
+        full_df['UGT_ID'] = full_df['UGT_ID'].astype(str)
+    if 'ugt_id' in metadata.columns:
+        metadata['ugt_id'] = metadata['ugt_id'].astype(str)
+    # Merge metadata with full_df to get is_active for each row
+    metadata = pd.merge(metadata, full_df[['UGT_ID', 'substrate', 'is_active']], left_on=['ugt_id', 'substrate'], right_on=['UGT_ID', 'substrate'], how='left', suffixes=(None, '_full'))
+    activity = metadata['is_active'].to_numpy()
+
+    # === HANDCRAFTED FEATURE INTEGRATION (toggleable via config) ===
+    if params is None:
+        raise ValueError("params dictionary must be provided to train_nn_experiment for feature toggling.")
+    USE_HANDCRAFTED_FEATURES = params.get("use_handcrafted_features", True)
+    if USE_HANDCRAFTED_FEATURES:
+        features_all = np.load("data/concatenated_embeddings/features_full_dataset.npy")
+        features_df = pd.read_csv("data/concatenated_embeddings/features_full_dataset.csv")
+        # Build mapping from substrate name to SMILES
+        substrate_map = pd.read_csv("data/Substrate_with_embeddings.csv", usecols=["substrate", "smiles"])
+        substrate_map = substrate_map.drop_duplicates().dropna(subset=["substrate", "smiles"])
+        # Merge metadata with substrate_map to get SMILES for each row
+        metadata_ = metadata.copy()
+        metadata_ = pd.merge(metadata_, substrate_map, left_on="substrate", right_on="substrate", how="left")
+        # Now merge with features on (ugt_id, SMILES)
+        if 'UGT_ID' in features_df.columns:
+            features_df['UGT_ID'] = features_df['UGT_ID'].astype(str)
+        if 'ugt_id' in metadata_.columns:
+            metadata_['ugt_id'] = metadata_['ugt_id'].astype(str)
+        merged = pd.merge(
+            metadata_,
+            features_df,
+            left_on=['ugt_id', 'smiles'],
+            right_on=['UGT_ID', 'SMILES_isomeric_1'],
+            how='left',
+            sort=False,
+            suffixes=(None, '_feat')
+        )
+        feature_cols = [c for c in merged.columns if c.startswith('f')]
+        # Drop samples with missing features (any NaN in feature columns)
+        before_drop = merged.shape[0]
+        merged = merged.dropna(subset=feature_cols)
+        after_drop = merged.shape[0]
+        if after_drop < before_drop:
+            logging.warning(f"Dropped {before_drop - after_drop} samples with missing features after merge.")
+        features = merged[feature_cols].to_numpy(dtype=np.float32)
+        features_all_aligned = features
+        # Also update metadata to match dropped rows
+        metadata = merged.reset_index(drop=True)
+        # Filter embeddings and activity to match new metadata
+        concatenated_embeddings = concatenated_embeddings[metadata.index]
+        activity = metadata['is_active'].to_numpy()  # Always use aligned is_active
+        logging.info(f"Features loaded and aligned: shape = {features_all_aligned.shape}")
+    # === END HANDCRAFTED FEATURE INTEGRATION ===
 
 
     # Print unique values for debugging
-    print("Unique activity values:", np.unique(activity, return_counts=True))
+    # print("Unique activity values:", np.unique(activity, return_counts=True))
 
     # Auto-detect binarization
     if activity.dtype.kind in {'U', 'S', 'O'}:
@@ -210,6 +264,12 @@ def train_nn_experiment(
         split_cols = {col.lower(): col for col in split_df.columns}
         meta_cols = {col.lower(): col for col in metadata.columns}
         merge_cols = []
+        # Ensure UGT_ID/ugt_id columns are both strings for merge
+        for col in ['UGT_ID', 'ugt_id']:
+            if col in split_df.columns:
+                split_df[col] = split_df[col].astype(str)
+            if col in metadata.columns:
+                metadata[col] = metadata[col].astype(str)
         if 'ugt_id' in meta_cols and ('ugt_id' in split_cols or 'ugt_id' in [c.lower() for c in split_df.columns]):
             merge_cols.append(('UGT_ID' if 'UGT_ID' in split_df.columns else split_cols.get('ugt_id', 'ugt_id'), meta_cols['ugt_id']))
         elif 'ugt_id' in meta_cols and 'UGT_ID' in split_cols:
@@ -223,13 +283,63 @@ def train_nn_experiment(
             indices = merged['index'].values.astype(int)
         else:
             indices = metadata.index.isin(split_df.index).nonzero()[0]
-        return concatenated_embeddings[indices], activity_binary[indices]
+        # Also return indices for feature normalization
+        return concatenated_embeddings[indices], activity_binary[indices], indices
 
-    train_emb, train_labels = get_embeddings_for_split(train, metadata, concatenated_embeddings)
-    val_emb, val_labels = get_embeddings_for_split(val, metadata, concatenated_embeddings)
-    c1_emb, c1_labels = get_embeddings_for_split(c1_test, metadata, concatenated_embeddings) if c1_test is not None else (None, None)
-    c2_emb, c2_labels = get_embeddings_for_split(c2_test, metadata, concatenated_embeddings) if c2_test is not None else (None, None)
-    c3_emb, c3_labels = get_embeddings_for_split(c3_test, metadata, concatenated_embeddings) if c3_test is not None else (None, None)
+    # --- Print class distribution for each split (removed for production) ---
+    split_info = [
+        ("train", train),
+        ("C1_val", val1),
+        ("C2_val", val2),
+        ("C3_val", val3),
+        ("C1_test", c1_test),
+        ("C2_test", c2_test),
+        ("C3_test", c3_test),
+    ]
+    for name, df in split_info:
+        if df is not None:
+            _, labels, _ = get_embeddings_for_split(df, metadata, concatenated_embeddings)
+            # print(f"{name} class distribution:", np.bincount(labels.astype(int)))
+
+    # Split leakage check removed for production
+
+    train_emb, train_labels, train_idx = get_embeddings_for_split(train, metadata, concatenated_embeddings)
+    val_emb, val_labels, val_idx = get_embeddings_for_split(val, metadata, concatenated_embeddings)
+    c1_emb, c1_labels, c1_idx = get_embeddings_for_split(c1_test, metadata, concatenated_embeddings) if c1_test is not None else (None, None, None)
+    c2_emb, c2_labels, c2_idx = get_embeddings_for_split(c2_test, metadata, concatenated_embeddings) if c2_test is not None else (None, None, None)
+    c3_emb, c3_labels, c3_idx = get_embeddings_for_split(c3_test, metadata, concatenated_embeddings) if c3_test is not None else (None, None, None)
+
+    # --- Normalize features if enabled ---
+    if USE_HANDCRAFTED_FEATURES:
+        feature_dim = features_all_aligned.shape[1]
+        # Get features for each split using indices
+        train_features = features_all_aligned[train_idx]
+        val_features = features_all_aligned[val_idx]
+        c1_features = features_all_aligned[c1_idx] if c1_idx is not None else None
+        c2_features = features_all_aligned[c2_idx] if c2_idx is not None else None
+        c3_features = features_all_aligned[c3_idx] if c3_idx is not None else None
+
+        # Fit scaler on train, transform all
+        feature_scaler = StandardScaler()
+        train_features = feature_scaler.fit_transform(train_features)
+        val_features = feature_scaler.transform(val_features)
+        if c1_features is not None:
+            c1_features = feature_scaler.transform(c1_features)
+        if c2_features is not None:
+            c2_features = feature_scaler.transform(c2_features)
+        if c3_features is not None:
+            c3_features = feature_scaler.transform(c3_features)
+
+        # Concatenate normalized features to embeddings for each split
+        train_emb = np.concatenate([train_emb, train_features], axis=1)
+        val_emb = np.concatenate([val_emb, val_features], axis=1)
+        if c1_emb is not None:
+            c1_emb = np.concatenate([c1_emb, c1_features], axis=1)
+        if c2_emb is not None:
+            c2_emb = np.concatenate([c2_emb, c2_features], axis=1)
+        if c3_emb is not None:
+            c3_emb = np.concatenate([c3_emb, c3_features], axis=1)
+        logging.info("Handcrafted features normalized and concatenated to embeddings for all splits.")
 
     # Normalize embeddings - fit on train, transform all
     logging.info("Normalizing embeddings with StandardScaler...")
@@ -245,6 +355,25 @@ def train_nn_experiment(
 
     logging.info(f"Train: {len(train_labels)}, Val: {len(val_labels)}, C1: {len(c1_labels) if c1_labels is not None else 0}, C2: {len(c2_labels) if c2_labels is not None else 0}, C3: {len(c3_labels) if c3_labels is not None else 0}")
     logging.info(f"Embeddings normalized - mean: {train_emb.mean():.4f}, std: {train_emb.std():.4f}")
+
+    # --- Oversample minority class in training set (configurable) ---
+    if params.get("oversample", True):
+        from collections import Counter
+        rng = np.random.default_rng(seed)
+        class_counts = Counter(np.round(train_labels).astype(int))
+        min_class = min(class_counts, key=class_counts.get)
+        max_class = max(class_counts, key=class_counts.get)
+        n_to_add = class_counts[max_class] - class_counts[min_class]
+        if n_to_add > 0:
+            min_indices = np.where(np.round(train_labels).astype(int) == min_class)[0]
+            add_indices = rng.choice(min_indices, size=n_to_add, replace=True)
+            train_emb = np.concatenate([train_emb, train_emb[add_indices]], axis=0)
+            train_labels = np.concatenate([train_labels, train_labels[add_indices]], axis=0)
+            logging.info(f"Oversampled minority class {min_class}: added {n_to_add} samples. New train shape: {train_emb.shape}")
+        else:
+            logging.info("No oversampling needed: classes already balanced.")
+    else:
+        logging.info("Oversampling disabled via config.")
     
     # Create DataLoaders
     train_dataset = TensorDataset(
@@ -275,11 +404,16 @@ def train_nn_experiment(
     c3_loader = DataLoader(c3_dataset, batch_size=batch_size, shuffle=False)
     
     # Initialize model
-    input_dim = concatenated_embeddings.shape[1]
-    # Determine protein and substrate dimensions
-    # Assume protein is always ProtT5 (1024D), rest is substrate
     protein_dim = 1024
+    # Recalculate input_dim and substrate_dim after all preprocessing (including oversampling/features)
+    input_dim = train_emb.shape[1]
     substrate_dim = input_dim - protein_dim
+    logging.info(f"Model input_dim={input_dim}, protein_dim={protein_dim}, substrate_dim={substrate_dim}")
+    if USE_HANDCRAFTED_FEATURES:
+        feature_dim = features.shape[1]
+        logging.info(f"Handcrafted features detected: feature_dim={feature_dim}, substrate_dim (embedding+features)={substrate_dim}")
+    else:
+        logging.info(f"No handcrafted features: substrate_dim={substrate_dim}")
     
     if model_type.lower() == "bilinear":
         model = BilinearInteractionNet(
@@ -362,26 +496,26 @@ def train_nn_experiment(
     
     for epoch in range(epochs):
         train_loss = train_epoch(model, train_loader, criterion, optimizer, device, noise_std=augmentation_noise)
-        
+
         # Evaluate on VALIDATION set for early stopping (proper ML practice)
         val_loss, val_preds, val_true = evaluate(model, val_loader, criterion, device)
-        
+
         # Convert smoothed labels back to binary for evaluation
         val_true_binary = np.round(val_true).astype(int)
-        
-        # Metrics
+
+        # Metrics at default threshold 0.5
         val_preds_binary = (val_preds > 0.5).astype(int)
         val_acc = accuracy_score(val_true_binary, val_preds_binary)
         val_f1 = f1_score(val_true_binary, val_preds_binary)
         val_roc_auc = roc_auc_score(val_true_binary, val_preds)
-        
+
         # Store metrics
         train_losses.append(train_loss)
         val_losses.append(val_loss)
         val_accuracies.append(val_acc)
         val_f1_scores.append(val_f1)
         val_roc_aucs.append(val_roc_auc)
-        
+
         # Log to W&B
         wandb.log({
             "epoch": epoch,
@@ -392,17 +526,17 @@ def train_nn_experiment(
             "val_roc_auc": val_roc_auc,
             "learning_rate": optimizer.param_groups[0]['lr']
         })
-        
+
         logging.info(f"Epoch {epoch+1}/{epochs} - Train Loss: {train_loss:.4f}, "
                     f"Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.4f}, Val F1: {val_f1:.4f}")
-        
+
         # Learning rate scheduling
         if scheduler is not None:
             if scheduler_type.lower() == 'reduce_on_plateau':
                 scheduler.step(val_loss)
             else:  # step or cosine
                 scheduler.step()
-        
+
         # Early stopping based on validation loss
         if val_loss < best_val_loss:
             best_val_loss = val_loss
@@ -421,6 +555,8 @@ def train_nn_experiment(
             if patience_counter >= patience:
                 logging.info(f"Early stopping at epoch {epoch+1}")
                 break
+
+    best_threshold = 0.5  # Using default threshold
     
     # Load best model state before final evaluation
     if best_model_state is not None:
@@ -497,31 +633,31 @@ def train_nn_experiment(
         ("C3", c3_loader, c3_labels)
     ]:
         _, test_preds, test_labels = evaluate(model, split_loader, criterion, device)
-        test_preds_binary = (test_preds > 0.5).astype(int)
-        
+        test_preds_binary = (test_preds > best_threshold).astype(int)
+
         # Convert smoothed labels back to binary for evaluation
         test_labels_binary = np.round(test_labels).astype(int)
-        
+
         # Calculate metrics
         acc = accuracy_score(test_labels_binary, test_preds_binary)
         f1 = f1_score(test_labels_binary, test_preds_binary)
         roc_auc = roc_auc_score(test_labels_binary, test_preds)
         mcc = matthews_corrcoef(test_labels_binary, test_preds_binary)
-        
+
         wandb.log({
             f"{split_name}/accuracy": acc,
             f"{split_name}/f1": f1,
             f"{split_name}/roc_auc": roc_auc,
             f"{split_name}/mcc": mcc,
         })
-        
+
         # Store test results
         results_metrics[f"{split_name}_accuracy"] = float(acc)
         results_metrics[f"{split_name}_f1"] = float(f1)
         results_metrics[f"{split_name}_roc_auc"] = float(roc_auc)
         results_metrics[f"{split_name}_mcc"] = float(mcc)
-        
-        logging.info(f"{split_name} - Acc: {acc:.4f}, F1: {f1:.4f}, ROC-AUC: {roc_auc:.4f}, MCC: {mcc:.4f}")
+
+        logging.info(f"{split_name} - Acc: {acc:.4f}, F1: {f1:.4f}, ROC-AUC: {roc_auc:.4f}, MCC: {mcc:.4f} (threshold={best_threshold:.2f})")
     
     # Save metrics to JSON
     results_dir = Path("reports/metrics")
@@ -573,6 +709,7 @@ def main():
         label_smoothing=params.get("label_smoothing", 0.0),
         seed=args.seed,
         save_path=args.save_path,
+        params=params,
     )
 
 

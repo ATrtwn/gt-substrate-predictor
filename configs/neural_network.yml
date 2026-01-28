@@ -1,28 +1,45 @@
 # Neural Network Configuration
 
 # Model architecture
-model_type: "bilinear"  # "simple" (GT_NN), "bilinear" (BilinearInteractionNet), or "attention" (AttentionMLP)
-hidden_dims: [256, 256, 256]  # 3 uniform layers - Optuna optimized
-dropout: 0.4  # Dropout rate - Optuna optimized
-projection_dim: 64  # Compact projection - Optuna optimized
+model_type: "attention"  # Optuna best
+hidden_dims: [1024, 512]  # Optuna best
+dropout: 0.4
+projection_dim: 128  # Optuna best
+activation: "tanh"
 
-# Attention-specific parameters
-num_heads: 4  # Number of attention heads (4 or 8 recommended)
-use_residual: true  # Use residual connections in attention model
+# Attention-specific parameters (not used for bilinear)
+num_heads: 2
+use_residual: true
 
 # Data augmentation
-data_augmentation: false  # Enable Gaussian noise augmentation during training
+data_augmentation: true  # Enable Gaussian noise augmentation during training
 noise_std: 0.02  # Standard deviation for Gaussian noise (0.01-0.05 recommended)
 
+# Oversampling
+oversample: true  # Toggle class oversampling in training set
+
+# Feature incorporation
+use_handcrafted_features: true  # Toggle handcrafted feature incorporation
+
+# Label smoothing
+label_smoothing: 0.05  # Disabled (tested: minimal impact on performance)
+
 # Training hyperparameters
-learning_rate: 0.000305  # Optuna optimized
-batch_size: 16  # Optuna optimized
+learning_rate: 0.0001  # Optuna best
+batch_size: 32  # Optuna best
 epochs: 100
-weight_decay: 0.000936  # Optuna optimized
+weight_decay: 0.00011761899025546045  # Optuna best
+
+# Optimizer and scheduler
+optimizer: "adamw"  # Optuna best
+scheduler: "step"  # Manual best: adaptive scheduling
+momentum: 0.9
+step_size: 7
+gamma: 0.8
 
 # Data
 concatenation_path: "data/concatenated_embeddings/"
-substrate_name: "chemberta2"  # Optuna found ChemBERTa2 (384D) beats ChemBERTa3!
+substrate_name: "chemberta3"  # Optuna best
 protein_name: "prott5"
 
 # W&B

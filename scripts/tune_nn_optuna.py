@@ -87,8 +87,8 @@ def objective(trial, config):
     # Substrate embedding selection
     substrate_name = trial.suggest_categorical('substrate_name', ['chemberta2', 'chemberta3'])
     
-    # Model architecture - choose between MLP, Attention, or Bilinear
-    model_type = trial.suggest_categorical('model_type', ['mlp', 'attention', 'bilinear'])
+    # Model architecture - choose between Attention or Bilinear
+    model_type = trial.suggest_categorical('model_type', ['attention', 'bilinear', 'mlp'])
     
     # Hidden layer configuration (applies to all model types)
     n_layers = trial.suggest_int('n_layers', 1, 4)
@@ -103,7 +103,7 @@ def objective(trial, config):
     
     # Training hyperparameters
     learning_rate = trial.suggest_categorical('lr', [1e-6, 1e-5, 1e-4, 1e-3, 1e-2])  # Powers of 10: 0.000001 to 0.01
-    batch_size = trial.suggest_categorical('batch_size', [8, 16, 32])
+    batch_size = trial.suggest_categorical('batch_size', [16, 32, 64, 128])
     optimizer_name = trial.suggest_categorical('optimizer', ['Adam', 'AdamW'])
     scheduler_name = trial.suggest_categorical('scheduler', ['StepLR', 'ReduceLROnPlateau'])
     # Scheduler-specific params
@@ -246,7 +246,7 @@ def objective(trial, config):
     if scheduler_name == 'StepLR':
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
     else:
-        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', patience=plateau_patience, factor=plateau_factor, verbose=False)
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', patience=plateau_patience, factor=plateau_factor)
     
     # =============================================================
     # TRAINING LOOP with pruning
