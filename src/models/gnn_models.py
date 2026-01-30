@@ -67,6 +67,7 @@ class GNNClassifier(nn.Module):
                  num_classes=2, 
                  heads=8, 
                  dropout=0.5,
+                 scalar_dim=0,
                  use_residual=True, 
                  layer_name="GATv2", 
                  concat=True):
@@ -115,16 +116,19 @@ class GNNClassifier(nn.Module):
         # Global pooling
         self.pool = global_mean_pool
 
+        self.scalar_dim = scalar_dim
+
         # Classification head (MLP)
-        self.classifier = nn.Sequential(
-            nn.Linear(embedding_size, embedding_size),
-            nn.ReLU(),
-            nn.Dropout(dropout),
-            nn.Linear(embedding_size, num_classes)
+        self.classifier = torch.nn.Sequential(
+            torch.nn.Linear(hidden_channels + scalar_dim, hidden_channels),
+            torch.nn.ReLU(),
+            torch.nn.Dropout(dropout),
+            torch.nn.Linear(hidden_channels, num_classes)
         )
 
-    def forward(self, x, edge_index, batch):
+    def forward(self, data):
         # Preprocessing
+        x, edge_index, batch = data.x, data.edge_index, data.batch
         x = F.relu(self.preprocessing_1(x))
         x = F.relu(self.preprocessing_2(x))
 
@@ -132,6 +136,9 @@ class GNNClassifier(nn.Module):
             x = conv(x, edge_index)
 
         x = self.pool(x, batch)  # [num_graphs, embedding_size]
+        if self.scalar_dim > 0:
+            scalars = data.scalar_feats
+            x = torch.cat([x, scalars], dim=1)
 
         logits = self.classifier(x)
 
@@ -139,7 +146,7 @@ class GNNClassifier(nn.Module):
     
 
 class MolecularEGNN(nn.Module):
-    def __init__(self, in_dim, hidden_dim, num_classes, depth=4, dropout=0.5):
+    def __init__(self, in_dim, hidden_dim, num_classes, depth=4, dropout=0.5, scalar_dim=0):
         super().__init__()
 
         # EGNN backbone
@@ -156,7 +163,7 @@ class MolecularEGNN(nn.Module):
 
         # Flexible MLP head
         self.head = nn.Sequential(
-            nn.Linear(hidden_dim, hidden_dim),
+            nn.Linear(hidden_dim + scalar_dim, hidden_dim),
             nn.ReLU(),
             nn.Dropout(dropout),
             nn.Linear(hidden_dim, num_classes)
@@ -166,6 +173,8 @@ class MolecularEGNN(nn.Module):
         x, pos, edge_index, batch = data.x, data.pos, data.edge_index, data.batch
         x, pos = self.egnn(x=x, pos=pos, edge_index=edge_index)
         x = self.pool(x, batch)  # shape: [num_graphs, hidden_dim]
+        if self.scalar_dim > 0:
+            x = torch.cat([x, data.scalar_feats], dim=1)
         logits = self.head(x)
 
         return logits

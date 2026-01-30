@@ -46,67 +46,46 @@ def get_binding_site(protein_atoms, protein_residues, ligands, cutoff=binding_si
 
 
 
-# def get_chain_with_ligand(atom_list):
-#     """
-#     Process a list of Atom objects and separate protein residues and ligands.
-#     Returns: (protein_residues, ligands)
-#     """
-#     if not all(hasattr(atom, "get_parent") for atom in atom_list):
-#         raise TypeError("Input must be a list of Atom objects")
-
-#     # Collect residues from atoms, deduplicate by (chain_id, res_id)
-#     res_dict = {}
-#     for atom in atom_list:
-#         res = atom.get_parent()        # Residue object
-#         chain_id = res.get_parent().id # chain ID
-#         key = (chain_id, res.get_id()) # unique key
-#         res_dict[key] = res
-
-#     residues = list(res_dict.values())
-
-#     # Separate protein residues
-#     protein_residues = [res for res in residues if is_aa(res, standard=True)]
-
-#     # Separate ligands (non-protein, excluding water)
-#     ligands = [res for res in residues
-#                if not is_aa(res, standard=True) and res.get_resname() not in ["HOH", "WAT"]]
-
-#     if ligands:
-#         return protein_residues, ligands
-#     else:
-#         raise ValueError("No ligand found in the atom list.")
-
-
 def calculate_rmsd(ref_residues, target_residues):
-    # Match residues by (chain, resseq) for global RMSD
-    ref_dict = {(res.get_parent().id, res.id[1]): res for res in ref_residues if 'CA' in res}
-    target_dict = {(res.get_parent().id, res.id[1]): res for res in target_residues if 'CA' in res}
-    common_keys = set(ref_dict.keys()) & set(target_dict.keys())
-    if not common_keys:
+    # Sort both by their actual position in the structure
+    ref_res = sorted([res for res in ref_residues if 'CA' in res], key=lambda x: x.id[1])
+    tar_res = sorted([res for res in target_residues if 'CA' in res], key=lambda x: x.id[1])
+
+    # Ensure we only compare up to the shortest sequence length available
+    min_len = min(len(ref_res), len(tar_res))
+    if min_len == 0:
         return None
-    ref_atoms = [ref_dict[k]['CA'] for k in common_keys]
-    target_atoms = [target_dict[k]['CA'] for k in common_keys]
+
+    ref_atoms = [ref_res[i]['CA'] for i in range(min_len)]
+    tar_atoms = [tar_res[i]['CA'] for i in range(min_len)]
+
     sup = Superimposer()
-    sup.set_atoms(ref_atoms, target_atoms)
-    sup.apply(target_atoms)
+    sup.set_atoms(ref_atoms, tar_atoms)
+    sup.apply(tar_atoms)
     return sup.rms
 
 def count_conserved_by_distance(exp_binding_site, pred_binding_site, cutoff=conserved_cutoff):
     """
-    Counts residues in the experimental binding site that have a predicted residue
-    within cutoff distance of their Cα atom.
+    Matches residues by their relative position in the binding site list 
+    since residue numbers may differ between files.
     """
-    pred_atoms = [res['CA'] for res in pred_binding_site if 'CA' in res]
-    print(pred_atoms)
-    print([res['CA'] for res in exp_binding_site if 'CA' in res])
-    ns = NeighborSearch(pred_atoms)
+    # Get CA atoms and sort to maintain relative order
+    exp_ca = sorted([res for res in exp_binding_site if 'CA' in res], key=lambda x: x.id[1])
+    pred_ca = sorted([res for res in pred_binding_site if 'CA' in res], key=lambda x: x.id[1])
+
+    if not exp_ca or not pred_ca:
+        return 0, set()
+
+    # Use NeighborSearch on all predicted CA atoms
+    ns = NeighborSearch([res['CA'] for res in pred_ca])
     conserved = set()
-    for res in exp_binding_site:
-        if 'CA' not in res:
-            continue
+
+    for res in exp_ca:
+        # If any predicted CA is within cutoff distance of this experimental CA
         neighbors = ns.search(res['CA'].coord, cutoff, level="R")
         if neighbors:
             conserved.add(res)
+            
     return len(conserved), conserved
 
 def visualize_structure(cif_file, protein_residues, binding_site_residues, conserved_residues, ligands, output_html):
@@ -159,41 +138,85 @@ def split_by_chain(atoms, residues, ligands):
     return dict(chains)
 # --- MAIN ANALYSIS ---
 
+# 1. Load and Split Experimental
 exp_atoms, exp_residues, exp_ligands = load_structure(experimental_cif)
-chains = split_by_chain(exp_atoms, exp_residues, exp_ligands)
+chains_data = split_by_chain(exp_atoms, exp_residues, exp_ligands)
 
-for chain_id, data in chains.items():
-    binding = get_binding_site(
-        data["atoms"],
-        data["residues"],
-        data["ligands"]
-    )
-    print(f"Chain {chain_id}: {len(binding)} binding residues")
+# 2. Select specific experimental chain (e.g., Chain A)
+target_chain_id = 'B' 
+if target_chain_id not in chains_data:
+    target_chain_id = list(chains_data.keys())[0]
 
-    print(f"Experimental structure has {len(data['ligands'])} ligand(s) and {len(binding)} binding site residues.\n")
-    visualize_structure(experimental_cif, exp_residues, binding, None, exp_ligands, f"{experimental_cif}_{chain_id}_visualization.html")
+exp_data = chains_data[target_chain_id]
+exp_binding_residues = get_binding_site(
+    exp_data["atoms"], 
+    exp_data["residues"], 
+    exp_data["ligands"]
+)
+
+# Visualize the Experimental reference first
+visualize_structure(
+    experimental_cif, 
+    exp_data["residues"], 
+    exp_binding_residues, 
+    None, 
+    exp_data["ligands"], 
+    f"experimental_ref_{target_chain_id}.html"
+)
 
 results = []
 
+# 3. Process Predictions
 for pred_file in predicted_files:
     pred_atoms, pred_residues, pred_ligands = load_structure(pred_file)
     pred_binding_residues = get_binding_site(pred_atoms, pred_residues, pred_ligands)
     
-    # RMSD calculations
-    rmsd_global = calculate_rmsd(exp_residues, pred_residues)
+    # Calculations
+    rmsd_global = calculate_rmsd(exp_data["residues"], pred_residues)
     rmsd_binding = calculate_rmsd(list(exp_binding_residues), list(pred_binding_residues))
+    num_conserved, conserved_res = count_conserved_by_distance(exp_binding_residues, pred_binding_residues)
     
-    # Conserved residues by distance
-    num_conserved, conserved_residues = count_conserved_by_distance(exp_binding_residues, pred_binding_residues)
+    results.append((pred_file.name, rmsd_global, rmsd_binding, num_conserved))
     
-    results.append((pred_file, rmsd_global, rmsd_binding, num_conserved))
+    # --- VISUALIZE PREDICTION ---
+    # This shows the predicted protein with its own binding site and highlights 
+    # the residues that matched the experimental distance cutoff in blue.
+    visualize_structure(
+        pred_file, 
+        pred_residues, 
+        pred_binding_residues, 
+        conserved_res, 
+        pred_ligands, 
+        f"viz_{pred_file.stem}.html"
+    )
     
-    print(f"--- {pred_file} ---")
-    print(f"Global RMSD: {rmsd_global:.2f} Å" if rmsd_global else "Global RMSD: N/A")
-    print(f"Binding site RMSD: {rmsd_binding:.2f} Å" if rmsd_binding else "Binding site RMSD: N/A")
-    print(f"Conserved binding-site residues: {num_conserved} / {len(exp_binding_residues)}\n")
-    
-    visualize_structure(pred_file, pred_residues, pred_binding_residues, conserved_residues, pred_ligands, f"{pred_file}_visualization.html")
+    # --- CALCULATE METRICS ---
+    conserved_pct = (num_conserved / len(exp_binding_residues)) * 100 if exp_binding_residues else 0
+
+    # Determine structural quality status
+    if rmsd_global and rmsd_global < 2.0:
+        fold_status = "Correct Fold"
+    elif rmsd_global and rmsd_global < 4.0:
+        fold_status = "Approximate Fold"
+    else:
+        fold_status = "Poor Fold"
+
+    # Determine binding site accuracy
+    site_status = "High Accuracy" if conserved_pct > 70 else "Moderate" if conserved_pct > 30 else "Low Accuracy"
+
+    # --- FORMATTED OUTPUT ---
+    print(f"{'='*40}")
+    print(f"MODEL: {pred_file.name}")
+    print(f"{'-'*40}")
+    print(f"Protein Backbone (Global):")
+    print(f"  - RMSD: {rmsd_global:.2f} Å ({fold_status})")
+    print(f"Binding Site (Local):")
+    print(f"  - RMSD: {rmsd_binding:.2f} Å")
+    print(f"  - Conserved Residues: {num_conserved} of {len(exp_binding_residues)} ({conserved_pct:.1f}%)")
+    print(f"  - Summary: {site_status}")
+    print(f"{'='*40}\n")
+
+print("Analysis complete.")
 
 print("Analysis complete. Summary:")
 for res in results:

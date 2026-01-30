@@ -11,12 +11,14 @@ from pathlib import Path
 import json
 import argparse
 import random
+from collections import Counter
 
 import numpy as np
 import pandas as pd
 import torch
 import torch.nn as nn
 #from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.data import WeightedRandomSampler
 from torch_geometric.loader import DataLoader
 import wandb
 import matplotlib.pyplot as plt
@@ -65,7 +67,7 @@ def train_epoch(model, train_loader, criterion, optimizer, device, noise_std=0.0
 
         optimizer.zero_grad()
         outputs = model(batch)  # shape: [num_graphs, num_classes]
-
+        labels = labels.view(-1,1).float()
         loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()
@@ -86,6 +88,7 @@ def evaluate(model, data_loader, criterion, device):
         for batch in data_loader:
             batch = batch.to(device)  # moves x, pos, edge_index, y automatically if PyG batch supports it
             labels = batch.y
+            labels = labels.view(-1,1).float()
 
             # Forward pass (graph-level classification)
             outputs = model(batch)  # shape: [num_graphs, num_classes]
@@ -101,10 +104,16 @@ def evaluate(model, data_loader, criterion, device):
 
             all_preds.append(probs.cpu())
             all_labels.append(labels.cpu())
-
-    avg_loss = total_loss / len(data_loader)
-    all_preds = torch.cat(all_preds).numpy()
-    all_labels = torch.cat(all_labels).numpy()
+    if len(data_loader)>0:
+        avg_loss = total_loss / len(data_loader)
+    else:
+        avg_loss = 0
+    if len(all_preds)>0:
+        all_preds = torch.cat(all_preds).numpy()
+        all_labels = torch.cat(all_labels).numpy()
+    else:
+        all_preds = np.empty((0,1),dtype=np.float32)
+        all_labels = np.empty((0,1),dtype=np.float32)
     return avg_loss, all_preds, all_labels
 
 
@@ -116,6 +125,7 @@ def train_gnn_experiment(
     learning_rate: float,
     batch_size: int,
     epochs: int,
+    oversample:bool,
     weight_decay: float = 0.0,
     num_heads: int = 4,
     num_workers: int = 4,
@@ -144,11 +154,51 @@ def train_gnn_experiment(
         seed: Random seed for reproducibility (for ensemble training)
         save_path: Custom path to save the model (for ensemble training)
     """
+    def load_trainset(name, filename, shuffle=False, oversample = False):
+        path = Path(__file__).resolve().parent.parent.parent / dataset_path / filename
+        graphs = torch.load(path, weights_only=False)
+        print(f"Loaded training set with {len(graphs)} objects")
+        print(f"DEBUG : Graph Keys founf : {graphs[0].keys()}")
+        all_features = torch.stack([g.scalars for g in graphs])
+        if oversample:
+            labels = torch.tensor([int(g.y.item()) for g in graphs])
+            class_counts = Counter(labels.tolist())
+
+            if len(class_counts) == 2:
+                n_neg = class_counts[0]
+                n_pos = class_counts[1]
+
+                weights = {
+                    0: 1.0 / n_neg,
+                    1: 1.0 / n_pos
+                }
+                sample_weights = torch.tensor(
+                    [weights[int(y.item())] for y in labels],
+                    dtype= torch.double
+                )
+                sampler = WeightedRandomSampler(
+                    weights = sample_weights,
+                    num_samples=len(sample_weights),
+                    replacement=True
+                )
+                print(f"Oversampling enabled | Class dict | {dict(class_counts)}")
+                return DataLoader(
+                    graphs,
+                    batch_size=batch_size,
+                    sampler=sampler,
+                    shuffle = False,
+                    num_workers = num_workers,
+                    pin_memory=True
+                ),all_features
+            else:
+                print("Oversampling skipped - dataset is not binary")
+        return load_dataset(name,filename,shuffle=shuffle),all_features
+
     def load_dataset(name, filename, shuffle=False):
-        path = dataset_path / filename
+        path = Path(__file__).resolve().parent.parent.parent / dataset_path / filename
         print(f"Loading {name} from {path}")
 
-        graphs = torch.load(path)
+        graphs = torch.load(path,weights_only=False)
         print(f"  -> {len(graphs)} graphs loaded")
 
         return DataLoader(
@@ -201,13 +251,16 @@ def train_gnn_experiment(
     #Create DataLoaders
     for name, filename in DATASETS.items():
         shuffle = (name == "train") and shufle_train
-        loaders[name] = load_dataset(name, filename, shuffle)
+        if name == "train":
+            loaders[name],all_features = load_trainset(name,filename,shuffle,oversample=oversample)
+        else:
+            loaders[name] = load_dataset(name, filename, shuffle)
 
     val_graphs = []
 
     for name in ["val_C1", "val_C2", "val_C3"]:
         path = dataset_path / DATASETS[name]
-        graphs = torch.load(path)
+        graphs = torch.load(path,weights_only = False)
         val_graphs.extend(graphs)
 
     val_loader = DataLoader(
@@ -218,8 +271,17 @@ def train_gnn_experiment(
         pin_memory=True
     )
     loaders["val"] = val_loader
-
+    mean = all_features.mean(dim=0)
+    std = all_features.std(dim=0) + 1e-8
+    num_scalar_features = loaders["train"].dataset[0].scalars.shape[0]
+    # Apply scaling to all graphs in train, val, test datasets
+    for loader_name in DATASETS.keys():
+        dataset = loaders[loader_name].dataset
+        for g in dataset:
+            g.scalars = (g.scalars - mean) / std
     # Initialize model
+    print(f"DEBUG : Hidden dims {hidden_dims}")
+    print(f"DEBUG : num scalar features {num_scalar_features}")
     if model_type in ["GATv2", "GAT", "GIN", "GraphSAGE"]:
         model = GNNClassifier(
             in_channels=loaders["train"].dataset[0].num_node_features,
@@ -229,6 +291,7 @@ def train_gnn_experiment(
             layer_name=model_type,
             heads=num_heads,
             use_residual=use_residual,
+            scalar_dim=num_scalar_features,
             concat=True,
         ).to(device)
     elif model_type == "MolecularEGNN":
@@ -238,20 +301,25 @@ def train_gnn_experiment(
             dropout=dropout,
             num_classes=1,  
         ).to(device)
-
+    train_labels = []
     # Calculate class weights for imbalanced data
     for batch in loaders["train"]:
         # batch.y shape: [num_graphs] for graph classification
         train_labels.append(batch.y.cpu())
 
-        train_labels = torch.cat(train_labels).numpy().astype(int)
+    train_labels = torch.cat(train_labels).numpy().astype(int)
     # Convert to int for bincount (use original binary labels before smoothing)
     train_labels_int = np.round(train_labels).astype(int)
-    class_counts = np.bincount(train_labels_int)
-    class_weights = torch.FloatTensor([1.0 / c for c in class_counts]).to(device)
-    pos_weight = class_weights[1] / class_weights[0]
-    
-    criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
+    if oversample:
+        criterion = nn.BCEWithLogitsLoss()
+    else:
+        class_counts = np.bincount(train_labels_int)
+        n_neg = class_counts[0]
+        n_pos = class_counts[1]
+        if n_pos==0:
+            raise ValueError("No positive samples in training set")
+        pos_weight = torch.tensor([n_neg / n_pos], device = device, dtype=torch.float32)
+        criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
     
     # Create optimizer based on config
     if optimizer_name.lower() == 'adam':
@@ -350,9 +418,9 @@ def train_gnn_experiment(
             if save_path is not None:
                 model_path = save_path
             elif seed is not None:
-                model_path = f"experiments/best_model_{substrate_name}_seed_{seed}.pth"
+                model_path = f"experiments/best_model_{model_tpye}_seed_{seed}.pth"
             else:
-                model_path = f"experiments/best_model_{substrate_name}.pth"
+                model_path = f"experiments/best_model_{model_type}.pth"
             save_model(model, optimizer, epoch, val_loss, model_path)
         else:
             patience_counter += 1
@@ -432,32 +500,33 @@ def train_gnn_experiment(
         ("C2", loaders["test_C2"]),
         ("C3", loaders["test_C3"])
     ]:
-        _, test_preds, test_labels = evaluate(model, split_loader, criterion, device)
-        test_preds_binary = (test_preds > 0.5).astype(int)
+        if len(loaders["test_C3"])>0:
+            _, test_preds, test_labels = evaluate(model, split_loader, criterion, device)
+            test_preds_binary = (test_preds > 0.5).astype(int)
         
-        # Convert smoothed labels back to binary for evaluation
-        test_labels_binary = np.round(test_labels).astype(int)
+            # Convert smoothed labels back to binary for evaluation
+            test_labels_binary = np.round(test_labels).astype(int)
         
-        # Calculate metrics
-        acc = accuracy_score(test_labels_binary, test_preds_binary)
-        f1 = f1_score(test_labels_binary, test_preds_binary)
-        roc_auc = roc_auc_score(test_labels_binary, test_preds)
-        mcc = matthews_corrcoef(test_labels_binary, test_preds_binary)
+            # Calculate metrics
+            acc = accuracy_score(test_labels_binary, test_preds_binary)
+            f1 = f1_score(test_labels_binary, test_preds_binary)
+            roc_auc = roc_auc_score(test_labels_binary, test_preds)
+            mcc = matthews_corrcoef(test_labels_binary, test_preds_binary)
         
-        wandb.log({
-            f"{split_name}/accuracy": acc,
-            f"{split_name}/f1": f1,
-            f"{split_name}/roc_auc": roc_auc,
-            f"{split_name}/mcc": mcc,
-        })
+            wandb.log({
+                f"{split_name}/accuracy": acc,
+                f"{split_name}/f1": f1,
+                f"{split_name}/roc_auc": roc_auc,
+                f"{split_name}/mcc": mcc,
+            })
         
-        # Store test results
-        results_metrics[f"{split_name}_accuracy"] = float(acc)
-        results_metrics[f"{split_name}_f1"] = float(f1)
-        results_metrics[f"{split_name}_roc_auc"] = float(roc_auc)
-        results_metrics[f"{split_name}_mcc"] = float(mcc)
+            # Store test results
+            results_metrics[f"{split_name}_accuracy"] = float(acc)
+            results_metrics[f"{split_name}_f1"] = float(f1)
+            results_metrics[f"{split_name}_roc_auc"] = float(roc_auc)
+            results_metrics[f"{split_name}_mcc"] = float(mcc)
         
-        logging.info(f"{split_name} - Acc: {acc:.4f}, F1: {f1:.4f}, ROC-AUC: {roc_auc:.4f}, MCC: {mcc:.4f}")
+            logging.info(f"{split_name} - Acc: {acc:.4f}, F1: {f1:.4f}, ROC-AUC: {roc_auc:.4f}, MCC: {mcc:.4f}")
     
     # Save metrics to JSON
     results_dir = Path("reports/metrics")
@@ -475,39 +544,40 @@ def train_gnn_experiment(
 
 def main():
     # Parse command-line arguments
-    parser = argparse.ArgumentParser(description='Train neural network for GT-substrate prediction')
+    parser = argparse.ArgumentParser(description='Train graph neural network for GT-substrate prediction')
     parser.add_argument('--seed', type=int, default=None, help='Random seed for reproducibility (for ensemble)')
     parser.add_argument('--save_path', type=str, default=None, help='Custom path to save model (for ensemble)')
     args = parser.parse_args()
     
-    params = get_params("neural_network")
-    
-    train_gnn_experiment(
-        dataset_path=Path(params["dataset_path"]),
-        model_type=params["model_type"],
-        hidden_dims=params["hidden_dims"],
-        dropout=params["dropout"],
-        learning_rate=params["learning_rate"],
-        batch_size=params["batch_size"],
-        epochs=params["epochs"],
-        weight_decay=params.get("weight_decay", 0.0),
-        num_heads=params.get("num_heads", 4),
-        num_workers=params.get("num_workers", 4),
-        use_residual=params.get("use_residual", True),
-        data_augmentation=params.get("data_augmentation", False),
-        shufle_train=params.get("shuffle_train", True),
-        noise_std=params.get("noise_std", 0.02),
-        wandb_mode=params["wandb_mode"],
-        project=params["project"],
-        optimizer_name=params.get("optimizer", "adam"),
-        scheduler_type=params.get("scheduler", "reduce_on_plateau"),
-        momentum=params.get("momentum", 0.9),
-        step_size=params.get("step_size", 20),
-        gamma=params.get("gamma", 0.1),
-        activation=params.get("activation", "relu"),
-        seed=args.seed,
-        save_path=args.save_path,
-    )
+    params = get_params("graph_neural_network")
+    for model in params["model_type"]: 
+        train_gnn_experiment(
+            dataset_path=Path(params["dataset_path"]),
+            model_type=model,
+            hidden_dims=params["hidden_dims"],
+            dropout=params["dropout"],
+            learning_rate=params["learning_rate"],
+            batch_size=params["batch_size"],
+            epochs=params["epochs"],
+            oversample=params["oversample"],
+            weight_decay=params.get("weight_decay", 0.0),
+            num_heads=params.get("num_heads", 4),
+            num_workers=params.get("num_workers", 4),
+            use_residual=params.get("use_residual", True),
+            data_augmentation=params.get("data_augmentation", False),
+            shufle_train=params.get("shuffle_train", True),
+            noise_std=params.get("noise_std", 0.02),
+            wandb_mode=params["wandb_mode"],
+            project=params["project"],
+            optimizer_name=params.get("optimizer", "adam"),
+            scheduler_type=params.get("scheduler", "reduce_on_plateau"),
+            momentum=params.get("momentum", 0.9),
+            step_size=params.get("step_size", 20),
+            gamma=params.get("gamma", 0.1),
+            activation=params.get("activation", "relu"),
+            seed=args.seed,
+            save_path=args.save_path,
+        )
 
 
 if __name__ == "__main__":
