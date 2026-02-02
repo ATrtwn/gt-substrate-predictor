@@ -1,12 +1,10 @@
 import pandas as pd
-import numpy as np
+
 from pathlib import Path
 import subprocess
-from rdkit import Chem
-from rdkit.Chem import Descriptors, Crippen, rdMolDescriptors
 
 # matlab dir
-matlab_dir = Path(__file__).parent/ "matlab"
+matlab_dir = Path(__file__).parent.parent/ "src" / "matlab"
 
 # data directory
 data_dir = Path(__file__).parent.parent / "data"
@@ -15,131 +13,33 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from Bio import SeqIO
 
+from src.matlab.prepare_data import build_interaction_matrix_enzyme, build_interaction_matrix_acceptor
+
 def write_train_fasta(train_df, out_fasta):
     records = []
     for enzyme, seq in train_df.groupby("UGT_ID")["prot_seq"].first().items():
         # remove all whitespace/newlines
         clean_seq = "".join(seq.split())
+        id_str = str(enzyme)
         records.append(
-            SeqRecord(Seq(clean_seq), id=str(enzyme), description="")
+            SeqRecord(Seq(clean_seq), id=id_str, description="")
         )
     SeqIO.write(records, out_fasta, "fasta")
 
 def write_query_fasta(enzyme, seq, path):
-    with open(path, "w") as f:
-        f.write(">" + str(enzyme) + "\n")
-        f.write(seq + "\n")
+    #with open(path, "w") as f:
+    #    id_str = ">" + str(enzyme) + "\n"
+    #    f.write(id_str)
+    #    f.write(seq + "\n")
 
-def find_relaxed_core(df, min_substrates=10, min_enzymes=5, max_iter=20):
-    core = df.copy()
-
-    for _ in range(max_iter):
-        changed = False
-
-        enz_counts = core.groupby("UGT_ID")["substrate"].nunique()
-        keep_enz = enz_counts[enz_counts >= min_substrates].index
-        if len(keep_enz) < core["UGT_ID"].nunique():
-            core = core[core["UGT_ID"].isin(keep_enz)]
-            changed = True
-
-        sub_counts = core.groupby("substrate")["UGT_ID"].nunique()
-        keep_sub = sub_counts[sub_counts >= min_enzymes].index
-        if len(keep_sub) < core["substrate"].nunique():
-            core = core[core["substrate"].isin(keep_sub)]
-            changed = True
-
-        if not changed:
-            break
-
-    return core
-
-def get_substrate_features(substrates_df):
-    COOH_SMARTS = Chem.MolFromSmarts("C(=O)[OH]")
-    OH_SMARTS = Chem.MolFromSmarts("[OH]")
-    AMINE_SMARTS = Chem.MolFromSmarts("[NX3;H2,H1;!$(NC=O)]")
-
-    rows = []
-
-    for _, row in substrates_df.drop_duplicates("substrate").iterrows():
-        mol = Chem.MolFromSmiles(row["SMILES_isomeric_1"])
-        if mol is None:
-            raise ValueError(f"Invalid SMILES: {row['SMILES_isomeric_1']}")
-
-        feats = {
-            "substrate": row["substrate"],
-            "logP": Crippen.MolLogP(mol),
-            "area": rdMolDescriptors.CalcTPSA(mol),
-            "vol": Descriptors.MolWt(mol), # proxy
-            "cooh": int(mol.HasSubstructMatch(COOH_SMARTS)),
-            "numOH": Descriptors.NumHDonors(mol),
-        }
-
-        rows.append(feats)
-
-    return pd.DataFrame(rows).set_index("substrate")
-
-def build_interaction_matrix(all_pairs_df, out_file, DT=False, test_frac=0.2, seed=0):
-    # get core (interactions between substrates and enzymes that have no missing combinations)
-    core_df = find_relaxed_core(all_pairs_df)
-
-    enzymes = core_df["UGT_ID"].unique()
-    substrates = sorted(core_df["substrate"].unique())
-
-    print(
-        f"Dense core: "
-        f"{len(enzymes)} enzymes × {len(substrates)} substrates"
+    # remove all whitespace/newlines
+    clean_seq = "".join(seq.split())
+    id_str = str(enzyme)
+    records = []
+    records.append(
+        SeqRecord(Seq(clean_seq), id=id_str, description="")
     )
-
-    # split dataframes
-    if DT:
-        # split substrates (not interactions)
-        rng = np.random.default_rng(seed)
-        n_test = int(len(substrates) * test_frac)
-        test_substrates = set(rng.choice(substrates, size=n_test, replace=False))
-        train_substrates = set(substrates) - test_substrates
-
-        core_train_df = core_df[core_df["substrate"].isin(train_substrates)].copy()
-        core_test_df = core_df[core_df["substrate"].isin(test_substrates)].copy()
-
-        # build matrix from train only
-        X = pd.DataFrame(2, index=sorted(train_substrates), columns=sorted(enzymes))
-    else:
-        # split enzymes (not interactions)
-        rng = np.random.default_rng(seed)
-        n_test = int(len(enzymes) * test_frac)
-        test_enzymes = set(rng.choice(enzymes, size=n_test, replace=False))
-        train_enzymes = set(enzymes) - test_enzymes
-
-        core_train_df = core_df[core_df["UGT_ID"].isin(train_enzymes)].copy()
-        core_test_df = core_df[core_df["UGT_ID"].isin(test_enzymes)].copy()
-
-        # build matrix from train only
-        X = pd.DataFrame(2, index=substrates, columns=sorted(train_enzymes))
-
-    for _, row in core_train_df.iterrows():
-        X.loc[row["substrate"], row["UGT_ID"]] = row["is_active"]
-
-    # minimal required metadata
-    meta = pd.DataFrame({
-        "Name": substrates
-    })
-    if DT:
-        # fill the substrate features
-        feats_df = get_substrate_features(all_pairs_df[['substrate', 'molecule', 'SMILES_isomeric_1']])
-
-        # Merge on substrate name
-        meta = meta.merge(feats_df, left_on="Name", right_index=True, how="left")
-
-        # Optional: reorder columns so ID/Name are first
-        cols = ["Name"] + [c for c in feats_df.columns]
-        meta = meta[cols]
-
-    full = pd.concat([meta, X.reset_index(drop=True)], axis=1)
-    full.to_csv(out_file, sep="\t", index=False)
-
-    # return test interactions for evaluation
-    return core_test_df, core_train_df, meta
-
+    SeqIO.write(records, path, "fasta")
 
 def read_gtpredict_output(path):
     """
@@ -168,6 +68,8 @@ def read_gtpredict_output(path):
                 preds[substrate] = 1
             elif label == "No":
                 preds[substrate] = 0
+            elif label == "Missing":
+                preds[substrate] = -1
 
     return preds
 
@@ -203,21 +105,82 @@ def read_gtpredict_dt_output(path):
 
     return preds
 
+
 def compute_accuracy(gt_labels, true_df, column):
-    y_true = []
-    y_pred = []
+    """
+    Compute accuracy for a given molecule (enzyme or substrate) over all its partners.
+    Ignores missing predictions (marked as -1).
+    Returns: accuracy (float), number of missing predictions (int)
+    """
+    print(f"  Compute accuracy for single enzyme/substrate query")
+
+    y_true, y_pred = [], []
+    skip_cnt = 0
 
     for _, row in true_df.iterrows():
-        molecule = str(row[column])
-        if molecule in gt_labels:
-            y_true.append(row.is_active)
-            y_pred.append(gt_labels[molecule])
+        partner = str(row[column])
+        if partner in gt_labels:
+            pred = gt_labels[partner]
+            truth = row.is_active
+            if pred == -1:
+                skip_cnt += 1
+                continue
+            y_true.append(truth)
+            y_pred.append(pred)
+        else:
+            print(f"  No prediction available for {partner}")
+            skip_cnt += 1
 
-    return sum(t == p for t, p in zip(y_true, y_pred)) / len(y_true)
+    if y_true:
+        acc = sum(t == p for t, p in zip(y_true, y_pred)) / len(y_true)
+    else:
+        acc = None  # No valid predictions at all
+
+    print(f"  Skipped {skip_cnt} rows with no prediction")
+    return acc, skip_cnt
+
+def build_groups_raw(row):
+    fam = int(row["Family"])
+
+    if fam == 1:  # Flavonoids
+        return [
+            row["F3-OH"],
+            row["F5-OH"],
+            row["F6-OH"],
+            row["F7-OH"],
+            row["F13-OH"],
+            row["F14-OH"],
+        ]
+
+    elif fam == 2:  # Coumarins
+        return [
+            row["Cm6-OH"],
+            row["Cm7-OH"],
+        ]
+
+    elif fam == 3:  # Cytokinins
+        return [
+            row["Ck3-N"],
+            row["Ck7-N"],
+            row["Ck-OH"],
+        ]
+
+    elif fam == 4:  # Cinnamic acids
+        return [
+            row["Cn2-OH"],
+            row["Cn3-OH"],
+            row["Cn4-OH"],
+        ]
+
+    else:
+        return []  # families with no scaffold features
 
 def PredictEnzyme(df):
+    print(f"\n +++ Prediction for GTPredict performance on Enzyme queries +++ ")
+
     # prepare data for GTPredict
-    test_df, train_df, meta = build_interaction_matrix(all_pairs_df=df, out_file=matlab_dir / "gt_interaction.txt")
+    test_df, train_df, meta = build_interaction_matrix_enzyme(all_pairs_df=df,
+                                                              out_file=matlab_dir / "data" / "gt_interaction.txt")
 
     # Check intersection
     train_enzymes = set(train_df["UGT_ID"].unique())
@@ -226,10 +189,22 @@ def PredictEnzyme(df):
 
     if overlap:
         print(f"Warning! These test enzymes are also in train: {overlap}")
-    else:
-        print("All test enzymes are unseen in the training matrix")
 
-    write_train_fasta(train_df, matlab_dir / "gt_train.fasta")
+    total_rows = len(train_df) + len(test_df)
+    print("GT-Predict evaluation summary")
+    print("--------------------------------")
+    print(
+        f"Training rows (interactions): "
+        f"{len(train_df)}/{total_rows} "
+        f"({len(train_df) / total_rows:.1%})"
+    )
+    print(
+        f"Test rows (interactions):     "
+        f"{len(test_df)}/{total_rows} "
+        f"({len(test_df) / total_rows:.1%})"
+    )
+
+    write_train_fasta(train_df, matlab_dir / "data" / "gt_train.fasta")
 
     # get GTPredict prediction on the labels
     matlab_cmd = [
@@ -243,32 +218,86 @@ def PredictEnzyme(df):
         f"'{matlab_dir}/data/gtpredict_prediction.csv')"
     ]
 
-    accs = []
+    set_accs = {}
+    set_missing = {}
+    set_total_acc = {}
 
-    for enzyme_id, df in test_df.groupby("UGT_ID"):
-        print(f"Prediction for test enzyme number: {enzyme_id} ({df['UGT_Nomenclature'].iloc[0]})")
+    for test_set in ["C1_test", "C2_test", "C3_test"]:
+        set_df = test_df[test_df["split"] == test_set].copy()
+        if set_df.empty:
+            print(f"No substrates in {test_set}, skipping...")
+            continue
 
-        seq = df["prot_seq"].iloc[0]
+        accs = []
+        missing_counts = []
 
-        # write query FASTA
-        write_query_fasta(enzyme_id, seq, matlab_dir / "data" /  "query.fasta")
+        # For total accuracy
+        total_correct = 0
+        total_checked = 0
+        total_missing = 0
 
-        # run MATLAB
-        subprocess.run(matlab_cmd, check=True)
+        print(f"\n+++ Predictions for {test_set} ({len(set_df)} interactions) +++")
 
-        # read predictions
-        pred_dict = read_gtpredict_output(matlab_dir / "data" / "gtpredict_prediction.csv")
+        for enzyme_id, enzyme_df in set_df.groupby("UGT_ID"):
+            print(f"Prediction for test enzyme id: {enzyme_id} ({enzyme_df['UGT_Nomenclature'].iloc[0]})")
+            print(f"Enzyme has {len(enzyme_df)} interactions in the test data")
 
-        # evaluate
-        accs.append(compute_accuracy(gt_labels=pred_dict, true_df=df, column='substrate'))
+            seq = enzyme_df["prot_seq"].iloc[0]
 
-    print("GT-Predict accuracy:", sum(accs) / len(accs))
+            # write query FASTA
+            write_query_fasta(enzyme_id, seq, matlab_dir / "data" /  "query.fasta")
+
+            # run MATLAB
+            subprocess.run(matlab_cmd, check=True)
+
+            # read predictions
+            pred_dict = read_gtpredict_output(matlab_dir / "data" / "gtpredict_prediction.csv")
+            total_preds = len(pred_dict)
+            missing_overall = sum([pred_dict[pred] == -1 for pred in pred_dict])
+            print(f"Missing predictions in list of all substrates: {missing_overall} / {total_preds}")
+
+            # compute accuracy only on valid predictions
+            acc, missing = compute_accuracy(gt_labels=pred_dict, true_df=enzyme_df, column='substrate')
+
+            if acc is not None:
+                print(f"Result: {acc:.2f}")
+                accs.append(acc)
+                n_checked = len(enzyme_df) - missing
+                n_correct = int(acc * n_checked)
+                total_correct += n_correct
+                total_checked += n_checked
+            else:
+                print("No valid predictions on test set to compute accuracy.")
+
+            missing_counts.append(missing)
+            total_missing += missing
+
+        # Store per set
+        mean_acc = sum(accs) / len(accs) if accs else 0
+        set_accs[test_set] = mean_acc
+        set_missing[test_set] = total_missing
+        total_acc = total_correct / total_checked if total_checked else 0
+        set_total_acc[test_set] = (total_acc, total_correct, total_checked)
+
+    # Summary
+    print("\n=== Summary per test set ===")
+    for test_set in ["C1_test", "C2_test", "C3_test"]:
+        if test_set in set_accs:
+            n_interactions = len(test_df[test_df["split"] == test_set])
+            mean_acc = set_accs[test_set]
+            missing = set_missing[test_set]
+            total_acc, n_correct, n_checked = set_total_acc[test_set]
+            print(f"{test_set}: mean accuracy = {mean_acc:.2f}, "
+                  f"total accuracy = {total_acc:.2f} ({n_correct}/{n_checked}), "
+                  f"missing = {missing} / {n_interactions}")
+
 
 def PredictAcceptor(df):
+    print(f"\n +++ Prediction for GTPredict performance on Substrate queries +++ ")
+
     # prepare data for GTPredict
-    test_df, train_df, meta = build_interaction_matrix(all_pairs_df=df,
-                                                 out_file=matlab_dir / "data" / "gt_dt_interaction.txt",
-                                                 DT=True)
+    test_df, train_df, meta = build_interaction_matrix_acceptor(all_pairs_df=df,
+                                                                out_file=matlab_dir / "data" / "gt_dt_interaction.txt")
 
     # Check intersection
     train_substrates = set(train_df["substrate"].unique())
@@ -277,48 +306,120 @@ def PredictAcceptor(df):
 
     if overlap:
         print(f"Warning! These test substrates are also in train: {overlap}")
-    else:
-        print("All test substrates are unseen in the training matrix")
 
-    accs = []
+    total_rows = len(train_df) + len(test_df)
+    print("GT-Predict evaluation summary")
+    print("--------------------------------")
+    print(
+        f"Training rows (interactions): "
+        f"{len(train_df)}/{total_rows} "
+        f"({len(train_df) / total_rows:.1%})"
+    )
+    print(
+        f"Test rows (interactions):     "
+        f"{len(test_df)}/{total_rows} "
+        f"({len(test_df) / total_rows:.1%})"
+    )
 
-    for substrate, df in test_df.groupby("substrate"):
-        print(f"Prediction for test substrate: {substrate}")
+    set_accs = {}
+    set_missing = {}
+    set_total_acc = {}
 
-        # Create MATLAB struct literal as string
-        query = meta[meta["Name"] == substrate].iloc[0]
+    for test_set in ["C1_test", "C2_test", "C3_test"]:
+        set_df = test_df[test_df["split"] == test_set].copy()
+        if set_df.empty:
+            print(f"No substrates in {test_set}, skipping...")
+            continue
 
-        # get GTPredict prediction on the labels
-        matlab_cmd = [
-            "/usr/local/MATLAB/R2024b/bin/matlab",
-            "-nodisplay",
-            "-batch",
-            f"addpath('{matlab_dir}');"
-            f"query.name = '{substrate}'; "
-            f"query.logP = {query['logP']}; "
-            f"query.area = {query['area']}; "
-            f"query.vol = {query['vol']}; "
-            f"query.cooh = {query['cooh']}; "
-            f"query.numOH = {query['numOH']}; "
-            f"PredictAcceptorInteraction_DT('{matlab_dir}/data/gt_dt_interaction.txt', "
-            f"query, "
-            f"'{matlab_dir}/data/gtpredict_dt_prediction.csv')"
-        ]
+        accs = []
+        missing_counts = []
 
-        # run MATLAB
-        subprocess.run(matlab_cmd, check=True)
+        # For total accuracy
+        total_correct = 0
+        total_checked = 0
+        total_missing = 0
 
-        # read predictions
-        pred_dict = read_gtpredict_dt_output(matlab_dir / "data" / "gtpredict_dt_prediction.csv")
+        print(f"\n+++ Predictions for {test_set} ({len(set_df)} interactions) +++")
 
-        # evaluate
-        accs.append(compute_accuracy(gt_labels=pred_dict, true_df=df, column='UGT_ID'))
+        for substrate, substrate_df in set_df.groupby("substrate"):
+            print(f"Prediction for test substrate: {substrate}")
+            print(f"Substrate has {len(substrate_df)} interactions in the test data")
 
-    print("GT-Predict accuracy:", sum(accs) / len(accs))
+            # Create MATLAB struct literal as string
+            query = meta[meta["Name"] == substrate].iloc[0]
+
+            groups_raw = build_groups_raw(query)
+            groups_str = " ".join(str(int(x)) for x in groups_raw)
+
+            # get GTPredict prediction on the labels
+            matlab_cmd = [
+                "/usr/local/MATLAB/R2024b/bin/matlab",
+                "-nodisplay",
+                "-batch",
+                f"addpath('{matlab_dir}');"
+                f"query.name = '{substrate}'; "
+                f"query.family = {query['Family']}; "
+                f"query.logP = {query['LogP']}; "
+                f"query.area = {query['AccessibleArea']}; "
+                f"query.vol = {query['Volume']}; "
+                f"query.cooh = {query['COOH']}; "
+                f"query.numOH = {query['Num_OH']}; "
+                f"query.groups_raw = [{groups_str}]; "
+                f"PredictAcceptorInteraction_DT('{matlab_dir}/data/gt_dt_interaction.txt', "
+                f"query, "
+                f"'{matlab_dir}/data/gtpredict_dt_prediction.csv')"
+            ]
+
+            # run MATLAB
+            subprocess.run(matlab_cmd, check=True)
+
+            # read predictions
+            pred_dict = read_gtpredict_dt_output(matlab_dir / "data" / "gtpredict_dt_prediction.csv")
+
+            # compute accuracy only on valid predictions
+            acc, missing = compute_accuracy(gt_labels=pred_dict, true_df=substrate_df, column='UGT_ID')
+
+            if acc is not None:
+                print(f"Result: {acc:.2f}")
+                accs.append(acc)
+                n_checked = len(substrate_df) - missing
+                n_correct = int(acc * n_checked)
+                total_correct += n_correct
+                total_checked += n_checked
+            else:
+                print("No valid predictions on test set to compute accuracy.")
+
+            missing_counts.append(missing)
+            total_missing += missing
+
+        # Store per set
+        mean_acc = sum(accs) / len(accs) if accs else 0
+        set_accs[test_set] = mean_acc
+        set_missing[test_set] = total_missing
+        total_acc = total_correct / total_checked if total_checked else 0
+        set_total_acc[test_set] = (total_acc, total_correct, total_checked)
+
+    # Summary
+    print("\n=== Summary per test set ===")
+    for test_set in ["C1_test", "C2_test", "C3_test"]:
+        if test_set in set_accs:
+            n_interactions = len(test_df[test_df["split"] == test_set])
+            mean_acc = set_accs[test_set]
+            missing = set_missing[test_set]
+            total_acc, n_correct, n_checked = set_total_acc[test_set]
+            print(f"{test_set}: mean accuracy = {mean_acc:.2f}, "
+                  f"total accuracy = {total_acc:.2f} ({n_correct}/{n_checked}), "
+                  f"missing = {missing} / {n_interactions}")
 
 def main():
     # get test splits
     splits = pd.read_csv(f"{data_dir}/split.csv")
+    splits["substrate"] = (
+        splits["substrate"]
+        .astype(str)
+        .str.replace("'", "", regex=False)  # remove apostrophes
+        .str.strip()
+    )
 
     PredictEnzyme(splits)
 

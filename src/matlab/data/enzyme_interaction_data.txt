@@ -1,0 +1,74 @@
+		UGT73C4	UGT78D1	UGT76E5	UGT73C7	UGT73B2	UGT76C4	UGT72E1	UGT89C1	UGT85A5	UGT85A4	UGT71B8	UGT76E4	UGT76E2	UGT76E1	UGT71C5	UGT72B3	UGT76E11	UGT75D1	UGT72C1	UGT72B1	UGT84B2	UGT71C1	UGT71C2	UGT89B1	UGT74F1	UGT72E2	UGT72E3	UGT71C3	UGT71C4	UGT71B1	UGT73B3	UGT78D2	UGT71B6	UGT73B1	UGT71B5	UGT88A1	UGT73C3	UGT73B5	UGT76E12	VVGT1	UGT72D1	UGT74B1	UGT73C5	UGT73C6	UGT73C1	UGT73B4	UGT74F2	UGT84A3	UGT84A4	UGT84B1	UGT84A2	UGT84A1	UGT75B1
+		D	F	H	D	D	H	E	B	G	G	E	H	H	H	E	E	H	L	E	E	L	E	E	B	L	E	E	E	E	E	D	F	E	D	E	E	D	D	H	F	E	L	D	D	D	D	L	L	L	L	L	L	L
+A	UDPGlc	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1
+S	UDPXyl	3	1				3		1							1	1						2	1	1	2	2		1	1	1	1	1		1	3	1	1	2		1		1	1	1	1	1				1	2		
+C	UDP5SGlc	3					3					1			1	1					1			1	1				1	1	1	1	1		1	3	1	1		1	1			1	1		1	1						
+D	UDPGal	3	1				3					1				1	1							1	2	1			1	1	1	1	1		1	3	1				1			1	2		1	1				1		
+R	dTDPXyl	3	1				3										2						2		1							1	1		1	3	1				1			1	1		1					1		
+B	UDPGlcNAc	3					3								1			1							1	1				1		1	2		1	3				1	1			1	1		1				1	1		
+W	dTDPGlc	3					3															1		2		2						1			1	3			1		1				1			1		1		1	1	1
+H	GDPGlc	3					3																									1	1			3					1												1	
+E	UDPMan	3					3																									1	1		1	3					1			2	2	2								
+U	UDPRha	3	1				3		1																							2				3								1	1									
+V	dTDPRha	3					3		1																											3								2										
+G	GDPFuc	3					3																													3																		
+F	GDPMan	3					3																									2				3																		
+31	"6,7-dihydroxy coumarin (Esculetin)"				1	2	1	2	2			1	2	2	1	1	1	1	2	1	1	2	2	1	1	1	1	1	1	1	1	1	1	2	1	2	1	1	1	1	1	1	1	1	1	1	1	1	2	2	2	1	1	1
+30	7-hydroxy 6-methoxy coumarin (Scopoletin)		3		1	3		2				1	1	2	1	1	1	1	2	1	1	1	1	1	1	1	1	1	1	1	1	1	1	2	1	1	1	1	1	1	1	1	2	1	1	1	1	1	1	2		1	1	2
+23	Kaempferol	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1			1	1	1	1	1			1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1
+22	Fisetin	1	1		1	1	1	1	1	1	1	1	1	1	1	1	1	1					1	1	1	1			1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1		1	1	1	1
+21	Quercetin	1	1	1	1	1	1	1	1	1		1				1	1	1					1	2					1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1
+20	Luteolin			2	1	1	1	2		1	1	1			1	2			1			1	1	1	2	1			1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1
+63	Catechin							2	1							2					3	2	2			2		2			2	1	1		2	2	1	1	1		1	1	1	1	1			1			1	1	1	
+4	2-Methyl-umbelliferone													2		1	1	1			1			2							1	1	1	2	1		1	1		1	1	1	2	1	1	1	1	1	1		1	1	1	1
+3	Umbelliferone						2											1			1	2								2	1		2	2	1					2	1		2	2	1			1	2			1	1	1
+64	Genistein		2			1	2			2					2						3		1						1		2					1	1	2	1	1	1	1	1	1	1	1	1	1	1	1		1	1	1
+42	Trans-dihydroquercetin (DHQ)			2																	3		1						1	1	1	1	1	1	1	1	1	1	1	2	1	1	1	1	1	1	1			1	1	1	1	1
+2	Baicalein					2	1			1	1	1	1	1	1	2													1	2	1	1	1	1	1	1	1	1	1	1	1			1	1	1	1	1	1	1		1	1	1
+28	2-hydroxy cinnamic acid							2				1	2		2				2				1	1	2	2	1	2	1	1	1											2	2					2		2		1	1	1
+26	"3,4-dihyroxy cinnamic acid"											1											1	1	1	2	1	1	1	1	1	1	1						1	1	1					2			1	1	1	1	1	1
+10	"2,5-dihydroxylbenzoic acid"									2			2			2	2				1		2	2	1	2	2	2	1	1	1	1										1				2	1						2	1
+9	"3,4-dihydroxylbenzoic acid"							2		2					2	2	2				1	2	1	2	1	2	2	2	1	1	1	1	1								2	1				2	1	1					1	1
+6	4-hydroxyl-benzoic acid																								1	2			1	1	1	1	1	2			2					2					1	1		1		1	1	1
+27	4-hydroxy 3-methoxy cinnamic acid								2										2								1	1				1							2										1	1	1	1	1	1
+24	Cinnamic acid								2																																								1	1	1	1	1	1
+25	4-hydroxy cinnamic acid												2		2				2				1	1	2	2	1	2				1										2	2						1	1	1	1	1	1
+5	Sinapic acid																					2	1	1			1	1				1	2		1														1	1	1	1	1	1
+48	7-hydroxycoumerin 4-acetic acid					2										2	1		2		3			2							1								1	1	2		2			1								
+29	3-hydroxy cinnamic acid							2				2	2		2				2						2	2	1	2		2												2												1
+17	"(±)- cis, trans Abscisic acid"																					1												1	1																1	1	1	1
+13	Indole 3-acetate														2							1			2																							1			1	1	1	1
+47	7-hydroxycoumerin 3-carboxylic acid					2															3																				2						1	1		1		1	1	1
+8	"3,4-dichloroaniline"										1						1				1						1							2																				
+34	Dihydrojasmonic acid								2												2					2								2																		1	1	1
+16	(±)-Jasmonic acid																																																			1	1	1
+68	Olomoucine																				3																							1	1	1		3		3				
+67	DihydroZeatin																				3																							1	1	1	1	3		3				
+19	trans-Zeatin									1																																		1		1								
+53	a-ManOBn		2	3	3		3												2		3															2					2		2					2						
+7	a-cyano-4-hydroxyl-cinnamic acid			3	3		3																																														2	2
+49	Chloramphenicol			3	3		3														3																							2	2									
+35	Ser-Phe			3	3		3														3																								2									
+15	Gibberellin A4																																						2															
+55	a-ManOCH2Bn			3	3		3														3										2																							
+54	a-ManOPh			3	3		3														3										2																							
+66	Trans-Zentin-Glucose																				3														2													3		3				
+41	MUGlcNAc			3	3	2	3														3																																	
+32	Threonine			3	3		3														2																																	
+18	Kinetin																																																					
+33	Glucose			3	3		3																																															
+36	Ser-Leu			3	3		3														3																																	
+14	Gibberellin A3																																																					
+37	BocCysThrOMe			3	3		3														3																																	
+12	GlcNAc			3	3		3																																															
+11	D-glycerate			3	3		3																																															
+38	1-Thio-S-cyanomethyl-N-acetyl-D-glucosamine			3	3		3														3																																	
+52	?-GlcOBn			3	3		3														3																																	
+56	a-ManOPMP			3	3		3														3																																	
+57	a-ManOBn(pNO2)			3	3		3														3																																	
+58	a-ManOPhF5			3	3		3														3																																	
+59	a-ManOBnF5			3	3		3														3																																	
+60	ManSTol			3	3		3														3																																	
+65	N6-Benzyladenine																				3																											3		3				
+72	Spectinomycin	3	3	3	3	3	3									3	3		3		3	3	3	3								3				3		3			3		3			3		3	3	3	3	3	3	3
+69	N6-isopentenyladenine																				3																											3		3				

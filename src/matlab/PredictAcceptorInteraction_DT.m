@@ -5,37 +5,37 @@ Data = read_acceptor_interaction_file(interactionFile);
 %Data.X(:, [5, 7:20]) = thres;
 thres = (Data.X(:,5) > 0);
 Data.X(:,5) = thres;
-%query.family   % scalar: 1..4
+query.family;   % scalar: 1..4
 query.logP;     % scalar
 query.area;    % scalar
 query.vol;      % scalar
 query.cooh;     % 0/1
 query.numOH;    % scalar
-% query.groups_raw  % 1×N vector, only the family-specific groups
+query.groups_raw;  % 1×N vector, only the family-specific groups
 
-% groups = zeros(1,14);   % all zeros initially
+groups = zeros(1,14);   % all zeros initially
 
-%switch query.family
-    %case 1   % flavonoids
-        %groups(1:6) = query.groups_raw(:)';
-    %case 2   % cm
-        %groups(7:8) = query.groups_raw(:)';
-    %case 3   % ck
-        %groups(9:11) = query.groups_raw(:)';
-    %case 4   % cn
-        %groups(12:14) = query.groups_raw(:)';
-    %otherwise
-        %error('Unknown family value');
-%end
+switch query.family
+    case 1   % flavonoids
+        groups(1:6) = query.groups_raw(:)';
+    case 2   % cm
+        groups(7:8) = query.groups_raw(:)';
+    case 3   % ck
+        groups(9:11) = query.groups_raw(:)';
+    case 4   % cn
+        groups(12:14) = query.groups_raw(:)';
+    otherwise
+         % leave as all zeros
+end
 
 X_new = [ ...
- %query.family, ... % scalar
+ query.family, ... % scalar
  query.logP, ...
  query.area, ...
  query.vol, ...
  query.cooh, ... % 0/1
  query.numOH, ...
- %groups ... % 1×14 binary vector
+ groups ... % 1×14 binary vector
 ];
 
 % train all of classification trees

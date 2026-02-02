@@ -1,6 +1,6 @@
 function Data = read_acceptor_interaction_file(filename)
 
-numX = 5;
+numX = 20;
 %numE = 53;
 
 
