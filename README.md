@@ -335,7 +335,7 @@ weight_decay: 0.0005  # L2 regularization
 oversample: true  # Minority class oversampling in training set
 
 # Feature incorporation
-use_handcrafted_features: true  # Handcrafted feature incorporation
+use_handcrafted_features: true  # Before using it run: python scripts/extract_features_full_dataset.py
 
 # Data
 substrate_name: "chemberta3"  # "chemberta2", "chemberta3", or "kpgt"
@@ -513,16 +513,18 @@ Our final production model uses the below written parameters from Optuna study a
 
 **Performance on Test Sets:**
 
-| Test Set | F1 Score | Accuracy | ROC-AUC | MCC |
-|----------|----------|----------|---------|-----|
-| **C1** | 0.95028 | 0.92857 | 0.98305 | 0.832 |
-| **C2** | 0.77301 | 0.79928 | 0.87521 | 0.61597 |
-| **C3** | 0.52174 | 0.52174 | 0.87521 | 0.61597 | 
+| Test Set | F1 Score (±SE) | Accuracy (±SE) | ROC-AUC (±SE) | MCC (±SE) |
+|----------|----------------|----------------|---------------|----------|
+| **C1** | 0.909 ± 0.021 | 0.865 ± 0.031 | 0.932 ± 0.022 | 0.648 ± 0.077 |
+| **C2** | 0.732 ± 0.026 | 0.812 ± 0.017 | 0.881 ± 0.015 | 0.595 ± 0.035 |
+| **C3** | 0.727 ± 0.116 | 0.739 ± 0.091 | 0.983 ± 0.023 | 0.586 ± 0.118 | 
 
 **Key Findings:**
-- **C3 is hardest** (as expected) - both protein and substrate are completely new to the model
-- Regularization techniques help the model generalise on C2 and C3 and hand-crafted features help the overall performance
-- Ensemble did not improve performance
+- **Improved C2/C3 balance** - Enhanced regularization stack reduced overfitting, C3 accuracy improved significantly
+- Comprehensive regularization (gradient clipping, mixup, stochastic depth) helps model generalize to unseen proteins/substrates
+- **C3 ROC-AUC (0.983)** shows excellent ranking ability despite moderate accuracy
+- Handcrafted features combined with aggressive regularization provide robust performance
+- Standard errors computed via bootstrap (1000 samples) for reliable uncertainty quantification
 
 **Training Configuration:**
 ```yaml
@@ -530,6 +532,8 @@ Our final production model uses the below written parameters from Optuna study a
 substrate_name: chemberta3
 model_type: attention (num_heads = 2 , use_residual = True)
 hidden_dims: [1024, 512] (n_layers = 2)
+
+# Core hyperparameters
 dropout: 0.4
 weight_decay: 0.00011761899025546045
 learning_rate: 0.0001
@@ -537,19 +541,78 @@ batch_size: 32
 optimizer: AdamW
 scheduler: StepLR (step_size = 7, gamma = 0.8)
 activation: tanh
+
+# Regularization stack
 data_augmentation: true
-noise_std: 0.02
-label_smoothing: 0.05
+noise_std: 0.02              # Gaussian noise augmentation
+label_smoothing: 0.05        # Label smoothing for calibration
+grad_clip: 1.0               # Gradient clipping (prevents explosions)
+mixup_alpha: 0.2             # Mixup augmentation (smooth boundaries)
+stochastic_depth: 0.1        # DropPath layer regularization
+
+# Data techniques
 oversample: true
 use_handcrafted_features: true
 ```
 
+#### 🛡️ Regularization Techniques
+
+Our model uses a comprehensive 10-layer regularization stack to prevent overfitting and improve generalization:
+
+**1. Gradient Clipping** (`grad_clip: 1.0`)
+- Prevents gradient explosions during backpropagation
+- Stabilizes training, especially for attention mechanisms
+- Clips gradients to max norm of 1.0
+
+**2. Mixup Augmentation** (`mixup_alpha: 0.2`)
+- Creates virtual training samples by interpolating between pairs
+- Forces model to learn smooth decision boundaries
+- Particularly effective for reducing C2/C3 overfitting gap
+
+**3. Stochastic Depth (DropPath)** (`stochastic_depth: 0.1`)
+- Randomly drops entire layers during training (10% probability)
+- Reduces co-adaptation between consecutive layers
+- Creates implicit ensemble effect
+
+**4. Gaussian Noise** (`noise_std: 0.02`)
+- Adds random noise to input embeddings during training
+- Makes model robust to small perturbations
+- Prevents memorization of exact embedding values
+
+**5. Label Smoothing** (`label_smoothing: 0.05`)
+- Smooths binary labels: 0→0.05, 1→0.95
+- Prevents overconfident predictions
+- Improves probability calibration
+
+**6. Dropout** (`dropout: 0.4`)
+- Randomly drops 40% of neurons per layer
+- Classic regularization for redundant representations
+
+**7. L2 Regularization** (`weight_decay: 0.00011...`)
+- Penalizes large weights in loss function
+- Encourages distributed, smaller weights
+
+**8. Batch Normalization** (built-in)
+- Normalizes activations within mini-batches
+- Provides mild regularization via batch statistics
+
+**9. Learning Rate Scheduling** (StepLR)
+- Reduces LR by 20% every 7 epochs
+- Allows refined updates as training progresses
+
+**10. Early Stopping** (patience=10)
+- Stops when validation loss plateaus
+- Prevents training past optimal generalization point
+
 **What We Tested:**
-1. ✅ **Data Augmentation** - Gaussian noise (std=0.02) improves robustness
-2. ✅ **Label Smoothing** - epsilon=0.05 improved performance
-3. ✅ **Oversampling** - helped with the class imbalance
-4. ✅ **Adding features into training** - improved overall performance
-3. ❌ **Ensemble Method** - Simple averaging did not outperform the individual models
+1. ✅ **Gradient Clipping** - Critical for training stability
+2. ✅ **Mixup Augmentation** - Significantly improved C2/C3 generalization
+3. ✅ **Stochastic Depth** - Reduced layer co-adaptation, better regularization
+4. ✅ **Gaussian Noise** - Improved robustness to input perturbations
+5. ✅ **Label Smoothing** - Better probability calibration
+6. ✅ **Oversampling** - Addressed class imbalance effectively
+7. ✅ **Handcrafted Features** - Improved overall performance
+8. ❌ **Ensemble Method** - Simple averaging did not outperform single models
 
 ### References
 tba

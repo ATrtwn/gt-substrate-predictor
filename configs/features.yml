@@ -59,12 +59,51 @@ features:
   # → Modify this list to choose which features to include
   # ============================================================
   substrate_features:
-    - molwt
-    - logp
-    - tpsa
-    - num_rings
-    - num_rotatable_bonds
-    - num_c
+    - molwt                     # Molecular weight
+    - logp                      # LogP (octanol-water partition coefficient)
+    - tpsa                      # Topological polar surface area
+    - h_donors                  # Number of hydrogen bond donors
+    - h_acceptors               # Number of hydrogen bond acceptors
+    - h_bond_total              # Total H-bond donors + acceptors
+    - num_rings                 # Total number of rings
+    - num_aromatic_rings        # Number of aromatic rings
+    - num_saturated_rings       # Number of saturated rings
+    - num_hetero_atoms          # Non-carbon, non-hydrogen atoms
+    - num_rotatable_bonds       # Number of rotatable bonds
+    - flexibility_ratio         # rotatable_bonds / total_atoms
+    - num_hydroxyl_groups       # Hydroxyl groups (–OH)
+    - num_carboxyl_groups       # Carboxyl groups (–COOH)
+    - num_primary_amines        # Primary amine groups (–NH2)
+    - num_aromatic_primary_amines  # Aromatic –NH2 groups
+    - num_secondary_amines      # Secondary amine groups (–NH–)
+    - num_thiol_groups          # Thiol groups (–SH)
+    - num_gt_reactive_groups    # GT-reactive groups (OH + NH2 + COOH + SH)
+    - num_phenol_groups         # Phenol groups
+    - num_benzene_rings         # Benzene rings
+    - num_pyridine_rings        # Pyridine rings
+    - formal_charge             # Formal charge of the molecule
+    - num_radical_electrons     # Number of radical electrons
+    - num_valence_electrons     # Total valence electrons
+    - bertz_ct                  # Bertz complexity index (Bertz CT)
+    - num_aromatic_oh           # Aromatic hydroxyl groups
+    - num_aliphatic_oh          # Aliphatic hydroxyl groups
+    - ratio_aromatic_to_aliphatic_oh  # Ratio aromatic OH / aliphatic OH
+    - num_c                     # Carbon atoms
+    - num_h                     # Hydrogen atoms
+    - num_n                     # Nitrogen atoms
+    - num_o                     # Oxygen atoms
+    - num_s                     # Sulfur atoms
+    - num_p                     # Phosphorus atoms
+    - num_f                     # Fluorine atoms
+    - num_cl                    # Chlorine atoms
+    - num_aromatic_c            # Aromatic carbon atoms
+    - num_aromatic_n            # Aromatic nitrogen atoms
+    - num_aromatic_o            # Aromatic oxygen atoms
+    - num_sp3_c                 # sp3-hybridized carbons
+    - num_sp2_c                 # sp2-hybridized carbons
+    - num_sp_c                  # sp-hybridized carbons
+    - ratio_aromatic_rings      # Aromatic rings / total rings
+    - ratio_heteroatoms         # Heteroatoms / total atoms
 
   # ============================================================
   # ALL AVAILABLE PROTEIN FEATURES (reference only)
@@ -84,8 +123,12 @@ features:
   # ACTIVE PROTEIN FEATURES (only these will be used)
   # ============================================================
   protein_features:
-    - length
-    - isoelectric_point
-    - gravy
-    - frac_hydrophobic
-    - frac_polar
+    - length              # protein length
+    - isoelectric_point   # theoretical pI
+    - gravy               # grand average of hydropathicity
+    - aromaticity         # aromatic residue fraction
+    - instability_index   # instability index
+    - frac_hydrophobic    # fraction of hydrophobic residues
+    - frac_positive       # fraction of positively charged residues
+    - frac_negative       # fraction of negatively charged residues
+    - frac_polar          # fraction of polar residues

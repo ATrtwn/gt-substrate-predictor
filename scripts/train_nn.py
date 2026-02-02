@@ -6,6 +6,7 @@ Usage:
     python scripts/train_nn.py --seed 42  # For ensemble training
 """
 
+
 import logging
 import sys
 from pathlib import Path
@@ -31,6 +32,61 @@ from sklearn.metrics import accuracy_score, roc_auc_score, f1_score, matthews_co
 from sklearn.preprocessing import StandardScaler
 
 
+def bootstrap_statistic(data, statistic_func, n_bootstrap=1000, ci_level=95):
+    """
+    Bootstrap any statistic with confidence intervals
+    
+    Parameters:
+    - data: array-like of values (e.g., pident values) or list of tuples
+    - statistic_func: function to compute statistic (e.g., np.mean, lambda x: np.mean(x > 80))
+    - n_bootstrap: number of bootstrap samples
+    - ci_level: confidence interval level
+    
+    Returns:
+    - observed: observed statistic
+    - std_error: bootstrap standard error
+    - ci: confidence interval
+    - bootstrap_dist: bootstrap distribution
+    """
+    # Convert to list to handle both arrays and lists of tuples
+    if isinstance(data, np.ndarray):
+        data = data.tolist()
+    elif not isinstance(data, list):
+        data = list(data)
+    
+    n = len(data)
+    
+    # Calculate observed statistic
+    observed = statistic_func(data)
+    
+    # Bootstrap by resampling indices
+    bootstrap_values = []
+    for _ in range(n_bootstrap):
+        # Resample indices with replacement
+        indices = np.random.choice(n, size=n, replace=True)
+        # Get bootstrap sample
+        bootstrap_sample = [data[i] for i in indices]
+        # Calculate statistic on bootstrap sample
+        stat = statistic_func(bootstrap_sample)
+        bootstrap_values.append(stat)
+    
+    bootstrap_values = np.array(bootstrap_values)
+    
+    # Standard error = standard deviation of bootstrap distribution
+    std_error = np.std(bootstrap_values, ddof=1)
+    
+    # Confidence interval
+    lower = np.percentile(bootstrap_values, (100 - ci_level) / 2)
+    upper = np.percentile(bootstrap_values, 100 - (100 - ci_level) / 2)
+    
+    return {
+        'observed': observed,
+        'std_error': std_error,
+        'ci': (lower, upper),
+        'bootstrap_dist': bootstrap_values
+    }
+
+
 def set_seed(seed):
     """Set all random seeds for reproducibility."""
     random.seed(seed)
@@ -43,18 +99,28 @@ def set_seed(seed):
         torch.backends.cudnn.benchmark = False
 
 
-def train_epoch(model, train_loader, criterion, optimizer, device, noise_std=0.0):
+def train_epoch(model, train_loader, criterion, optimizer, device, noise_std=0.0, grad_clip=None, mixup_alpha=0.0):
     """
     Train for one epoch.
     
     Args:
         noise_std: Standard deviation for Gaussian noise augmentation (0.0 = no noise)
+        grad_clip: Gradient clipping value (None = no clipping)
+        mixup_alpha: Mixup alpha parameter (0.0 = no mixup)
     """
     model.train()
     total_loss = 0
     
     for batch_X, batch_y in train_loader:
         batch_X, batch_y = batch_X.to(device), batch_y.to(device)
+        
+        # Apply Mixup augmentation if enabled
+        if mixup_alpha > 0:
+            lam = np.random.beta(mixup_alpha, mixup_alpha)
+            batch_size = batch_X.size(0)
+            index = torch.randperm(batch_size).to(device)
+            batch_X = lam * batch_X + (1 - lam) * batch_X[index]
+            batch_y = lam * batch_y + (1 - lam) * batch_y[index]
         
         # Apply Gaussian noise augmentation if enabled
         if noise_std > 0:
@@ -65,6 +131,11 @@ def train_epoch(model, train_loader, criterion, optimizer, device, noise_std=0.0
         outputs = model(batch_X)
         loss = criterion(outputs, batch_y.float())
         loss.backward()
+        
+        # Apply gradient clipping if enabled
+        if grad_clip is not None:
+            torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip)
+        
         optimizer.step()
         
         total_loss += loss.item()
@@ -110,6 +181,9 @@ def train_nn_experiment(
     use_residual: bool = True,
     data_augmentation: bool = False,
     noise_std: float = 0.02,
+    grad_clip: float = None,
+    mixup_alpha: float = 0.0,
+    stochastic_depth: float = 0.0,
     wandb_mode: str = "offline",
     project: str = "gt-substrate-predictor",
     concatenation_path: str = None,
@@ -172,6 +246,15 @@ def train_nn_experiment(
     concatenated_embeddings = np.load(f"{concatenation_path}/X_{substrate_name}.npy")
     meta_name = f"metadata_{substrate_name}.csv"
     metadata = pd.read_csv(f"{concatenation_path}/{meta_name}")
+    
+    # Ensure metadata and embeddings have matching sizes from the start
+    if len(metadata) != len(concatenated_embeddings):
+        logging.warning(f"Metadata size ({len(metadata)}) doesn't match embeddings size ({len(concatenated_embeddings)}). Truncating to embeddings size.")
+        metadata = metadata.iloc[:len(concatenated_embeddings)].copy()
+    
+    # Add original index column to track rows through merges
+    metadata['_original_idx'] = np.arange(len(metadata))
+    
     # Load full_dataset.csv and use is_active for activity labels
     full_df = pd.read_csv("data/full_dataset.csv")
     # Ensure merge columns are string for robust matching
@@ -181,6 +264,22 @@ def train_nn_experiment(
         metadata['ugt_id'] = metadata['ugt_id'].astype(str)
     # Merge metadata with full_df to get is_active for each row
     metadata = pd.merge(metadata, full_df[['UGT_ID', 'substrate', 'is_active']], left_on=['ugt_id', 'substrate'], right_on=['UGT_ID', 'substrate'], how='left', suffixes=(None, '_full'))
+    
+    # Filter out rows with missing is_active (unmatched in full_dataset.csv)
+    before_filter = len(metadata)
+    valid_rows = metadata['is_active'].notna()
+    metadata = metadata[valid_rows].copy()
+    after_filter = len(metadata)
+    if after_filter < before_filter:
+        logging.warning(f"Dropped {before_filter - after_filter} samples with missing is_active labels")
+    
+    # Filter embeddings using original indices
+    valid_indices = metadata['_original_idx'].to_numpy()
+    concatenated_embeddings = concatenated_embeddings[valid_indices]
+    
+    # Reset index and remove tracking column
+    metadata = metadata.drop(columns=['_original_idx']).reset_index(drop=True)
+    
     activity = metadata['is_active'].to_numpy()
 
     # === HANDCRAFTED FEATURE INTEGRATION (toggleable via config) ===
@@ -219,10 +318,12 @@ def train_nn_experiment(
             logging.warning(f"Dropped {before_drop - after_drop} samples with missing features after merge.")
         features = merged[feature_cols].to_numpy(dtype=np.float32)
         features_all_aligned = features
-        # Also update metadata to match dropped rows
+        # Store original indices before resetting
+        original_indices = merged.index.to_numpy()
+        # Filter embeddings and activity using original indices
+        concatenated_embeddings = concatenated_embeddings[original_indices]
+        # Now reset metadata index and update activity
         metadata = merged.reset_index(drop=True)
-        # Filter embeddings and activity to match new metadata
-        concatenated_embeddings = concatenated_embeddings[metadata.index]
         activity = metadata['is_active'].to_numpy()  # Always use aligned is_active
         logging.info(f"Features loaded and aligned: shape = {features_all_aligned.shape}")
     # === END HANDCRAFTED FEATURE INTEGRATION ===
@@ -422,7 +523,8 @@ def train_nn_experiment(
             hidden_dims=hidden_dims, 
             dropout=dropout,
             projection_dim=128,
-            activation=activation
+            activation=activation,
+            stochastic_depth=stochastic_depth
         ).to(device)
         logging.info(f"Using BilinearInteractionNet with protein_dim={protein_dim}, substrate_dim={substrate_dim}")
     elif model_type.lower() == "attention":
@@ -433,11 +535,12 @@ def train_nn_experiment(
             hidden_dims=hidden_dims,
             dropout=dropout,
             use_residual=use_residual,
-            activation=activation
+            activation=activation,
+            stochastic_depth=stochastic_depth
         ).to(device)
         logging.info(f"Using AttentionMLP with num_heads={num_heads}, protein_dim={protein_dim}, substrate_dim={substrate_dim}")
     else:
-        model = GT_NN(input_dim=input_dim, hidden_dims=hidden_dims, dropout=dropout, activation=activation).to(device)
+        model = GT_NN(input_dim=input_dim, hidden_dims=hidden_dims, dropout=dropout, activation=activation, stochastic_depth=stochastic_depth).to(device)
         logging.info(f"Using GT_NN with hidden_dims={hidden_dims}")
     
     # Calculate class weights for imbalanced data
@@ -491,11 +594,16 @@ def train_nn_experiment(
     
     # Determine noise level for augmentation
     augmentation_noise = noise_std if data_augmentation else 0.0
-    if data_augmentation:
-        logging.info(f"Data augmentation enabled: Gaussian noise with std={noise_std}")
+    if grad_clip is not None:
+        logging.info(f"Gradient clipping enabled: max_norm={grad_clip}")
+    if stochastic_depth > 0:
+        logging.info(f"Stochastic depth enabled: drop_prob={stochastic_depth}")
+    if mixup_alpha > 0:
+        logging.info(f"Mixup augmentation enabled: alpha={mixup_alpha}")
     
     for epoch in range(epochs):
-        train_loss = train_epoch(model, train_loader, criterion, optimizer, device, noise_std=augmentation_noise)
+        train_loss = train_epoch(model, train_loader, criterion, optimizer, device, 
+                                noise_std=augmentation_noise, grad_clip=grad_clip, mixup_alpha=mixup_alpha)
 
         # Evaluate on VALIDATION set for early stopping (proper ML practice)
         val_loss, val_preds, val_true = evaluate(model, val_loader, criterion, device)
@@ -634,8 +742,6 @@ def train_nn_experiment(
     ]:
         _, test_preds, test_labels = evaluate(model, split_loader, criterion, device)
         test_preds_binary = (test_preds > best_threshold).astype(int)
-
-        # Convert smoothed labels back to binary for evaluation
         test_labels_binary = np.round(test_labels).astype(int)
 
         # Calculate metrics
@@ -644,20 +750,51 @@ def train_nn_experiment(
         roc_auc = roc_auc_score(test_labels_binary, test_preds)
         mcc = matthews_corrcoef(test_labels_binary, test_preds_binary)
 
+        # Compute standard errors using bootstrap_statistic
+        n_bootstrap = 1000
+        acc_boot = bootstrap_statistic(
+            list(zip(test_labels_binary, test_preds_binary)),
+            lambda arr: accuracy_score([x[0] for x in arr], [x[1] for x in arr]),
+            n_bootstrap=n_bootstrap
+        )
+        f1_boot = bootstrap_statistic(
+            list(zip(test_labels_binary, test_preds_binary)),
+            lambda arr: f1_score([x[0] for x in arr], [x[1] for x in arr]),
+            n_bootstrap=n_bootstrap
+        )
+        roc_auc_boot = bootstrap_statistic(
+            list(zip(test_labels_binary, test_preds)),
+            lambda arr: roc_auc_score([x[0] for x in arr], [x[1] for x in arr]),
+            n_bootstrap=n_bootstrap
+        )
+        mcc_boot = bootstrap_statistic(
+            list(zip(test_labels_binary, test_preds_binary)),
+            lambda arr: matthews_corrcoef([x[0] for x in arr], [x[1] for x in arr]),
+            n_bootstrap=n_bootstrap
+        )
+
         wandb.log({
             f"{split_name}/accuracy": acc,
             f"{split_name}/f1": f1,
             f"{split_name}/roc_auc": roc_auc,
             f"{split_name}/mcc": mcc,
+            f"{split_name}/accuracy_stderr": acc_boot['std_error'],
+            f"{split_name}/f1_stderr": f1_boot['std_error'],
+            f"{split_name}/roc_auc_stderr": roc_auc_boot['std_error'],
+            f"{split_name}/mcc_stderr": mcc_boot['std_error'],
         })
 
-        # Store test results
+        # Store test results and standard errors
         results_metrics[f"{split_name}_accuracy"] = float(acc)
+        results_metrics[f"{split_name}_accuracy_stderr"] = float(acc_boot['std_error'])
         results_metrics[f"{split_name}_f1"] = float(f1)
+        results_metrics[f"{split_name}_f1_stderr"] = float(f1_boot['std_error'])
         results_metrics[f"{split_name}_roc_auc"] = float(roc_auc)
+        results_metrics[f"{split_name}_roc_auc_stderr"] = float(roc_auc_boot['std_error'])
         results_metrics[f"{split_name}_mcc"] = float(mcc)
+        results_metrics[f"{split_name}_mcc_stderr"] = float(mcc_boot['std_error'])
 
-        logging.info(f"{split_name} - Acc: {acc:.4f}, F1: {f1:.4f}, ROC-AUC: {roc_auc:.4f}, MCC: {mcc:.4f} (threshold={best_threshold:.2f})")
+        logging.info(f"{split_name} - Acc: {acc:.4f} (SE={acc_boot['std_error']:.4f}), F1: {f1:.4f} (SE={f1_boot['std_error']:.4f}), ROC-AUC: {roc_auc:.4f} (SE={roc_auc_boot['std_error']:.4f}), MCC: {mcc:.4f} (SE={mcc_boot['std_error']:.4f}) (threshold={best_threshold:.2f})")
     
     # Save metrics to JSON
     results_dir = Path("reports/metrics")
@@ -689,6 +826,9 @@ def main():
         hidden_dims=params["hidden_dims"],
         dropout=params["dropout"],
         learning_rate=params["learning_rate"],
+        grad_clip=params.get("grad_clip", None),
+        mixup_alpha=params.get("mixup_alpha", 0.0),
+        stochastic_depth=params.get("stochastic_depth", 0.0),
         batch_size=params["batch_size"],
         epochs=params["epochs"],
         weight_decay=params.get("weight_decay", 0.0),
