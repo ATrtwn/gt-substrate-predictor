@@ -31,12 +31,36 @@ def find_smiles_columns(df: pd.DataFrame) -> List[str]:
     if not smiles_cols:
         raise ValueError(
             "No SMILES columns found. Please ensure your CSV has columns like "
-            "'SMILES_isomeric_1', 'SMILES_isomeric_2', etc."
+            "'SMILES_isomeric_1', 'SMILES_isomeric_2', or any column containing 'smiles'."
         )
     return smiles_cols
 
 
 def build_long_table(df: pd.DataFrame, smiles_cols: List[str]) -> pd.DataFrame:
+    # Try to find the substrate column if not present
+    if "substrate" not in df.columns:
+        # Try to find a column containing 'substrate' (case-insensitive)
+        substrate_cols = [col for col in df.columns if "substrate" in col.lower()]
+        if substrate_cols:
+            df = df.rename(columns={substrate_cols[0]: "substrate"})
+        else:
+            raise ValueError("No substrate column found. Expected 'substrate' or a column containing 'substrate'.")
+
+    # Special case: if smiles_cols is ["smiles"] and df already has only ['substrate', 'smiles'] columns, just clean and return
+    if smiles_cols == ["smiles"] and set(df.columns) >= {"substrate", "smiles"}:
+        long_df = df[["substrate", "smiles"]].copy()
+        long_df["smiles"] = long_df["smiles"].astype(str).str.strip()
+        def valid_smiles(x):
+            if x is None:
+                return False
+            if x.lower() in ["", "nan", "none", "null"]:
+                return False
+            return True
+        long_df = long_df[long_df["smiles"].apply(valid_smiles)]
+        long_df = long_df.drop_duplicates(subset=["substrate", "smiles"]).reset_index(drop=True)
+        return long_df
+
+    # Otherwise, melt as before
     long_df = df.melt(
         id_vars=["substrate"],
         value_vars=smiles_cols,
@@ -206,8 +230,9 @@ def generate_CB3_emb(
     output_path: str = None,
     verbose=False
 ):
+    # Always use full_dataset.csv as the default input for SMILES
     if smiles_csv is None:
-        smiles_csv = f"{data_dir}/Substrate_SMILES.csv"
+        smiles_csv = f"{data_dir}/full_dataset.csv"
     smiles_csv_path = Path(smiles_csv)
     if output_path is None:
         output_path = f"{data_dir}/Substrate_Embeddings/ChemBERTa3_substrate_embeddings.pt"
@@ -217,11 +242,34 @@ def generate_CB3_emb(
         print(f"    Loading SMILES table from: {smiles_csv_path}")
     df = pd.read_csv(smiles_csv_path)
 
-    smiles_cols = find_smiles_columns(df)
-    if verbose:
-        print(f"    Detected SMILES columns: {smiles_cols}")
 
-    long_df = build_long_table(df, smiles_cols)
+    # Flexible SMILES column selection (like ChemBERTa2)
+    if 'SMILES_isomeric_1' in df.columns:
+        smiles_cols = ['SMILES_isomeric_1']
+        if verbose:
+            print(f"    Using SMILES from SMILES_isomeric_1 column")
+    elif 'smiles' in df.columns:
+        smiles_cols = ['smiles']
+        if verbose:
+            print(f"    Using existing smiles column")
+    else:
+        smiles_cols = [col for col in df.columns if 'smiles' in col.lower()]
+        if smiles_cols:
+            if verbose:
+                print(f"    Using SMILES from column: {smiles_cols[0]}")
+        else:
+            raise ValueError("No SMILES column found. Expected 'SMILES_isomeric_1', 'smiles', or a column containing 'smiles'.")
+
+    # Build DataFrame for embedding directly from full_dataset.csv
+    embed_df = df.drop_duplicates(subset=["substrate"]).copy()
+    embed_df = embed_df[["substrate"] + smiles_cols]
+    # Collapse to one SMILES column named 'smiles'
+    embed_df = embed_df.rename(columns={smiles_cols[0]: "smiles"})
+    embed_df = embed_df[["substrate", "smiles"]]
+
+    # Only keep valid SMILES for embedding
+    valid_embed_df = embed_df[embed_df["smiles"].apply(lambda x: pd.notna(x) and str(x).strip().lower() not in ["", "nan", "none", "null"]) ]
+    long_df = build_long_table(valid_embed_df, ["smiles"])
     if verbose:
         print(f"    Number of (substrate, SMILES) pairs: {len(long_df)}")
 
@@ -239,13 +287,29 @@ def generate_CB3_emb(
     if verbose:
         print(f"    Number of unique substrates with embeddings: {len(substrate_to_embedding)}")
 
+    # Save CSV with only substrates that have valid SMILES (like ChemBERTa2)
+    embed_df_out = valid_embed_df[['substrate', 'smiles']].copy()
+    substrate_emb_dir = data_dir / "Substrate_Embeddings"
+    substrate_emb_dir.mkdir(exist_ok=True)
+    output_csv_path = substrate_emb_dir / "Substrate_with_embeddings_chemberta3.csv"
+    print(f"[DEBUG] Saving ChemBERTa3 substrate CSV to: {output_csv_path}")
+    try:
+        embed_df_out.to_csv(output_csv_path, index=False)
+        # Force flush to disk
+        with open(output_csv_path, 'r+') as f:
+            f.flush()
+        print(f"[DEBUG] Successfully wrote: {output_csv_path}")
+    except Exception as e:
+        print(f"[ERROR] Failed to write CSV: {e}")
+
+    # Save .npy or .pt with only valid embeddings
     save_embeddings(
-        substrate_to_embedding=substrate_to_embedding,
-        original_df=df,
-        output_path=output_path,
+        substrate_to_embedding,
+        embed_df,
+        output_path,
         model_name=MODEL_NAME,
         smiles_source_file=smiles_csv_path,
         verbose=verbose
     )
     if verbose:
-        print("    ChemBERTa substrate embeddings computed successfully.")
+        print("ChemBERTa substrate embeddings computed successfully.")

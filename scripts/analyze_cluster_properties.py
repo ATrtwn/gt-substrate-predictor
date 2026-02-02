@@ -10,12 +10,14 @@ from rdkit import Chem
 from rdkit.Chem import Descriptors, Lipinski
 
 ROOT = Path(__file__).parent.parent
+
 DATA_DIR = ROOT / "data"
-EMBEDDINGS_DIR = ROOT / "embeddings"
+EMBEDDINGS_DIR = ROOT / "data" / "Substrate_Embeddings"
 REPORTS_DIR = ROOT / "reports"
 
-ACTIVITY_CSV = DATA_DIR / "Activity.csv"
+FULL_DATASET_CSV = DATA_DIR / "full_dataset.csv"
 CLUSTERS_CSV = EMBEDDINGS_DIR / "Substrate_with_clusters_chemberta2.csv"
+CLUSTER_SIZES_TSV = REPORTS_DIR / "substrate_cluster_sizes_chemberta2.tsv"
 
 sns.set_theme(context='paper', style='whitegrid', palette='pastel', font_scale=1.1)
 
@@ -23,22 +25,33 @@ sns.set_theme(context='paper', style='whitegrid', palette='pastel', font_scale=1
 def load_data():
     """Load cluster assignments and activity data."""
     clusters = pd.read_csv(CLUSTERS_CSV)
-    activity = pd.read_csv(ACTIVITY_CSV)
-    return clusters, activity
+    # Ensure cluster_kmeans matches the clusters in the cluster sizes file
+    cluster_sizes = pd.read_csv(CLUSTER_SIZES_TSV, sep='\t')
+    # Filter clusters to only those present in the cluster sizes file (should always match, but for safety)
+    clusters = clusters[clusters['cluster_kmeans'].isin(cluster_sizes['cluster_kmeans'])]
+    full_data = pd.read_csv(FULL_DATASET_CSV)
+    return clusters, full_data
 
 
 def merge_activity(clusters, activity):
     """Merge cluster data with activity labels."""
-    # Count activity per substrate
-    act_counts = activity.groupby('substrate').size().reset_index(name='num_enzymes')
-    act_mode = activity.groupby('substrate')['activity'].agg(lambda x: x.mode()[0] if len(x.mode()) > 0 else 'unknown').reset_index()
+    # Use 'is_active' as activity, group by substrate
+    # Ensure one row per substrate in act_counts and act_mode
+    act_counts = activity.groupby('substrate').size().reset_index(name='num_enzymes').drop_duplicates(subset=['substrate'])
+    act_mode = activity.groupby('substrate')['is_active'].agg(lambda x: x.mode()[0] if len(x.mode()) > 0 else 'unknown').reset_index().drop_duplicates(subset=['substrate'])
     act_mode.columns = ['substrate', 'activity_mode']
-    
+
+    # Merge only with deduplicated summaries to prevent duplicates
     merged = clusters.merge(act_counts, on='substrate', how='left')
     merged = merged.merge(act_mode, on='substrate', how='left')
     merged['num_enzymes'] = merged['num_enzymes'].fillna(0).astype(int)
     merged['activity_mode'] = merged['activity_mode'].fillna('no_data')
-    
+
+    # Check for duplicates (should be zero)
+    n_dupes = merged.duplicated(subset=['substrate']).sum()
+    if n_dupes > 0:
+        print(f"Warning: {n_dupes} duplicate substrate entries after merge.")
+
     return merged
 
 

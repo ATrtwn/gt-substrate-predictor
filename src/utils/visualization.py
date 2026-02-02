@@ -18,7 +18,8 @@ sns.set_theme(
 )
 
 # output folder for plots
-FIGURES_DIR = "../reports"
+from pathlib import Path
+FIGURES_DIR = str((Path(__file__).resolve().parent.parent.parent / "reports").resolve())
 os.makedirs(FIGURES_DIR, exist_ok=True)
 
 def plot_class_balance(df, label_col="activity", label_rot=True):
@@ -51,7 +52,7 @@ def plot_sequence_length_distribution(df, seq_col="prot_seq"):
     plt.savefig(output_path)
     plt.close()
 
-def plot_molecular_property_distribution(df_substrate):
+def plot_molecular_property_distribution(df_substrate, smiles_col="ConnectivitySMILES"):
     """Plot Pairplot of molecular properties."""
     # --- Compute molecular descriptors ---
     def compute_properties(smiles):
@@ -73,7 +74,7 @@ def plot_molecular_property_distribution(df_substrate):
             "NumRotatableBonds": Descriptors.NumRotatableBonds(mol),
         }
         return props
-    props_df = df_substrate["ConnectivitySMILES"].apply(compute_properties).dropna().apply(pd.Series)
+    props_df = df_substrate[smiles_col].apply(compute_properties).dropna().apply(pd.Series)
     g = sns.pairplot(props_df, vars=["MolWt", "LogP", "TPSA","NumHDonors","NumHAcceptors", "NumRotatableBonds"], diag_kind="kde")
     plt.suptitle("Molecular Property Distributions by Binding Activity")
     g.figure.suptitle("Molecular Property Distributions by Binding Activity", y=1.02)

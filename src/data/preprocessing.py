@@ -101,6 +101,24 @@ def create_full_dataset(verbose=False):
         print(f" - took {len(df_EZS)} (pos.) samples from EZS")
         print(f" - Merged dataset shape: {df_all.shape}")
 
+    # --- Fill missing SMILES_isomeric_1 from Substrate_SMILES.csv ---
+    smiles_lookup = None
+    try:
+        smiles_df = pd.read_csv(os.path.join(data_dir, "Substrate_SMILES.csv"))
+        smiles_lookup = dict(zip(smiles_df['substrate'], smiles_df['SMILES_isomeric_1']))
+    except Exception as e:
+        if verbose:
+            print(f"[WARN] Could not load Substrate_SMILES.csv for SMILES filling: {e}")
+
+    if smiles_lookup is not None:
+        mask_missing = df_all['SMILES_isomeric_1'].isna() | df_all['SMILES_isomeric_1'].astype(str).str.strip().isin(["", "nan", "none", "null"])
+        missing_substrates = df_all.loc[mask_missing, 'substrate']
+        filled_smiles = missing_substrates.map(smiles_lookup)
+        df_all.loc[mask_missing, 'SMILES_isomeric_1'] = filled_smiles.values
+        if verbose:
+            n_filled = filled_smiles.notna().sum()
+            print(f" - Filled {n_filled} missing SMILES_isomeric_1 from Substrate_SMILES.csv")
+
     return df_all
 
 def create_csv(verbose=False):
@@ -312,7 +330,21 @@ def mmseqs_clustering(fasta_path, output_dir, identity_threshold=0.9, coverage=0
 def binarize_activity(df, label_col="activity"):
     """Convert multi-level activity values to binary (active/inactive)."""
     active_labels = ["low", "medium", "high", "low, high", "low, medium", "medium, high"]
-    df["is_active"] = df[label_col].apply(lambda x: 1 if x in active_labels else 0)
+    def is_active_fn(x):
+        # Numeric 1/0
+        if pd.api.types.is_number(x):
+            return 1 if x == 1 else 0
+        # String numeric
+        try:
+            if str(x).strip() in {"1", "active", "yes"}:
+                return 1
+            if str(x).strip() in {"0", "inactive", "no"}:
+                return 0
+        except Exception:
+            pass
+        # Multi-level string labels
+        return 1 if x in active_labels else 0
+    df["is_active"] = df[label_col].apply(is_active_fn)
     return df
 
 

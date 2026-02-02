@@ -1,28 +1,48 @@
 # Neural Network Configuration
 
 # Model architecture
-model_type: "attention"  # "simple" (GT_NN), "deep" (DeepMLP), "bilinear" (BilinearInteractionNet), or "attention" (AttentionMLP)
-hidden_dims: [512, 256]  # 3 layers total: input->512->256->output
-dropout: 0.4  # Dropout rate
-projection_dim: 128  # Projection dimension for bilinear model (reduces parameters)
+model_type: "attention"  # Optuna best
+hidden_dims: [1024, 512]  # Optuna best
+dropout: 0.4  # Optuna best
+projection_dim: 128  # Optuna best
+activation: "tanh"  # Optuna best
 
-# Attention-specific parameters
-num_heads: 4  # Number of attention heads (4 or 8 recommended)
-use_residual: true  # Use residual connections in attention model
+# Attention-specific parameters (not used for bilinear)
+num_heads: 2  # Optuna best
+use_residual: true # Optuna best
 
 # Data augmentation
-data_augmentation: false  # Enable Gaussian noise augmentation during training
+data_augmentation: true  # Enable Gaussian noise augmentation during training
 noise_std: 0.02  # Standard deviation for Gaussian noise (0.01-0.05 recommended)
+grad_clip: 1.0  # Gradient clipping max norm (1.0 recommended, None to disable)
+mixup_alpha: 0.2  # Mixup augmentation alpha (0.2-0.4 recommended, 0.0 to disable)
+stochastic_depth: 0.1  # Stochastic depth drop probability (0.1-0.2 recommended, 0.0 to disable)
+
+# Oversampling
+oversample: true  # Toggle class oversampling in training set
+
+# Feature incorporation
+use_handcrafted_features: true  # Toggle handcrafted feature incorporation
+
+# Label smoothing
+label_smoothing: 0.05
 
 # Training hyperparameters
-learning_rate: 0.001
-batch_size: 16  # Increased with simpler model
+learning_rate: 0.0001  # Optuna best
+batch_size: 32  # Optuna best
 epochs: 100
-weight_decay: 0.0005  # Moderate L2 regularization
+weight_decay: 0.00011761899025546045  # Optuna best
+
+# Optimizer and scheduler
+optimizer: "adamw"  # Optuna best
+scheduler: "step"  # Manual best: adaptive scheduling
+momentum: 0.9
+step_size: 7  # Optuna best
+gamma: 0.8  # Optuna best
 
 # Data
 concatenation_path: "data/concatenated_embeddings/"
-substrate_name: "chemberta3" 
+substrate_name: "chemberta3"  # Optuna best
 protein_name: "prott5"
 
 # W&B
