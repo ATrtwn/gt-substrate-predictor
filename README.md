@@ -39,26 +39,7 @@ project_root/
 
 ### ⚡ Usage
 
-#### 1. Generate CSV files from the Access database
-
-1. Create a `.env` file in the project root with:
-
-    - ACCESS_DB_PATH=/full/path/to/database.accdb
-    - ACCESS_DB_PASSWORD=yourpassword
-
-2. Run the script:
-
-   ```bash
-   python scripts/fetch_data.py
-   ```
-    
-   The script will:
-   - Check if UGT.csv, Activity.csv, and Substrate.csv already exist in data/
-   - If missing, export the tables from the .accdb file and fetch additional substrate info
-
-3. Result: CSV files will be saved in the data/ folder, ready for preprocessing and analysis.
-
-#### 2. Data Processing and Embedding Generation Pipeline
+#### Data Processing and Embedding Generation Pipeline
 
 1. Dataset Preprocessing
     Entry point:
@@ -71,8 +52,21 @@ project_root/
       - Creating FASTA files for protein sequences
       - Merging original data sources
       - Creating the full, cleaned interaction dataset
+
+    Creating the original dataset:
+
+   1. Add a .env file in the project root with:
+      ACCESS_DB_PATH=/full/path/to/database.accdb
+      ACCESS_DB_PASSWORD=yourpassword
+
+   2. Run the script, the function create_original_dataset will:
+      - Check if UGT.csv, Activity.csv, and Substrate.csv already exist in data/
+      - If missing, export the tables from the .accdb file and retrieve additional substrate information
+
+   3. Output: CSV files will be saved in the data/ folder, ready for preprocessing and further analysis.
+
    
-    **This step only needs to be run once unless the raw data changes.**
+**This step only needs to be run once unless the raw data changes.**
 
 
 2. Dataset Splitting (C1 / C2 / C3)
@@ -148,7 +142,7 @@ project_root/
             - `available_*_features` = everything you could choose 
             - `*_features` = the items you actually activate by listing them
 
-4.  Recommended Usage Order
+4. Recommended Usage Order
     
     To run the full pipeline from raw data to embeddings:
  
@@ -500,7 +494,7 @@ In order to run the baseline models one has to specify the settings of the exper
 ##### Run the experiment within the env
  ```sh
     python scripts/run_experiment.py
-    ```
+ ```
 
 ### 💡 Results
 
@@ -612,4 +606,13 @@ Our model uses a comprehensive 10-layer regularization stack to prevent overfitt
 8. ❌ **Ensemble Method** - Simple averaging did not outperform single models
 
 ### References
-tba
+
+ESP data:
+Kroll, A., Ranjan, S., Engqvist, M.K.M., Lercher, M.J. "A general model to predict small molecule substrates of enzymes based on machine and deep learning." Nature Communications, 14, 2787 (2023). https://doi.org/10.1038/s41467-023-38347-2
+
+EZSpecificity data:
+Cui, H., Su, Y., Dean, T.J., Yu, T., Zhang, Z., Peng, J., Shukla, D., Zhao, H. "Enzyme specificity prediction using cross-attention graph neural networks." Nature, 647, 639–647 (2025). https://doi.org/10.1038/s41586-025-09697-2
+
+GT-Predict evaluation:
+Yang, M., Fehl, C., Lees, K.V., Lim, E-H., Offen, W.A., Davies, G.J., Bowles, D.J. "Functional and informatics analysis enables glycosyltransferase activity prediction." Nature Chemical Biology, 14, 1109–1117 (2018). https://doi.org/10.1038/s41589-018-0154-9
+
