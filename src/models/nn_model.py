@@ -2,6 +2,27 @@ import torch
 import torch.nn as nn
 from pathlib import Path
 
+
+class StochasticDepth(nn.Module):
+    """
+    Stochastic Depth (Drop Path) layer.
+    Randomly drops the entire residual branch during training.
+    """
+    def __init__(self, drop_prob=0.0):
+        super().__init__()
+        self.drop_prob = drop_prob
+    
+    def forward(self, x):
+        if not self.training or self.drop_prob == 0.0:
+            return x
+        
+        keep_prob = 1 - self.drop_prob
+        # Create random tensor with same shape as first dimension
+        random_tensor = keep_prob + torch.rand((x.size(0), 1), dtype=x.dtype, device=x.device)
+        random_tensor.floor_()  # Binarize
+        return x * random_tensor / keep_prob
+
+
 def save_model(model, optimizer, epoch, loss, path="experiments/checkpoint.pth"):
     """Save model checkpoint to experiments folder"""
     Path(path).parent.mkdir(parents=True, exist_ok=True)
@@ -34,19 +55,30 @@ class GT_NN(nn.Module):
         Simple (2 layers): hidden_dims=[512, 256]
         Deep (5 layers): hidden_dims=[1024, 512, 256, 128, 64]
     """
-    def __init__(self, input_dim, hidden_dims=[512, 256], dropout=0.3):
+    def __init__(self, input_dim, hidden_dims=[512, 256], dropout=0.3, activation='relu', stochastic_depth=0.0):
         super().__init__()
+        
+        # Map activation string to PyTorch class (not instance)
+        activation_map = {
+            'relu': nn.ReLU,
+            'gelu': nn.GELU,
+            'tanh': nn.Tanh,
+            'sigmoid': nn.Sigmoid,
+            'leaky_relu': nn.LeakyReLU
+        }
+        activation_class = activation_map.get(activation, nn.ReLU)
         
         layers = []
         prev_dim = input_dim
         
         # Hidden layers
-        for hidden_dim in hidden_dims:
+        for i, hidden_dim in enumerate(hidden_dims):
             layers.extend([
                 nn.Linear(prev_dim, hidden_dim),
                 nn.BatchNorm1d(hidden_dim),
-                nn.ReLU(),
-                nn.Dropout(dropout)
+                activation_class(),  # Create new instance for each layer
+                nn.Dropout(dropout),
+                StochasticDepth(stochastic_depth) if stochastic_depth > 0 else nn.Identity()
             ])
             prev_dim = hidden_dim
         
@@ -74,8 +106,18 @@ class BilinearInteractionNet(nn.Module):
     
     This uses projections instead of full bilinear to drastically reduce parameters.
     """
-    def __init__(self, protein_dim, substrate_dim, hidden_dims=[512, 256], dropout=0.3, projection_dim=128):
+    def __init__(self, protein_dim, substrate_dim, hidden_dims=[512, 256], dropout=0.3, projection_dim=128, activation='relu', stochastic_depth=0.0):
         super().__init__()
+        
+        # Map activation string to PyTorch class (not instance)
+        activation_map = {
+            'relu': nn.ReLU,
+            'gelu': nn.GELU,
+            'tanh': nn.Tanh,
+            'sigmoid': nn.Sigmoid,
+            'leaky_relu': nn.LeakyReLU
+        }
+        activation_class = activation_map.get(activation, nn.ReLU)
         
         self.protein_dim = protein_dim
         self.substrate_dim = substrate_dim
@@ -93,12 +135,13 @@ class BilinearInteractionNet(nn.Module):
         layers = []
         prev_dim = total_dim
         
-        for hidden_dim in hidden_dims:
+        for i, hidden_dim in enumerate(hidden_dims):
             layers.extend([
                 nn.Linear(prev_dim, hidden_dim),
                 nn.BatchNorm1d(hidden_dim),
-                nn.ReLU(),
-                nn.Dropout(dropout)
+                activation_class(),  # Create new instance for each layer
+                nn.Dropout(dropout),
+                StochasticDepth(stochastic_depth) if stochastic_depth > 0 else nn.Identity()
             ])
             prev_dim = hidden_dim
         
@@ -216,8 +259,18 @@ class AttentionMLP(nn.Module):
     4. MLP for classification
     """
     def __init__(self, protein_dim, substrate_dim, num_heads=4, 
-                 hidden_dims=[512, 256], dropout=0.4, use_residual=True):
+                 hidden_dims=[512, 256], dropout=0.4, use_residual=True, activation='relu', stochastic_depth=0.0):
         super().__init__()
+        
+        # Map activation string to PyTorch class (not instance)
+        activation_map = {
+            'relu': nn.ReLU,
+            'gelu': nn.GELU,
+            'tanh': nn.Tanh, 
+            'sigmoid': nn.Sigmoid,
+            'leaky_relu': nn.LeakyReLU
+        }
+        activation_class = activation_map.get(activation, nn.ReLU)
         
         self.protein_dim = protein_dim
         self.substrate_dim = substrate_dim
@@ -254,12 +307,13 @@ class AttentionMLP(nn.Module):
         layers = []
         prev_dim = mlp_input_dim
         
-        for hidden_dim in hidden_dims:
+        for i, hidden_dim in enumerate(hidden_dims):
             layers.extend([
                 nn.Linear(prev_dim, hidden_dim),
                 nn.BatchNorm1d(hidden_dim),
-                nn.ReLU(),
-                nn.Dropout(dropout)
+                activation_class(),  # Create new instance for each layer
+                nn.Dropout(dropout),
+                StochasticDepth(stochastic_depth) if stochastic_depth > 0 else nn.Identity()
             ])
             prev_dim = hidden_dim
         

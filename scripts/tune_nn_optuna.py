@@ -87,24 +87,34 @@ def objective(trial, config):
     # Substrate embedding selection
     substrate_name = trial.suggest_categorical('substrate_name', ['chemberta2', 'chemberta3'])
     
-    # Model architecture - choose between MLP, Attention, or Bilinear
-    model_type = trial.suggest_categorical('model_type', ['mlp', 'attention', 'bilinear'])
+    # Model architecture - choose between Attention or Bilinear
+    model_type = trial.suggest_categorical('model_type', ['attention', 'bilinear', 'mlp'])
     
     # Hidden layer configuration (applies to all model types)
-    n_layers = trial.suggest_int('n_layers', 1, 5)
+    n_layers = trial.suggest_int('n_layers', 1, 4)
     hidden_dims = []
     for i in range(n_layers):
         dim = trial.suggest_categorical(f'hidden_dim_{i}', [128, 256, 512, 1024])
         hidden_dims.append(dim)
     
     # Regularization
-    dropout = trial.suggest_float('dropout', 0.2, 0.9, step=0.1)
+    dropout = trial.suggest_float('dropout', 0.2, 0.8, step=0.1)
     weight_decay = trial.suggest_float('weight_decay', 1e-5, 1e-3, log=True)
     
     # Training hyperparameters
     learning_rate = trial.suggest_categorical('lr', [1e-6, 1e-5, 1e-4, 1e-3, 1e-2])  # Powers of 10: 0.000001 to 0.01
-    batch_size = trial.suggest_categorical('batch_size', [8, 16, 32])
+    batch_size = trial.suggest_categorical('batch_size', [16, 32, 64, 128])
+    optimizer_name = trial.suggest_categorical('optimizer', ['Adam', 'AdamW'])
+    scheduler_name = trial.suggest_categorical('scheduler', ['StepLR', 'ReduceLROnPlateau'])
+    # Scheduler-specific params
+    step_size = trial.suggest_int('step_size', 5, 20) if scheduler_name == 'StepLR' else None
+    gamma = trial.suggest_float('gamma', 0.1, 0.9, step=0.1) if scheduler_name == 'StepLR' else None
+    plateau_patience = trial.suggest_int('plateau_patience', 2, 10) if scheduler_name == 'ReduceLROnPlateau' else None
+    plateau_factor = trial.suggest_float('plateau_factor', 0.1, 0.9, step=0.1) if scheduler_name == 'ReduceLROnPlateau' else None
     
+    # Activation function (applies to all model types)
+    activation = trial.suggest_categorical('activation', ['relu', 'gelu', 'tanh', 'sigmoid', 'leaky_relu'])
+
     # Model-specific parameters
     if model_type == 'attention':
         num_heads = trial.suggest_categorical('num_heads', [2, 4, 8])
@@ -205,7 +215,8 @@ def objective(trial, config):
             num_heads=num_heads,
             hidden_dims=hidden_dims,
             dropout=dropout,
-            use_residual=use_residual
+            use_residual=use_residual,
+            activation=activation
         ).to(device)
     elif model_type == 'bilinear':
         model = BilinearInteractionNet(
@@ -213,11 +224,12 @@ def objective(trial, config):
             substrate_dim=substrate_dim,
             hidden_dims=hidden_dims,
             dropout=dropout,
-            projection_dim=projection_dim
+            projection_dim=projection_dim,
+            activation=activation
         ).to(device)
     else:  # mlp
         # Standard MLP with flexible hidden layers
-        model = GT_NN(input_dim=input_dim, hidden_dims=hidden_dims, dropout=dropout).to(device)
+        model = GT_NN(input_dim=input_dim, hidden_dims=hidden_dims, dropout=dropout, activation=activation).to(device)
     
     # Loss and optimizer
     class_counts = np.bincount(train_labels)
@@ -225,7 +237,16 @@ def objective(trial, config):
     pos_weight = class_weights[1] / class_weights[0]
     
     criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
-    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
+    if optimizer_name == 'Adam':
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
+    else:
+        optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
+
+    # Scheduler
+    if scheduler_name == 'StepLR':
+        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
+    else:
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', patience=plateau_patience, factor=plateau_factor)
     
     # =============================================================
     # TRAINING LOOP with pruning
@@ -236,14 +257,20 @@ def objective(trial, config):
     for epoch in range(max_epochs):
         train_loss = train_epoch(model, train_loader, criterion, optimizer, device)
         val_loss, val_probs, val_true = evaluate(model, val_loader, criterion, device)
-        
+
+        # Scheduler step
+        if scheduler_name == 'StepLR':
+            scheduler.step()
+        else:
+            scheduler.step(accuracy_score(val_true, (val_probs > 0.5).astype(int)))
+
         # Calculate accuracy for this epoch
         val_preds = (val_probs > 0.5).astype(int)
         val_acc = accuracy_score(val_true, val_preds)
-        
+
         # Report intermediate value to Optuna (for pruning)
         trial.report(val_acc, epoch)
-        
+
         # Optuna pruning: Stop unpromising trials early
         if trial.should_prune():
             raise optuna.TrialPruned()
