@@ -671,6 +671,11 @@ def train_nn_experiment(
         model.load_state_dict(best_model_state)
         logging.info("Loaded best model state for final evaluation")
     
+    # Load best model state before final evaluation
+    if best_model_state is not None:
+        model.load_state_dict(best_model_state)
+        logging.info("Loaded best model state for final evaluation")
+    
     # Plot training curves
     plot_dir = Path("reports/figures")
     plot_dir.mkdir(parents=True, exist_ok=True)

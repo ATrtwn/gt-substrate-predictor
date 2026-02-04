@@ -296,6 +296,63 @@ with torch.no_grad():
 
 ---
 
+### 🚀 Quick Start Guide
+
+#### Step-by-Step: Training a Model
+
+1. **Prepare your data** (if not already done):
+   ```bash
+   python scripts/fetch_data.py
+   python scripts/concatenate_embeddings.py --substrate chemberta3
+   ```
+
+2. **Choose your approach:**
+
+   **Option A: Quick Training (with default parameters)**
+   ```bash
+   python scripts/train_nn.py
+   ```
+   Uses settings from `configs/neural_network.yml`. Good for testing or if you already have optimized parameters.
+
+   **Option B: Hyperparameter Optimization First (Recommended)**
+   ```bash
+   # Find best hyperparameters (takes ~45-60 minutes)
+   python scripts/tune_nn_optuna.py
+   
+   # Copy best parameters from output to configs/neural_network.yml
+   # Then train with optimized settings:
+   python scripts/train_nn.py
+   ```
+   Optuna automatically tests 50 different configurations to find the best model.
+
+3. **View results:**
+   - Training curves: `reports/figures/nn_training_*.png`
+   - Metrics JSON: `reports/metrics/nn_metrics_*.json`
+   - Best model: `experiments/best_model_*.pth`
+
+#### Making Predictions with Trained Model
+
+```python
+import torch
+from src.models.nn_model import AttentionMLP, GT_NN, BilinearInteractionNet
+
+# Load model
+model = AttentionMLP(input_dim=1792, hidden_dims=[512, 256], num_heads=4)
+model.load_state_dict(torch.load('experiments/best_model_chemberta3.pth'))
+model.eval()
+
+# Load your concatenated embedding
+X_test = np.load('data/concatenated_embeddings/X_chemberta3.npy')
+
+# Make prediction
+with torch.no_grad():
+    prediction = model(torch.FloatTensor(X_test[0:1]))
+    probability = torch.sigmoid(prediction).item()
+    print(f"Activity probability: {probability:.2%}")
+```
+
+---
+
 ### 🤖 Neural Network Training
 
 Train neural networks for GT-substrate activity prediction using concatenated embeddings.
@@ -475,7 +532,8 @@ Edit line ~275 in `objective()` function:
 
 ### 📈 Experiments
 - **Baseline models:** Random classifier, majority class, logistic regression.
-- **Neural networks:** Simple MLP, Deep MLP, Bilinear Interaction Network.
+- **Neural networks:** Flexible MLP, Bilinear Interaction Network, Attention MLP.
+- **Hyperparameter optimization:** Optuna for automated tuning.
 - **Future work:** GNN on molecular graphs, multi-modal transformer, AlphaFold2 integration.
 
 #### Baseline models

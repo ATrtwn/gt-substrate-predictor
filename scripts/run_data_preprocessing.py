@@ -23,6 +23,7 @@ def prepare_dataset(verbose=False):
     print("== [1/4] Merging original data sources ==")
     create_original_dataset(verbose=verbose)
 
+
     print("== [2/4] Creating full merged dataset ==")
     df_all = create_full_dataset(verbose=verbose)
     # Save full_dataset.csv immediately after creation

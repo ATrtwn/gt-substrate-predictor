@@ -3,6 +3,7 @@ import wandb
 import optuna
 import json
 import logging
+import os
 
 from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
@@ -27,6 +28,9 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import StandardScaler
+ROOT = Path(__file__).parent.parent
+
 
 MODEL_MAPPING = {
     "ridge_classifier": RidgeClassifier,
@@ -62,19 +66,19 @@ class OptunaWandbSweep:
         
 
     def run_sklearn_experiment(
-        self,
         model_name: str,
         model_params: dict[str, Any],
         substrate_name:str,
         protein_name:str,
         wandb_mode: str = "offline",
+        project: str = "gt-substrate-predictor",
+        sweep: bool = False,
         concatenation_path:str=None,
-    ) -> float:
+    ) -> None:
+        
 
-        log_dict = {}
         if model_name not in MODEL_MAPPING:
             raise ValueError(f"Unknown model_name '{model_name}'. Available: {list(MODEL_MAPPING.keys())}")
-
 
         sk_model = MODEL_MAPPING[model_name](**model_params)
 
@@ -82,113 +86,150 @@ class OptunaWandbSweep:
         trainer = SklearnTrainer(model=sk_model)
 
         # --- Load the embeddings here ---
-        if concatenation_path is not None:
-            concatenated_embeddings = np.load( data_dir/concatenation_path / f'X_{substrate_name}.npy')
-            activity = np.load(data_dir / concatenation_path / f'y_{substrate_name}.npy')
-        meta_name = "metadata_"+substrate_name+"_"+protein_name+".csv"
-        metadata = pd.read_csv(data_dir / concatenation_path /  meta_name )
-        # Convert activity to binary: 0 if value is the string "None", else 1
-
-        activity = (activity != "none").astype(int)
-
-        protein_col = "UGT_trivial_name"
-        substrate_col = "substrate"
-        label_col = "activity"
-
-        unique_proteins = metadata[protein_col].unique()
-        unique_substrates = metadata[substrate_col].unique()
-
-        log_dict["unique_proteins"] = len(unique_proteins)
-        log_dict["unique_substrates"] = len(unique_substrates)
-
-        splits = stratified_split_by_entities(metadata,
-                                            protein_col=protein_col,
-                                            substrate_col=substrate_col,
-                                            label_col=label_col,
-                                            plot=False)
-
-        # check stratification
-        c1 = splits['C1']
-        c2 = splits['C2']
-        c3 = splits['C3']
-        train = splits['train']
-        val = splits['val']
-
-
-        check_split(train, val, c1, c2, c3, protein_col, substrate_col)
-
-        dataset_len = len(metadata[[protein_col, substrate_col]].drop_duplicates())
+        # Load data
+        data_dir = Path(__file__).parent.parent
+        concatenated_embeddings = np.load(data_dir / concatenation_path / f'X_{substrate_name}.npy')
+        activity = np.load(data_dir / concatenation_path / f'y_{substrate_name}.npy')
+        meta_name = f"metadata_{substrate_name}.csv"
+        metadata = pd.read_csv(data_dir / concatenation_path / meta_name)
+        metadata = metadata.rename(columns={'activity': 'is_active'})
+        df = pd.read_csv(f"{ROOT}/data/split.csv")
         
-        log_dict["dataset_len"] = dataset_len
+        # Convert to binary: 0 if "none", else 1
+        # Auto-detect binarization
+        if activity.dtype.kind in {'U', 'S', 'O'}:
+            # String or object: treat 'none' as negative, else positive
+            activity_binary = (activity != "none").astype(int)
+        else:
+            # Numeric: assume already binarized (0/1)
+            activity_binary = activity.astype(int)
+        logging.info(f"Loaded {len(activity_binary)} samples")
+        logging.info(f"Embedding dimension: {concatenated_embeddings.shape[1]}")
+        logging.info(f"Class distribution: {np.bincount(activity_binary)}")
+        def get_embeddings_for_split(split_df, metadata, concatenated_embeddings):
+            split_cols = {col.lower(): col for col in split_df.columns}
+            meta_cols = {col.lower(): col for col in metadata.columns}
+            merge_cols = []
+            if 'ugt_id' in meta_cols and ('ugt_id' in split_cols or 'ugt_id' in [c.lower() for c in split_df.columns]):
+                merge_cols.append(('UGT_ID' if 'UGT_ID' in split_df.columns else split_cols.get('ugt_id', 'ugt_id'), meta_cols['ugt_id']))
+            elif 'ugt_id' in meta_cols and 'UGT_ID' in split_cols:
+                merge_cols.append(('UGT_ID', meta_cols['ugt_id']))
+            if 'substrate' in meta_cols and 'substrate' in split_cols:
+                merge_cols.append(('substrate', 'substrate'))
+            if merge_cols:
+                left_on = [mc[0] for mc in merge_cols]
+                right_on = [mc[1] for mc in merge_cols]
+                merged = pd.merge(split_df, metadata.reset_index(), left_on=left_on, right_on=right_on, how='inner')
+                indices = merged['index'].values.astype(int)
+            else:
+                indices = metadata.index.isin(split_df.index).nonzero()[0]
+            return concatenated_embeddings[indices], activity_binary[indices]
+        
+        
+        logging.info("Creating data splits...")
+        logging.info("Load Split ...")
+        mapping = df[['UGT_ID', 'substrate', 'cluster_id','dataset']].drop_duplicates()
 
-        # Create a table with columns: Subset, Class, Frequency
+        # 2. Merge into metadata
+        metadata = metadata.merge(
+            mapping,
+            left_on=['ugt_id', 'substrate'],
+            right_on=['UGT_ID', 'substrate'],
+            how='left'
+        )
+        metadata = metadata.drop(columns=['ugt_id'])
+
+        splits = pd.read_csv(f"{ROOT}/data/split.csv")
+        train = splits[splits["split"] == "train"]
+        val1 = splits[splits["split"]=="C1_val"]
+        val2 = splits[splits["split"]=="C2_val"]
+        val3 = splits[splits["split"]=="C3_val"]
+        val = pd.concat([val1, val2, val3], axis=0)
+
+        c1 = splits[splits["split"] == "C1_test"]
+        c2 = splits[splits["split"] == "C2_test"]
+        c3 = splits[splits["split"] == "C3_test"]
+        test_sets = {"C1_test": c1, "C2_test": c2, "C3_test": c3}
+    
+
+        # Get embeddings for each split
+        metadata=metadata[0:len(concatenated_embeddings)]
+        train_emb, train_labels = get_embeddings_for_split(train, metadata, concatenated_embeddings)
+        val_emb, val_labels = get_embeddings_for_split(val, metadata, concatenated_embeddings)
+        c1_emb, c1_labels = get_embeddings_for_split(c1, metadata, concatenated_embeddings) if c1 is not None else (None, None)
+        c2_emb, c2_labels = get_embeddings_for_split(c2, metadata, concatenated_embeddings) if c2 is not None else (None, None)
+        c3_emb, c3_labels = get_embeddings_for_split(c3, metadata, concatenated_embeddings) if c3 is not None else (None, None)
+    
+
+
+
+        # Normalize embeddings - fit on train, transform all
+        logging.info("Normalizing embeddings with StandardScaler...")
+        scaler = StandardScaler()
+        train_emb = scaler.fit_transform(train_emb)
+        val_emb = scaler.transform(val_emb)
+        c1_emb = scaler.transform(c1_emb)
+        c2_emb = scaler.transform(c2_emb)
+        c3_emb = scaler.transform(c3_emb)
+        
+
+    
         table = wandb.Table(columns=["Subset", "Class", "Frequency"])
 
         for name, subset in [("Training", train), ("val", val), ("C1", c1), ("C2", c2), ("C3", c3)]:
-            counts = subset["activity"].value_counts(normalize=True).sort_index()
+            counts = subset["is_active"].value_counts(normalize=True).sort_index()
             for cls, freq in counts.items():
                 table.add_data(name, cls, freq)
 
-        c1_emb = concatenated_embeddings[metadata.index.isin(c1.original_index)]
-        c2_emb = concatenated_embeddings[metadata.index.isin(c2.original_index)]
-        #c3_emb = concatenated_embeddings[metadata.index.isin(c3.original_index)]
-        train_emb = concatenated_embeddings[metadata.index.isin(train.original_index)]
-        val_emb = concatenated_embeddings[metadata.index.isin(val.original_index)]
+        
+        test_dict_sets = {
+            "C1_test": [c1_emb,c1_labels],
+            "C2_test": [c2_emb,c2_labels],
+            "C3_test": [c3_emb,c3_labels]
+        }
 
-        train_activity = activity[metadata.index.isin(train.original_index)]
-        val_activity = activity[metadata.index.isin(val.original_index)]
+        
+
 
         # Fit the model
         logging.info("Start training" + model_name + " with params :" + str(model_params))
-        history = trainer.fit(train_emb, train_activity, val_emb, val_activity)
+    
+        history = trainer.fit(train_emb, train_labels, val_emb, val_labels)
+        metrics_list = []
+        pred_data = []
+        return_f1 = 0.0
+        val_loss = history["val_loss"][-1] if history["val_loss"] else None
+        for set_name, test_set in test_dict_sets.items():
+            emb,indices = test_set
+            y_true = activity_binary[indices]
+            y_prob = trainer.predict(emb)
+            y_pred = (y_prob > 0.5).astype(int)
 
-        # Log losses to wandb
-        
-        log_dict["train_loss"] = history["train_loss"][-1]
-        log_dict["val_loss"] = history["val_loss"][-1] if history["val_loss"][-1] is not None else None
+            # Calculate Metrics
+            acc = accuracy_score(y_true, y_pred)
+            f1 = f1_score(y_true, y_pred)
+            mcc = matthews_corrcoef(y_true, y_pred)
+            
+            if set_name == "val": return_f1 = f1
 
-        # Evaluate on sets
-        results = {}
-        val_loss = 0.0
-        for emb,name in [(train_emb,'train'), (val_emb,'val'),(c1_emb, "C1"), (c2_emb, "C2") ]:#,(c3_emb, "C3")
-            y_pred = trainer.predict(emb)
-            results[name] = y_pred
+            metrics_list.append({"Split": set_name, "Accuracy": acc, "F1": f1, "MCC": mcc})
+            
+            # Collect predictions
+            for i, idx in enumerate(indices):
+                pred_data.append([set_name, idx, y_true[i], y_prob[i], y_pred[i]])
 
-        test_sets = ["train", "val","C1","C2"]#,"C3"]
-        metrics = [accuracy_score, roc_auc_score, f1_score, matthews_corrcoef]
-
-        # Prepare a W&B Table
-        pred_table = wandb.Table(
-            columns=["Split", "Index", "y_true_raw", "y_true_bin", "y_pred_prob", "y_pred_bin"]
-        )
-        metrics_table = wandb.Table(columns=["Split", "Metric", "Value"])
-
-        for split_name in test_sets:
-
-            true_activities = metadata[metadata.index.isin(splits[split_name].original_index)]["activity"].values
-            binary_true_activities = (true_activities != "none").astype(int)
-
-            predicted_activities_prob = results[split_name]
-            predicted_activities_bin = (predicted_activities_prob > 0.5).astype(int)
-
-            for metric_fn in metrics:
-                # Some metrics require probabilities (e.g., roc_auc_score)
-                if metric_fn == roc_auc_score:
-                    value = metric_fn(binary_true_activities,predicted_activities_prob)  # pass probabilities
-                else:
-                    value = metric_fn(binary_true_activities,predicted_activities_bin)  # pass binary predictions)
-                if split_name == "val" and metric_fn == f1_score:
-                    val_loss = value
-                metrics_table.add_data(split_name, metric_fn.__name__, value)
-            for idx, (raw, true, prob, pred) in enumerate(
-                zip(true_activities, binary_true_activities, predicted_activities_prob, predicted_activities_bin)
-            ):
-                pred_table.add_data(split_name, idx, raw, int(true), float(prob), int(pred))
-        # Log the table
-        
-        log_dict["metrics_table"] = metrics_table
-        log_dict["predictions_table"] = pred_table
+        # --- 3. SAVE DATA TABLES LOCALLY ---
+        metrics_df = pd.DataFrame(metrics_list)
+        preds_df = pd.DataFrame(pred_data, columns=["Split", "Index", "True", "Prob", "Pred"])
+        log_dict = {}
+        log_dict["unique_proteins"] = metadata['UGT_ID'].nunique()
+        log_dict["unique_substrates"] = metadata['substrate'].nunique()
+        log_dict["dataset_len"] = len(metadata)
+        log_dict["metrics_table"] = metrics_df
+        log_dict["predictions_table"] = preds_df
         log_dict["val_loss"] = val_loss
+        log_dict["train_counts"] = np.bincount(train_labels).tolist()
+        log_dict["val_counts"] = np.bincount(val_labels).tolist()
         return log_dict
     
     def objective(self, trial: optuna.Trial):
@@ -212,6 +253,7 @@ class OptunaWandbSweep:
         trial.set_user_attr("val_loss", log_dict["val_loss"])
         trial.set_user_attr("unique_proteins", log_dict["unique_proteins"])
         trial.set_user_attr("unique_substrates", log_dict["unique_substrates"])
+        trial.set_user_attr("train_counts", log_dict["train_counts"] if "train_counts" in log_dict else None)
         trial.set_user_attr("dataset_len", log_dict["dataset_len"])
         trial.set_user_attr("train_loss", log_dict["train_loss"])
         trial.set_user_attr("predictions_table", log_dict["predictions_table"])
@@ -221,16 +263,19 @@ class OptunaWandbSweep:
     
 
     def run_sweep(self):
-        # Create Optuna study
+        # 1. Added SQLite storage to save Optuna progress to a local file
+        study_db = f"sqlite:///{self.optuna_config.get('study_name', 'study')}.db"
+        
         study = optuna.create_study(
+            study_name=self.optuna_config["study_name"],
+            storage=f"sqlite:///{self.optuna_config['study_name']}.db", # Local file
+            load_if_exists=True,                                       # Resume if interrupted
             direction=self.optuna_config["direction"],
             pruner=optuna.pruners.MedianPruner(),
             sampler=optuna.samplers.TPESampler(seed=42)
         )
         
-        # Run optimization
-        study.optimize(self.objective, n_trials=self.optuna_config["n_trials"],show_progress_bar=True)
-
+        study.optimize(self.objective, n_trials=self.optuna_config["n_trials"], show_progress_bar=True)
 
         completed_trials = [
             t for t in study.trials 
@@ -241,28 +286,44 @@ class OptunaWandbSweep:
             print("⚠️ No completed trials found!")
             return study
         
-       # Log best 5 hyperparameters to wandb
-       #we want to maximize so we reverse sort
-        best_trials = sorted(study.trials, key=lambda t: t.value, reverse=True)[:5]
-        for i, trial in enumerate(best_trials):
-            wandb.init(
-                project=self.wandb_par["project"],
-                name=f"best_trial_{i+1}_{self.optuna_config['model_name']}_{nano_id(6)}",
-                config=trial.params,
-                reinit=True
-            )
-            wandb.run.summary["val_loss"] = trial.value
-            wandb.run.summary["unique_proteins"] = trial.user_attrs["unique_proteins"]
-            wandb.run.summary["unique_substrates"] = trial.user_attrs["unique_substrates"]
-            wandb.run.summary["dataset_len"] = trial.user_attrs["dataset_len"]
-            wandb.run.summary["train_loss"] = trial.user_attrs["train_loss"]
-            wandb.log({
-                "predictions_table": trial.user_attrs["predictions_table"],
-                "metrics_table": trial.user_attrs["metrics_table"]
-            })
-            print(f"logged metrics table with size {len(trial.user_attrs['metrics_table'].data)}")
-            print(f"logged predictions table with size {len(trial.user_attrs['predictions_table'].data)} ")
+        # Determine if we maximize or minimize based on config
+        is_reverse = True if self.optuna_config["direction"] == "maximize" else False
+        best_trials = sorted(completed_trials, key=lambda t: t.value, reverse=is_reverse)[:5]
 
+        # 1. Create the output directory
+        output_dir = ROOT /"reports" / "results_scikit_learn" / f"{self.optuna_config['study_name']}_substrate-{self.paths['substrate_name']}_protein-{self.paths['protein_name']}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        os.makedirs(output_dir, exist_ok=True)
+
+        # 2. Export All Trials Comparison
+        # This converts the study to a dataframe, including your user_attrs
+        df = study.trials_dataframe()
+        
+        # Rename columns for readability (Optuna prefixes them with 'user_attrs_')
+        df.columns = [c.replace('user_attrs_', '') if 'user_attrs_' in c else c for c in df.columns]
+        
+        comparison_path = os.path.join(output_dir, f"{self.optuna_config['study_name']}_comparison.csv")
+        df.to_csv(comparison_path, index=False)
+
+        # 3. Export Best Trial Detailed Metrics
+        best_trial = study.best_trial
+        best_results = {
+            "best_trial_number": best_trial.number,
+            "best_value": best_trial.value,
+            "best_params": best_trial.params,
+            "all_metrics": {
+                # Extract specific attributes you logged in objective()
+                "val_loss": best_trial.user_attrs.get("val_loss"),
+                "train_loss": best_trial.user_attrs.get("train_loss"),
+                "dataset_len": best_trial.user_attrs.get("dataset_len"),
+                # Exclude large objects like tables from the JSON summary if necessary
+            }
+        }
+
+        best_json_path = os.path.join(output_dir, f"best_model_{self.optuna_config['model_name']}.json")
+        with open(best_json_path, "w") as f:
+            json.dump(best_results, f, indent=4)
+
+        print(f"📊 Reports generated in {output_dir}")
         return study
 
 # Usage

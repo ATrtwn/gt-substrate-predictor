@@ -40,7 +40,7 @@ class SklearnTrainer(Trainer):
     def validate(self, X, y):
         if hasattr(self.model, "predict_proba"):
             y_pred = self.model.predict_proba(X)[:, 1]
-            loss = log_loss(y, y_pred)
+            loss = log_loss(y, y_pred, labels=[0,1])
         else:
             loss = None
         return loss
