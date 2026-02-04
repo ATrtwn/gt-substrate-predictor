@@ -6,13 +6,13 @@ from pathlib import Path
 from tqdm import tqdm
 from Bio.PDB import MMCIFParser, NeighborSearch
 from Bio.PDB.Polypeptide import is_aa
-from torch_geometric.data import Data
 import torch
 from sklearn.neighbors import NearestNeighbors
 import json
 proj_root = Path(__file__).resolve().parents[2]
 sys.path.append(str(proj_root))
 from src.features.feature_utils import compute_all_features
+from src.utils.structure import ProteinData
 
 boltz_dir = Path(__file__).parent.parent.parent.parent/ "boltz_output" 
 split_dir = Path(__file__).parent.parent / "data"/ "splits.csv"
@@ -174,7 +174,7 @@ def analyze_to_pocket_graph(cif_file_path: Path, is_active: int,c:str, model_str
     
     edge_index = torch.tensor(np.array([edge_sources, edge_targets]), dtype=torch.long)
 
-    return Data(x=x, edge_index=edge_index, pos=torch.tensor(coords, dtype=torch.float), y=y,c=c, model_str=model_str, UGT_ID=UGT_ID, smiles=smiles, scalars=raw_scalars)
+    return ProteinData(x=x, edge_index=edge_index, pos=torch.tensor(coords, dtype=torch.float), y=y,c=c, model_str=model_str, UGT_ID=UGT_ID, smiles=smiles, scalars=raw_scalars)
 
 def collect(root_dir: Path):
     # Setup paths and load labels

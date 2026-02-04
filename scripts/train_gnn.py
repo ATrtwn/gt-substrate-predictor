@@ -27,7 +27,7 @@ import matplotlib.pyplot as plt
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 from src.models.nn_model import GT_NN, BilinearInteractionNet, AttentionMLP, save_model
-from src.models.gnn_models import GNNClassifier,MolecularEGNN
+from src.models.gnn_models import GNNClassifier,MolecularEGNN,MolecularEGNN_Sparse
 from src.data.data_split import stratified_split_by_entities, check_split
 from src.utils.helper_function import get_params, setup_logging, nano_id
 from sklearn.metrics import accuracy_score, roc_auc_score, f1_score, matthews_corrcoef
@@ -295,7 +295,7 @@ def train_gnn_experiment(
             concat=True,
         ).to(device)
     elif model_type == "MolecularEGNN":
-        model = MolecularEGNN(
+        model = MolecularEGNN_Sparse(
             in_dim=loaders["train"].dataset[0].num_node_features,
             hidden_dim=hidden_dims,
             dropout=dropout,
@@ -418,7 +418,7 @@ def train_gnn_experiment(
             if save_path is not None:
                 model_path = save_path
             elif seed is not None:
-                model_path = f"experiments/best_model_{model_tpye}_seed_{seed}.pth"
+                model_path = f"experiments/best_model_{model_type}_seed_{seed}.pth"
             else:
                 model_path = f"experiments/best_model_{model_type}.pth"
             save_model(model, optimizer, epoch, val_loss, model_path)
@@ -478,6 +478,29 @@ def train_gnn_experiment(
     plt.savefig(plot_path, dpi=300, bbox_inches='tight')
     plt.close()
     logging.info(f"Training curves saved to {plot_path}")
+
+    # ALSO save numeric learning curves (CSV and NPZ) to results directory for reproducibility ✅
+    curves = {
+        "train_loss": np.array(train_losses, dtype=float),
+        "val_loss": np.array(val_losses, dtype=float),
+        "val_accuracy": np.array(val_accuracies, dtype=float),
+        "val_f1": np.array(val_f1_scores, dtype=float),
+        "val_roc_auc": np.array(val_roc_aucs, dtype=float)
+    }
+    # Ensure results_dir exists (already created below when saving metrics, but double-check)
+    results_dir.mkdir(parents=True, exist_ok=True)
+    # Save NPZ
+    curves_npz_path = results_dir / f"learning_curves_{model_type}_{nano_id()}.npz"
+    np.savez(curves_npz_path, **curves)
+    # Save CSV for easy inspection
+    try:
+        df_curves = pd.DataFrame({k: v for k, v in curves.items()})
+        curves_csv_path = results_dir / f"learning_curves_{model_type}_{nano_id()}.csv"
+        df_curves.to_csv(curves_csv_path, index=False)
+    except Exception as e:
+        logging.warning(f"Failed to save learning curves CSV: {e}")
+
+    logging.info(f"Learning curves saved to {curves_npz_path}")
     
     # Final evaluation on test sets
     logging.info("Evaluating on test sets...")

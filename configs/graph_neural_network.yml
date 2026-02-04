@@ -1,5 +1,5 @@
-model_type: "egnn"       # EGNN for 3D graphs
-hidden_dims: [256]       # hidden_dim for EGNN blocks
+model_type: ["GAT","GIN","SAGE","GATv2","MolecularEGNN"]       # EGNN for 3D graphs
+hidden_dims: [64,64]       # hidden_dim for EGNN blocks
 dropout: 0.4
 num_heads: 4             # only relevant for attention-based GNNs
 use_residual: true
@@ -10,8 +10,9 @@ learning_rate: 0.000305
 batch_size: 16
 epochs: 100
 weight_decay: 0.000936
+oversample: True
 
 wandb_mode: "offline"
 project: "gt-substrate-predictor"
 
-dataset_path: "boltz_processes/gnn_dataset/"
+dataset_path: "boltz_processed/pocket_graphs/"
