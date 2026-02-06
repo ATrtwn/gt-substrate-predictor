@@ -461,7 +461,7 @@ def train_gnn_experiment(
     """
     def load_trainset(df, name, shuffle=False, oversample = False):
         # If a DataFrame is passed in place of filename, build dataset from it
-        pocket_dir = Path(__file__).resolve().parent.parent.parent / dataset_path 
+        pocket_dir = Path(__file__).resolve().parent.parent.parent / dataset_path
         if isinstance(df, pd.DataFrame):
             graphs = build_graphs_from_dataframe(df, pocket_dir)
             print(f"Built training set from DataFrame with {len(graphs)} objects")
@@ -509,7 +509,7 @@ def train_gnn_experiment(
 
     def load_dataset(df,name, shuffle=False):
         # Support passing a DataFrame to build the graphs on-the-fly
-        pocket_dir = Path(__file__).resolve().parent.parent.parent / "boltz_processed_protein" /"pocket_graphs"
+        pocket_dir = Path(__file__).resolve().parent.parent.parent / dataset_path
         if isinstance(df, pd.DataFrame):
             graphs = build_graphs_from_dataframe(df, pocket_dir)
             print(f"Built {name} dataset from DataFrame: {len(graphs)} graphs")
@@ -871,7 +871,7 @@ def train_gnn_experiment(
         "final_val_loss": float(val_losses[-1]),
     }
     
-    # Evaluate on all three test sets: C1, C2, and C3
+     # Evaluate on all three test sets: C1, C2, and C3
     for split_name, split_loader in [
         ("C1", loaders["test_C1"]),
         ("C2", loaders["test_C2"]),
@@ -880,28 +880,56 @@ def train_gnn_experiment(
         if len(loaders["test_C3"])>0:
             _, test_preds, test_labels = evaluate(model, split_loader, criterion, device)
             test_preds_binary = (test_preds > 0.5).astype(int)
-        
+
             # Convert smoothed labels back to binary for evaluation
             test_labels_binary = np.round(test_labels).astype(int)
-        
+
             # Calculate metrics
             acc = accuracy_score(test_labels_binary, test_preds_binary)
             f1 = f1_score(test_labels_binary, test_preds_binary)
             roc_auc = roc_auc_score(test_labels_binary, test_preds)
             mcc = matthews_corrcoef(test_labels_binary, test_preds_binary)
-        
+            #Bootrap standard error
+            rng = np.random.default_rng(42)
+            boots_idx = [rng.integers(0,len(test_labels_binary),len(test_labels_binary)) for _ in range(1000)]
+            f1_se = np.std(
+                [f1_score(
+                        test_labels_binary[i],test_preds_binary[i]
+                    ) for i in boots_idx
+                ],ddof=1
+            )
+            acc_se = np.std(
+                [accuracy_score(
+                    test_labels_binary[i],test_preds_binary[i]
+                    ) for i in boots_idx
+                ],ddof=1
+            )
+            roc_auc_se = np.std(
+                [roc_auc_score(
+                    test_labels_binary[i],test_preds_binary[i]
+                    ) for i in boots_idx
+                ],ddof=1
+            )
+            mse_se = np.std(
+                [matthews_corrcoef(
+                        test_labels_binary[i],test_preds_binary[i]
+                        )for i in boots_idx
+                ],ddof=1
+            )
             wandb.log({
                 f"{split_name}/accuracy": acc,
                 f"{split_name}/f1": f1,
                 f"{split_name}/roc_auc": roc_auc,
                 f"{split_name}/mcc": mcc,
             })
-        
+
             # Store test results
             results_metrics[f"{split_name}_accuracy"] = float(acc)
             results_metrics[f"{split_name}_f1"] = float(f1)
             results_metrics[f"{split_name}_roc_auc"] = float(roc_auc)
             results_metrics[f"{split_name}_mcc"] = float(mcc)
+            results_metrics[f"{split_name}_f1_se"] = float(f1_se)
+            results_metrics[f"{split_name}_acc_se"] = float(acc_se)
         
             logging.info(f"{split_name} - Acc: {acc:.4f}, F1: {f1:.4f}, ROC-AUC: {roc_auc:.4f}, MCC: {mcc:.4f}")
     

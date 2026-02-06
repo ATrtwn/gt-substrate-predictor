@@ -15,8 +15,13 @@ Alternatively a guide on how to setup the cluster can be found here : https://sd
 
 ### Create yaml files
     Run the scripts/create_boltz_input.py to create the yaml files for each prediction and store them in the BOLTZ_INPUT folder
+    This codes creates yaml files for the prediction of the binding structure of enzyme and substrate
 ```bash
     python scripts/create_boltz_input.py --output /path/to/output --msa /path/to/msa
+```
+This codes creates yaml files for the prediction of the individual protein structures
+```bash
+    python scripts/create_boltz_seperate_input.py --output /path/to/output --msa /path/to/msa
 ```
 ### create msa files
     This is step is only necessary if you have to run the msa process for boltz locally, so no --use_msa_server flag. When running on the compute node one does not have acces to the Internet so this step is necessary. 
@@ -31,7 +36,10 @@ Alternatively a guide on how to setup the cluster can be found here : https://sd
     # Install ColabFold
     pip install colabfold[alphafold-minus-jax] #for CPU only 
 ```
-
+    If not done before you should create a .fasta file with unique protein values
+```bash 
+python scripts/create_unique_fasta.py --input <Path to input CSV file> 
+```
     Then inside the env :
 ```bash 
 colabfold_batch <input_sequences>.fasta <output_folder> --msa-only

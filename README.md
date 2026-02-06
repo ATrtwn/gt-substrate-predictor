@@ -296,62 +296,7 @@ with torch.no_grad():
 
 ---
 
-### 🚀 Quick Start Guide
 
-#### Step-by-Step: Training a Model
-
-1. **Prepare your data** (if not already done):
-   ```bash
-   python scripts/fetch_data.py
-   python scripts/concatenate_embeddings.py --substrate chemberta3
-   ```
-
-2. **Choose your approach:**
-
-   **Option A: Quick Training (with default parameters)**
-   ```bash
-   python scripts/train_nn.py
-   ```
-   Uses settings from `configs/neural_network.yml`. Good for testing or if you already have optimized parameters.
-
-   **Option B: Hyperparameter Optimization First (Recommended)**
-   ```bash
-   # Find best hyperparameters (takes ~45-60 minutes)
-   python scripts/tune_nn_optuna.py
-   
-   # Copy best parameters from output to configs/neural_network.yml
-   # Then train with optimized settings:
-   python scripts/train_nn.py
-   ```
-   Optuna automatically tests 50 different configurations to find the best model.
-
-3. **View results:**
-   - Training curves: `reports/figures/nn_training_*.png`
-   - Metrics JSON: `reports/metrics/nn_metrics_*.json`
-   - Best model: `experiments/best_model_*.pth`
-
-#### Making Predictions with Trained Model
-
-```python
-import torch
-from src.models.nn_model import AttentionMLP, GT_NN, BilinearInteractionNet
-
-# Load model
-model = AttentionMLP(input_dim=1792, hidden_dims=[512, 256], num_heads=4)
-model.load_state_dict(torch.load('experiments/best_model_chemberta3.pth'))
-model.eval()
-
-# Load your concatenated embedding
-X_test = np.load('data/concatenated_embeddings/X_chemberta3.npy')
-
-# Make prediction
-with torch.no_grad():
-    prediction = model(torch.FloatTensor(X_test[0:1]))
-    probability = torch.sigmoid(prediction).item()
-    print(f"Activity probability: {probability:.2%}")
-```
-
----
 
 ### 🤖 Neural Network Training
 
@@ -530,16 +475,13 @@ Edit line ~275 in `objective()` function:
 ```
 ---
 
-### 📈 Experiments
-- **Baseline models:** Random classifier, majority class, logistic regression.
-- **Neural networks:** Flexible MLP, Bilinear Interaction Network, Attention MLP.
-- **Hyperparameter optimization:** Optuna for automated tuning.
-- **Future work:** GNN on molecular graphs, multi-modal transformer, AlphaFold2 integration.
 
-#### Baseline models
+
+
+### Baseline models
 In order to run the baseline models one has to specify the settings of the experiment in the configs folder in a yaml file e.g. the scikit-learn.yml
 
-##### Create a virtual environment
+#### Create a virtual environment
 1. Install uv with 
     ```sh
     pip install uv
@@ -563,16 +505,123 @@ In order to run the baseline models one has to specify the settings of the exper
   ```sh
     source .venv/bin/activate
   ```
-##### Login with wandb
+#### Login with wandb
  ```sh
     uv add wandb
     uv run wandb login
   ```
 
-##### Run the experiment within the env
+#### Run the experiment within the env
  ```sh
     python scripts/run_experiment.py
  ```
+
+### Graph Neural Network Model Training
+
+For training the Graph Neural Network one first needs to generate .cif files with the 3D structure predictions according to the [3D Structure prediction Guide](boltz_prediction.md). This guide works for generating structure predictions on compute nodes on the Jülich supercomputing cluster.If one wants to predict the structure with a different local device it is important to keep the output folder structure. It is highly recommended to predict the structures at least with a GPU, since the computing time on the Jülich Cluster was on average ~2min per structure with ~1500 unique proteins in our dataset. Once the data is generated this setup is enough to run the GNN models : 
+<details>
+<summary><b>requirements.txt</b></summary>
+
+<pre><code>
+--index-url https://download.pytorch.org/whl/cpu
+
+torch
+torchvision
+torchaudio
+torch_geometric
+egnn_pytorch
+colabfold[alphafold-minus-jax]
+jax==0.4.35
+jaxlib==0.4.35
+protobuf>=5.28
+ruamel-yaml
+wandb
+rdkit
+upsetplot
+</code></pre>
+
+</details>
+
+
+#### Run the protein structure preprocessing
+ ```sh
+    python scripts/preprocess_structure_prediction_protein.py <folder where you want to save the output>
+ ```
+ This will save the {UGT_id}_pocket_dataset.pt files in your selected output/pocket_graphs folder. Those files are now ready to be directly loaded into a Pytorch Geometric Dataloader. 
+ #### Run the training and evaluation on the GNN Models that take just the protein structures
+ ```sh
+    python scripts/train_gnn_protein.py 
+ ```
+ This will save the generate the predictions and save the result metrices in your reports folder in the folder from where you run the code.
+ #### Run the protein-ligand structure preprocessing
+```sh
+    python scripts/preprocess_structure_prediction.py <folder where you want to save the output>
+ ```
+  #### Run the training and evaluation on the GNN Models that take the protein-ligand structures
+ ```sh
+    python scripts/train_gnn.py 
+ ```
+ #### Configurations 
+ Edit config/graph_neural_network.yml
+```yaml 
+# Select the GNN architecture(s) to use.
+# Options: "GAT", "GIN", "SAGE", "GATv2", "MolecularEGNN"
+# For protein-only structure modeling, only "MolecularEGNN" is supported.
+# For protein–ligand structure modeling, multiple models may be listed.
+model_type: [MolecularEGNN]
+
+# Hidden dimensionality of each block.
+hidden_dims: [64, 64]
+
+# Dropout probability applied to node embeddings during training.
+dropout: 0.4
+
+# Number of attention heads.
+# Used by attention-based GNNs (e.g., GAT, GATv2).
+# Used for the attention layer for the protein only architecture
+num_heads: 4
+
+# Whether to use residual (skip) connections between GNN layers.
+use_residual: true
+
+# data_augmentation: Enable Gaussian noise augmentation during training
+data_augmentation: false
+
+# Standard deviation of Gaussian noise added to coordinates
+# (only relevant if data_augmentation is enabled).
+noise_std: 0.02
+
+# Optimizer learning rate.
+learning_rate: 0.000305
+
+# Number of samples per training batch.
+batch_size: 16
+
+# Total number of training epochs.
+epochs: 100
+
+# L2 regularization coefficient applied via optimizer weight decay.
+weight_decay: 0.000936
+
+# Whether to oversample underrepresented classes in the training set.
+oversample: true
+
+# Weights & Biases logging mode.
+# Use "offline" for local logging without syncing to the server.
+wandb_mode: "offline"
+
+# W&B project name.
+project: "gt-substrate-predictor"
+
+# Path to the preprocessed dataset containing pocket-level graph data.
+dataset_path: "boltz_processed/pocket_graphs/
+```
+
+### 📈 Experiments
+- **Baseline models:** Random classifier, majority class, logistic regression.
+- **Neural networks:** Flexible MLP, Bilinear Interaction Network, Attention MLP.
+- **Hyperparameter optimization:** Optuna for automated tuning.
+- **Future work:** GNN on molecular graphs, multi-modal transformer, AlphaFold2 integration.
 
 ### 💡 Results
 
@@ -695,7 +744,7 @@ To validate our model selection, we compared multiple approaches from baseline c
 |-------|------------|-------------|------------|-------------------------|
 | Majority Classifier | 0.561 ± 0.020 | 0.390 ± 0.020 | 0.500 ± 0.000 | - |
 | Gradient Boosting | 0.627 ± 0.021 | 0.554 ± 0.020 | 0.913 ± 0.014 | +11.7% |
-| GNN | 0.573 ± 0.024 | - | - | +2.1% |
+| GNN | 0.573 ± 0.024 | 0.665 | 0.658 | +2.1% |
 | **Attention MLP** ⭐ | **0.732 ± 0.026** | **0.812 ± 0.017** | **0.881 ± 0.015** | **+30.5%** |
 
 **Complete Performance Matrix:**
@@ -704,7 +753,7 @@ To validate our model selection, we compared multiple approaches from baseline c
 |-------|-------|-------------|-------|-------------|-------|-------------|------------|
 | Majority Baseline | 0.853 ± 0.025 | 0.744 ± 0.038 | 0.561 ± 0.020 | 0.390 ± 0.020 | 0.632 ± 0.131 | 0.462 ± 0.137 | 0.682 |
 | Gradient Boosting | 0.881 ± 0.023 | 0.798 ± 0.034 | 0.627 ± 0.021 | 0.554 ± 0.020 | 0.625 ± 0.148 | 0.538 ± 0.139 | 0.711 |
-| GNN | 0.903 ± 0.022 | - | 0.573 ± 0.024 | - | 0.727 ± 0.183 | - | 0.734 |
+| GNN | 0.903 ± 0.022 | 0.852 | 0.573 ± 0.024 | 0.665 | 0.727 ± 0.183 | - | 0.734 |
 | **Attention MLP** ⭐ | **0.909 ± 0.021** | **0.865 ± 0.031** | **0.732 ± 0.026** | **0.812 ± 0.017** | **0.727 ± 0.116** | **0.739 ± 0.091** | **0.789** |
 
 **Model Selection Rationale:**
