@@ -626,6 +626,7 @@ To validate our model selection, we compared multiple approaches from baseline c
 |-------|------------|-------------|------------|-------------------------|
 | Majority Classifier | 0.561 ± 0.020 | 0.390 ± 0.020 | 0.500 ± 0.000 | - |
 | Gradient Boosting | 0.627 ± 0.021 | 0.554 ± 0.020 | 0.913 ± 0.014 | +11.7% |
+| GNN | 0.573 ± 0.024 | - | - | +2.1% |
 | **Attention MLP** ⭐ | **0.732 ± 0.026** | **0.812 ± 0.017** | **0.881 ± 0.015** | **+30.5%** |
 
 **Complete Performance Matrix:**
@@ -634,6 +635,7 @@ To validate our model selection, we compared multiple approaches from baseline c
 |-------|-------|-------------|-------|-------------|-------|-------------|------------|
 | Majority Baseline | 0.853 ± 0.025 | 0.744 ± 0.038 | 0.561 ± 0.020 | 0.390 ± 0.020 | 0.632 ± 0.131 | 0.462 ± 0.137 | 0.682 |
 | Gradient Boosting | 0.881 ± 0.023 | 0.798 ± 0.034 | 0.627 ± 0.021 | 0.554 ± 0.020 | 0.625 ± 0.148 | 0.538 ± 0.139 | 0.711 |
+| GNN | 0.903 ± 0.022 | - | 0.573 ± 0.024 | - | 0.727 ± 0.183 | - | 0.734 |
 | **Attention MLP** ⭐ | **0.909 ± 0.021** | **0.865 ± 0.031** | **0.732 ± 0.026** | **0.812 ± 0.017** | **0.727 ± 0.116** | **0.739 ± 0.091** | **0.789** |
 
 **Model Selection Rationale:**
@@ -644,7 +646,7 @@ The **Attention MLP architecture** was selected based on:
 3. **Statistical significance** - improvements over baselines exceed standard errors
 4. **Interpretability** - attention weights reveal which protein-substrate features drive predictions
 
-The attention mechanism outperforms both the majority baseline and gradient boosting by learning which feature interactions are most predictive of binding. The model shows **30.5% improvement over the majority baseline** and **16.8% improvement over gradient boosting** on C2, demonstrating that complex protein-substrate interactions require sophisticated feature learning beyond traditional ensemble methods.
+The attention mechanism outperforms all baselines by learning which feature interactions are most predictive of binding. The model shows **30.5% improvement over the majority baseline**, **16.8% improvement over gradient boosting**, and **27.7% improvement over GNN** on C2. While the GNN model performs well on C1 (F1=0.903±0.022), it struggles with novel GT-substrate pairs in C2 (F1=0.573±0.024), demonstrating that complex protein-substrate interactions require sophisticated feature learning and attention mechanisms beyond graph-based representations.
 
 *Note: C3 test set has high uncertainty (SE > 0.11) due to limited samples with both novel GT and substrate, making it unreliable for model selection.*
 
